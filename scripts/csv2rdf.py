@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import csv
+import datetime
 import os
 import sys
 import urllib
@@ -52,17 +53,65 @@ class Converter(object):
 class Converter_data_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix ctype: <data/setup_Complex#>' # FIXME: unverified
+        print >>outf, '@prefix ctype: <data/setup_Complex#>'
 
     def encode_ID(self, val):
         return None
 
     def encode_ComplexType(self, val):
         return 'ctype:r' + val
+
+
+class Converter_data_Document(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_Document, self).output_prefixes(outf)
+        print >>outf, '@prefix dtype: <data/setup_Document#>'
+
+    def encode_ID(self, val):
+        return None
+
+    def encode_DocumentType(self, val):
+        return 'dtype:r' + val
+
+
+class Converter_data_Simplex(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_Simplex, self).output_prefixes(outf)
+        print >>outf, '@prefix stype: <data/setup_Simplex#>'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#>'
+
+    def encode_ID(self, val):
+        return None
+
+    def encode_SimplexType(self, val):
+        return 'stype:r' + val
+
+    # TODO: What is refValue?
+
+    def encode_Locked(self, val):
+        xsdval = 'false' if val == '0' else 'true'
+        return '"%s"^^xsd:boolean' % (xsdval,)
+
+
+class Converter_data_SimplexDate(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_SimplexDate, self).output_prefixes(outf)
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#>'
+
+    def encode_ID(self, val):
+        return None
+
+    def encode_Value(self, val):
+        dtval = datetime.datetime.strptime(val, '%m/%d/%y %H:%M:%S')
+        dtval = dtval.replace(year=dtval.year - 100)
+        return '"%s"^^xsd:dateTime' % (dtval.isoformat(),)
         
 
 CONVERTERS = {
     'data_Complex': Converter_data_Complex,
+    'data_Document': Converter_data_Document,
+    'data_Simplex': Converter_data_Simplex,
+    'data_SimplexDate': Converter_data_SimplexDate,
 }
 def convert_file(fname):
     dirpart, filepart = os.path.split(fname)
