@@ -107,11 +107,30 @@ class Converter_data_SimplexDate(Converter):
         return '"%s"^^xsd:dateTime' % (dtval.isoformat(),)
         
 
+class Converter_data_SimplexNumber(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_SimplexNumber, self).output_prefixes(outf)
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#>'
+
+    def encode_ID(self, val):
+        return None
+
+    def encode_Value(self, val):
+        return '"%s"^^xsd:integer' % (val,)
+
+
+class Converter_data_SimplexText(Converter):
+    def encode_ID(self, val):
+        return None
+
+
 CONVERTERS = {
     'data_Complex': Converter_data_Complex,
     'data_Document': Converter_data_Document,
     'data_Simplex': Converter_data_Simplex,
     'data_SimplexDate': Converter_data_SimplexDate,
+    'data_SimplexNumber': Converter_data_SimplexNumber,
+    'data_SimplexText': Converter_data_SimplexText,
 }
 def convert_file(fname):
     dirpart, filepart = os.path.split(fname)
