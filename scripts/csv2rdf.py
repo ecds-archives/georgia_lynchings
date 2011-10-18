@@ -18,9 +18,9 @@ class Converter(object):
             print >>outf, '@base <%s> .' % (self.in_uri,)
             self.output_prefixes(outf)
 
-            for i, row in enumerate(row_iter):
-                # i+1 here so that the id matches the line number
-                print >>outf, '<#r%d> a <#Row>' % (i+1,),
+            for row in row_iter:
+                # row[0] is always ID
+                print >>outf, '<#r%s> a <#Row>' % (row[0],),
                 for prop, val in zip(columns, row):
                     encode = getattr(self, 'encode_' + prop, self.encode)
                     encoded = encode(val)
