@@ -20,12 +20,12 @@ class Converter(object):
 
             for i, row in enumerate(row_iter):
                 # i+1 here so that the id matches the line number
-                print >>outf, '<#r%d> a src:Row' % (i+1,),
+                print >>outf, '<#r%d> a <#Row>' % (i+1,),
                 for prop, val in zip(columns, row):
                     encode = getattr(self, 'encode_' + prop, self.encode)
                     encoded = encode(val)
                     if encoded is not None:
-                        print >>outf, ';\n   src:%s %s' % (prop, encoded),
+                        print >>outf, ';\n   <#%s> %s' % (prop, encoded),
                 print >>outf, '.'
 
     def make_output_filename(self, in_fname):
@@ -38,7 +38,7 @@ class Converter(object):
         return out_fname
 
     def output_prefixes(self, outf):
-        print >>outf, '@prefix src: <%s#> .' % (self.in_uri,)
+        pass
     
     def encode(self, val):
         # lacking other info, assume string
@@ -60,7 +60,7 @@ class Converter(object):
 class Converter_data_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix ctype: <data/setup_Complex.csv#> .'
+        print >>outf, '@prefix ctype: <setup_Complex.csv#> .'
 
     def encode_ComplexType(self, val):
         return 'ctype:r' + val
@@ -69,7 +69,7 @@ class Converter_data_Complex(Converter):
 class Converter_data_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix dtype: <data/setup_Document.csv#> .'
+        print >>outf, '@prefix dtype: <setup_Document.csv#> .'
 
     def encode_DocumentType(self, val):
         return 'dtype:r' + val
@@ -78,7 +78,7 @@ class Converter_data_Document(Converter):
 class Converter_data_Simplex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_Simplex, self).output_prefixes(outf)
-        print >>outf, '@prefix stype: <data/setup_Simplex.csv#> .'
+        print >>outf, '@prefix stype: <setup_Simplex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_SimplexType(self, val):
@@ -127,7 +127,7 @@ class Converter_data_VCommentArchive(Converter):
 class Converter_data_xref_AnyComplex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_AnyComplex_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+        print >>outf, '@prefix cx: <data_Complex.csv#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -141,7 +141,7 @@ class Converter_data_xref_AnyComplex_Complex(Converter):
 class Converter_data_xref_Comment_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Comment_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+        print >>outf, '@prefix cx: <data_Complex.csv#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -150,7 +150,7 @@ class Converter_data_xref_Comment_Complex(Converter):
 class Converter_data_xref_Comment_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Comment_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix doc: <data/data_Document.csv#> .'
+        print >>outf, '@prefix doc: <data_Document.csv#> .'
 
     def encode_Document(self, val):
         return 'doc:r' + val
@@ -159,7 +159,7 @@ class Converter_data_xref_Comment_Document(Converter):
 class Converter_data_xref_Comment_Simplex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Comment_Simplex, self).output_prefixes(outf)
-        print >>outf, '@prefix sx: <data/data_Simplex.csv#> .'
+        print >>outf, '@prefix sx: <data_Simplex.csv#> .'
 
     def encode_Simplex(self, val):
         return 'sx:r' + val
@@ -168,8 +168,8 @@ class Converter_data_xref_Comment_Simplex(Converter):
 class Converter_data_xref_Complex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Complex_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
-        print >>outf, '@prefix xref: <data/setup_xref_Complex_Complex.csv#> .'
+        print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix xref: <setup_xref_Complex_Complex.csv#> .'
 
     def encode_HigherComplex(self, val):
         if val != '-1':
@@ -189,8 +189,8 @@ class Converter_data_xref_Complex_Complex(Converter):
 class Converter_data_xref_Complex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Complex_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
-        print >>outf, '@prefix doc: <data/data_Document.csv#> .'
+        print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix doc: <data_Document.csv#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -208,9 +208,9 @@ class Converter_data_xref_Complex_Document(Converter):
 class Converter_data_xref_Simplex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
-        print >>outf, '@prefix sx: <data/data_Simplex.csv#> .'
-        print >>outf, '@prefix xref: <data/setup_xref_Simplex_Complex.csv#> .'
+        print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix sx: <data_Simplex.csv#> .'
+        print >>outf, '@prefix xref: <setup_xref_Simplex_Complex.csv#> .'
 
     def encode_xrefID(self, val):
         return 'xref:r' + val
@@ -228,8 +228,8 @@ class Converter_data_xref_Simplex_Complex(Converter):
 class Converter_data_xref_Simplex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix sx: <data/data_xref_Simplex_Complex.csv#> .'
-        print >>outf, '@prefix doc: <data/data_Documnet.csv#> .'
+        print >>outf, '@prefix sx: <data_xref_Simplex_Complex.csv#> .'
+        print >>outf, '@prefix doc: <data_Documnet.csv#> .'
 
     def encode_Simplex(self, val):
         return 'sx:r' + val
@@ -240,9 +240,9 @@ class Converter_data_xref_Simplex_Document(Converter):
 class Converter_data_xref_Simplex_Simplex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Simplex_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix sx: <data/data_Simplex.csv#> .'
-        print >>outf, '@prefix doc: <data/data_Documnet.csv#> .'
-        print >>outf, '@prefix xref: <data/setup_xref_Simplex_Document.csv#> .'
+        print >>outf, '@prefix sx: <data_Simplex.csv#> .'
+        print >>outf, '@prefix doc: <data_Documnet.csv#> .'
+        print >>outf, '@prefix xref: <setup_xref_Simplex_Document.csv#> .'
     
     def encode_xrefID(self, val):
         return 'xref:r' + val
@@ -262,7 +262,7 @@ class Converter_data_xref_VComment(Converter):
 
     def output_prefixes(self, outf):
         super(Converter_data_xref_VComment, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+        print >>outf, '@prefix cx: <data_Complex.csv#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -276,7 +276,7 @@ class Converter_data_xref_VComment_Document(Converter):
 
     def output_prefixes(self, outf):
         super(Converter_data_xref_VComment_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+        print >>outf, '@prefix cx: <data_Complex.csv#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
