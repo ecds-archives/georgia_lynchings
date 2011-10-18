@@ -42,6 +42,9 @@ class Converter(object):
     
     def encode(self, val):
         # lacking other info, assume string
+        return self._encode_as_string(val)
+
+    def _encode_as_string(self, val):
         val = val.replace('\\', '\\\\') \
                  .replace('"', '\"')
         if '\n' in val:
@@ -49,35 +52,32 @@ class Converter(object):
         else:
             return '"%s"' % (val,)
 
-    def encode_ID(self, val):
-        return None
-
     def _encode_as_boolean(self, val):
         xsdval = 'false' if val == '0' else 'true'
         return '"%s"^^xsd:boolean' % (xsdval,)
 
 
-class Converter_Complex(Converter):
+class Converter_data_Complex(Converter):
     def output_prefixes(self, outf):
-        super(Converter_Complex, self).output_prefixes(outf)
+        super(Converter_data_Complex, self).output_prefixes(outf)
         print >>outf, '@prefix ctype: <data/setup_Complex.csv#> .'
 
     def encode_ComplexType(self, val):
         return 'ctype:r' + val
 
 
-class Converter_Document(Converter):
+class Converter_data_Document(Converter):
     def output_prefixes(self, outf):
-        super(Converter_Document, self).output_prefixes(outf)
+        super(Converter_data_Document, self).output_prefixes(outf)
         print >>outf, '@prefix dtype: <data/setup_Document.csv#> .'
 
     def encode_DocumentType(self, val):
         return 'dtype:r' + val
 
 
-class Converter_Simplex(Converter):
+class Converter_data_Simplex(Converter):
     def output_prefixes(self, outf):
-        super(Converter_Simplex, self).output_prefixes(outf)
+        super(Converter_data_Simplex, self).output_prefixes(outf)
         print >>outf, '@prefix stype: <data/setup_Simplex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
@@ -92,9 +92,9 @@ class Converter_Simplex(Converter):
         return self._encode_as_boolean(val)
 
 
-class Converter_SimplexDate(Converter):
+class Converter_data_SimplexDate(Converter):
     def output_prefixes(self, outf):
-        super(Converter_SimplexDate, self).output_prefixes(outf)
+        super(Converter_data_SimplexDate, self).output_prefixes(outf)
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#>'
 
     def encode_Value(self, val):
@@ -103,20 +103,20 @@ class Converter_SimplexDate(Converter):
         return '"%s"^^xsd:dateTime' % (dtval.isoformat(),)
         
 
-class Converter_SimplexNumber(Converter):
+class Converter_data_SimplexNumber(Converter):
     def output_prefixes(self, outf):
-        super(Converter_SimplexNumber, self).output_prefixes(outf)
+        super(Converter_data_SimplexNumber, self).output_prefixes(outf)
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Value(self, val):
         return '"%s"^^xsd:integer' % (val,)
 
 
-class Converter_SimplexText(Converter):
+class Converter_data_SimplexText(Converter):
     pass # nothing to do?
 
 
-class Converter_VCommentArchive(Converter):
+class Converter_data_VCommentArchive(Converter):
     pass
 
     # TODO: What are UserID/VerifierID?
@@ -124,20 +124,50 @@ class Converter_VCommentArchive(Converter):
     # TODO: Do we need to split up Position macro events?
 
 
-class Converter_xref_AnyComplex_Complex(Converter):
+class Converter_data_xref_AnyComplex_Complex(Converter):
     def output_prefixes(self, outf):
-        super(Converter_xref_AnyComplex_Complex, self).output_prefixes(outf)
+        super(Converter_data_xref_AnyComplex_Complex, self).output_prefixes(outf)
         print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
         
     # TODO: What is AnyComplex?
-        
+    def encode_AnyComplex(self, val):
+        if val:
+            return self._encode_as_string(val)
 
-class Converter_xref_Complex_Complex(Converter):
+
+class Converter_data_xref_Comment_Complex(Converter):
     def output_prefixes(self, outf):
-        super(Converter_xref_Complex_Complex, self).output_prefixes(outf)
+        super(Converter_data_xref_Comment_Complex, self).output_prefixes(outf)
+        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+
+    def encode_Complex(self, val):
+        return 'cx:r' + val
+
+
+class Converter_data_xref_Comment_Document(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_Comment_Document, self).output_prefixes(outf)
+        print >>outf, '@prefix doc: <data/data_Document.csv#> .'
+
+    def encode_Document(self, val):
+        return 'doc:r' + val
+
+
+class Converter_data_xref_Comment_Simplex(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_Comment_Simplex, self).output_prefixes(outf)
+        print >>outf, '@prefix sx: <data/data_Simplex.csv#> .'
+
+    def encode_Simplex(self, val):
+        return 'sx:r' + val
+
+
+class Converter_data_xref_Complex_Complex(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_Complex_Complex, self).output_prefixes(outf)
         print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
         print >>outf, '@prefix xref: <data/setup_xref_Complex_Complex.csv#> .'
 
@@ -156,13 +186,11 @@ class Converter_xref_Complex_Complex(Converter):
         return '"%s"^^xsd:integer' % (val,)
 
 
-class Converter_xref_Complex_Document(Converter):
-    # TODO: verify. this source table does not appear on our table map
-
+class Converter_data_xref_Complex_Document(Converter):
     def output_prefixes(self, outf):
-        super(Converter_xref_Complex_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data/setup_Complex.csv#> .'
-        print >>outf, '@prefix doc: <data/setup_Document.csv#> .'
+        super(Converter_data_xref_Complex_Document, self).output_prefixes(outf)
+        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+        print >>outf, '@prefix doc: <data/data_Document.csv#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -177,19 +205,105 @@ class Converter_xref_Complex_Document(Converter):
         return self._encode_as_boolean(val)
 
 
+class Converter_data_xref_Simplex_Complex(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_Simplex_Complex, self).output_prefixes(outf)
+        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+        print >>outf, '@prefix sx: <data/data_Simplex.csv#> .'
+        print >>outf, '@prefix xref: <data/setup_xref_Simplex_Complex.csv#> .'
+
+    def encode_xrefID(self, val):
+        return 'xref:r' + val
+
+    def encode_Simplex(self, val):
+        return 'sx:r' + val
+
+    def encode_Complex(self, val):
+        return 'cx:r' + val
+
+    def encode_Order(self, val):
+        return '"%s"^^xsd:integer' % (val,)
+
+
+class Converter_data_xref_Simplex_Document(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_Simplex_Document, self).output_prefixes(outf)
+        print >>outf, '@prefix sx: <data/data_xref_Simplex_Complex.csv#> .'
+        print >>outf, '@prefix doc: <data/data_Documnet.csv#> .'
+
+    def encode_Simplex(self, val):
+        return 'sx:r' + val
+
+    def encode_Document(self, val):
+        return 'doc:r' + val
+
+class Converter_data_xref_Simplex_Simplex_Document(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_Simplex_Simplex_Document, self).output_prefixes(outf)
+        print >>outf, '@prefix sx: <data/data_Simplex.csv#> .'
+        print >>outf, '@prefix doc: <data/data_Documnet.csv#> .'
+        print >>outf, '@prefix xref: <data/setup_xref_Simplex_Document.csv#> .'
+    
+    def encode_xrefID(self, val):
+        return 'xref:r' + val
+
+    def encode_Simplex(self, val):
+        return 'sx:r' + val
+
+    def encode_Document(self, val):
+        return 'doc:r' + val
+
+    def encode_Order(self, val):
+        return '"%s"^^xsd:integer' % (val,)
+
+
+class Converter_data_xref_VComment(Converter):
+    # TODO: this table is undocumented. many fields guessed or entirely unknown
+
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_VComment, self).output_prefixes(outf)
+        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+
+    def encode_Complex(self, val):
+        return 'cx:r' + val
+
+    def encode_Completed(self, val):
+        return self._encode_as_boolean(val)
+
+
+class Converter_data_xref_VComment_Document(Converter):
+    # TODO: this table is undocumented. many fields guessed or entirely unknown
+
+    def output_prefixes(self, outf):
+        super(Converter_data_xref_VComment_Document, self).output_prefixes(outf)
+        print >>outf, '@prefix cx: <data/data_Complex.csv#> .'
+
+    def encode_Complex(self, val):
+        return 'cx:r' + val
+
+    def encode_Completed(self, val):
+        return self._encode_as_boolean(val)
 
 
 CONVERTERS = {
-    'data_Complex': Converter_Complex,
-    'data_Document': Converter_Document,
-    'data_Simplex': Converter_Simplex,
-    'data_SimplexDate': Converter_SimplexDate,
-    'data_SimplexNumber': Converter_SimplexNumber,
-    'data_SimplexText': Converter_SimplexText,
-    'data_VCommentArchive': Converter_VCommentArchive,
-    'data_xref_AnyComplex_Complex': Converter_xref_AnyComplex_Complex,
-    'data_xref_Complex_Complex': Converter_xref_Complex_Complex,
-    'data_xref_Complex_Document': Converter_xref_Complex_Document,
+    'data_Complex': Converter_data_Complex,
+    'data_Document': Converter_data_Document,
+    'data_Simplex': Converter_data_Simplex,
+    'data_SimplexDate': Converter_data_SimplexDate,
+    'data_SimplexNumber': Converter_data_SimplexNumber,
+    'data_SimplexText': Converter_data_SimplexText,
+    'data_VCommentArchive': Converter_data_VCommentArchive,
+    'data_xref_AnyComplex_Complex': Converter_data_xref_AnyComplex_Complex,
+    'data_xref_Comment_Complex': Converter_data_xref_Comment_Complex,
+    'data_xref_Comment_Document': Converter_data_xref_Comment_Document,
+    'data_xref_Comment_Simplex': Converter_data_xref_Comment_Simplex,
+    'data_xref_Complex_Complex': Converter_data_xref_Complex_Complex,
+    'data_xref_Complex_Document': Converter_data_xref_Complex_Document,
+    'data_xref_Simplex_Complex': Converter_data_xref_Simplex_Complex,
+    'data_xref_Simplex_Document': Converter_data_xref_Simplex_Document,
+    'data_xref_Simplex_Simplex_Document': Converter_data_xref_Simplex_Simplex_Document,
+    'data_xref_VComment': Converter_data_xref_VComment,
+    'data_xref_VComment_Document': Converter_data_xref_VComment_Document,
 }
 def convert_file(fname):
     dirpart, filepart = os.path.split(fname)
