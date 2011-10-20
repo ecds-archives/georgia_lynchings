@@ -99,7 +99,7 @@ class Converter_data_Simplex(Converter):
 class Converter_data_SimplexDate(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_SimplexDate, self).output_prefixes(outf)
-        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#>'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Value(self, val):
         dtval = datetime.datetime.strptime(val, '%m/%d/%y %H:%M:%S')
@@ -174,6 +174,7 @@ class Converter_data_xref_Complex_Complex(Converter):
         super(Converter_data_xref_Complex_Complex, self).output_prefixes(outf)
         print >>outf, '@prefix cx: <data_Complex.csv#> .'
         print >>outf, '@prefix xref: <setup_xref_Complex_Complex.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_HigherComplex(self, val):
         if val != '-1':
@@ -195,6 +196,7 @@ class Converter_data_xref_Complex_Document(Converter):
         super(Converter_data_xref_Complex_Document, self).output_prefixes(outf)
         print >>outf, '@prefix cx: <data_Complex.csv#> .'
         print >>outf, '@prefix doc: <data_Document.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -215,6 +217,7 @@ class Converter_data_xref_Simplex_Complex(Converter):
         print >>outf, '@prefix cx: <data_Complex.csv#> .'
         print >>outf, '@prefix sx: <data_Simplex.csv#> .'
         print >>outf, '@prefix xref: <setup_xref_Simplex_Complex.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_xrefID(self, val):
         return 'xref:r' + val
@@ -247,6 +250,7 @@ class Converter_data_xref_Simplex_Simplex_Document(Converter):
         print >>outf, '@prefix sx: <data_Simplex.csv#> .'
         print >>outf, '@prefix doc: <data_Documnet.csv#> .'
         print >>outf, '@prefix xref: <setup_xref_Simplex_Document.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
     
     def encode_xrefID(self, val):
         return 'xref:r' + val
@@ -267,6 +271,7 @@ class Converter_data_xref_VComment(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_VComment, self).output_prefixes(outf)
         print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -281,6 +286,7 @@ class Converter_data_xref_VComment_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_VComment_Document, self).output_prefixes(outf)
         print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Complex(self, val):
         return 'cx:r' + val
@@ -301,6 +307,10 @@ class Converter_setup_Document(Converter):
 
 
 class Converter_setup_Simplex(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_setup_Simplex, self).output_prefixes(outf)
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
+
     def encode_ValueType(self, val):
         # FIXME: Represent the actual meaning of this number. Simplex data
         # with these types are:
@@ -319,6 +329,7 @@ class Converter_setup_xref_Complex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_setup_xref_Complex_Complex, self).output_prefixes(outf)
         print >>outf, '@prefix cx: <setup_Complex.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_HigherComplex(self, val):
         if val != '-1':
