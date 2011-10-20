@@ -30,11 +30,12 @@ class Converter(object):
 
     def make_output_filename(self, in_fname):
         in_base, ext = os.path.splitext(in_fname)
-        out_fname = '%s.ttl' % (in_base,)
+        out_ext = '.ttl'
+        out_fname = in_base + out_ext
         i = 0
         while os.path.exists(out_fname):
             i += 1
-            out_fname = '%s.%d.n3' % (in_base, i)
+            out_fname = '%s.%d%s' % (in_base, i, out_ext)
         return out_fname
 
     def output_prefixes(self, outf):
@@ -51,6 +52,9 @@ class Converter(object):
             return '"""%s"""' % (val,)
         else:
             return '"%s"' % (val,)
+
+    def _encode_as_integer(self, val):
+        return '"%s"^^xsd:integer' % (val,)
 
     def _encode_as_boolean(self, val):
         xsdval = 'false' if val == '0' else 'true'
@@ -109,7 +113,7 @@ class Converter_data_SimplexNumber(Converter):
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Value(self, val):
-        return '"%s"^^xsd:integer' % (val,)
+        return self._encode_as_integer(val)
 
 
 class Converter_data_SimplexText(Converter):
@@ -183,7 +187,7 @@ class Converter_data_xref_Complex_Complex(Converter):
         return 'xref:r' + val
 
     def encode_Order(self, val):
-        return '"%s"^^xsd:integer' % (val,)
+        return self._encode_as_integer(val)
 
 
 class Converter_data_xref_Complex_Document(Converter):
@@ -222,7 +226,7 @@ class Converter_data_xref_Simplex_Complex(Converter):
         return 'cx:r' + val
 
     def encode_Order(self, val):
-        return '"%s"^^xsd:integer' % (val,)
+        return self._encode_as_integer(val)
 
 
 class Converter_data_xref_Simplex_Document(Converter):
@@ -254,7 +258,7 @@ class Converter_data_xref_Simplex_Simplex_Document(Converter):
         return 'doc:r' + val
 
     def encode_Order(self, val):
-        return '"%s"^^xsd:integer' % (val,)
+        return self._encode_as_integer(val)
 
 
 class Converter_data_xref_VComment(Converter):
@@ -285,30 +289,37 @@ class Converter_data_xref_VComment_Document(Converter):
         return self._encode_as_boolean(val)
 
 
-CONVERTERS = {
-    'data_Complex': Converter_data_Complex,
-    'data_Document': Converter_data_Document,
-    'data_Simplex': Converter_data_Simplex,
-    'data_SimplexDate': Converter_data_SimplexDate,
-    'data_SimplexNumber': Converter_data_SimplexNumber,
-    'data_SimplexText': Converter_data_SimplexText,
-    'data_VCommentArchive': Converter_data_VCommentArchive,
-    'data_xref_AnyComplex_Complex': Converter_data_xref_AnyComplex_Complex,
-    'data_xref_Comment_Complex': Converter_data_xref_Comment_Complex,
-    'data_xref_Comment_Document': Converter_data_xref_Comment_Document,
-    'data_xref_Comment_Simplex': Converter_data_xref_Comment_Simplex,
-    'data_xref_Complex_Complex': Converter_data_xref_Complex_Complex,
-    'data_xref_Complex_Document': Converter_data_xref_Complex_Document,
-    'data_xref_Simplex_Complex': Converter_data_xref_Simplex_Complex,
-    'data_xref_Simplex_Document': Converter_data_xref_Simplex_Document,
-    'data_xref_Simplex_Simplex_Document': Converter_data_xref_Simplex_Simplex_Document,
-    'data_xref_VComment': Converter_data_xref_VComment,
-    'data_xref_VComment_Document': Converter_data_xref_VComment_Document,
-}
+class Converter_setup_Complex(Converter):
+    # TODO: copySetting: Is this a boolean? number?
+    # TODO: DocumentType: Does this reference setup_Document? maybe?
+    pass
+
+
+class Converter_setup_Document(Converter):
+    # DocumentType looks like just a string. Leave it for now.
+    pass
+
+
+class Converter_setup_Simplex(Converter):
+    def encode_ValueType(self, val):
+        # FIXME: Represent the actual meaning of this number. Simplex data
+        # with these types are:
+        #   1. text (in data_SimplexText)
+        #   2. number (in data_SimplexNumber)
+        #   3. date (in data_SimplexDate)
+        #   4. boolean, directly encoded
+        #   5. time (in data_SimplexDate)
+        return self._encode_as_integer(val)
+
+    def encode_Locked(self, val):
+        return self._encode_as_boolean(val)
+
+
 def convert_file(fname):
     dirpart, filepart = os.path.split(fname)
     basename, ext = os.path.splitext(filepart)
-    ConverterClass = CONVERTERS.get(basename, Converter)
+    converter_name = 'Converter_' + basename
+    ConverterClass = globals().get(converter_name, Converter)
     converter = ConverterClass()
     converter.process_file(fname)
             
