@@ -315,6 +315,35 @@ class Converter_setup_Simplex(Converter):
         return self._encode_as_boolean(val)
 
 
+class Converter_setup_xref_Complex_Complex(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_setup_xref_Complex_Complex, self).output_prefixes(outf)
+        print >>outf, '@prefix cx: <setup_Complex.csv#> .'
+
+    def encode_HigherComplex(self, val):
+        if val != '-1':
+            return 'cx:r' + val
+        
+    def encode_LowerComplex(self, val):
+        if val != '-1':
+            return 'cx:r' + val
+        
+    # TODO: What is Relationship?
+
+    def encode_Order(self, val):
+        return self._encode_as_integer(val)
+
+    # TODO: What is Group?
+
+    def encode_Required(self, val):
+        return self._encode_as_boolean(val)
+
+    def encode_AllowMultiple(self, val):
+        return self._encode_as_boolean(val)
+        
+    # TODO: What is Autoxref?
+
+
 def convert_file(fname):
     dirpart, filepart = os.path.split(fname)
     basename, ext = os.path.splitext(filepart)
