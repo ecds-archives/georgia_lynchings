@@ -72,29 +72,29 @@ class Converter(object):
 class Converter_data_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix ctype: <setup_Complex.csv#> .'
+        print >>outf, '@prefix scx: <setup_Complex.csv#> .'
 
     def encode_ComplexType(self, val):
-        return 'ctype:r' + val
+        return 'scx:r' + val
 
 
 class Converter_data_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix dtype: <setup_Document.csv#> .'
+        print >>outf, '@prefix sd: <setup_Document.csv#> .'
 
     def encode_DocumentType(self, val):
-        return 'dtype:r' + val
+        return 'sd:r' + val
 
 
 class Converter_data_Simplex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_Simplex, self).output_prefixes(outf)
-        print >>outf, '@prefix stype: <setup_Simplex.csv#> .'
+        print >>outf, '@prefix ssx: <setup_Simplex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_SimplexType(self, val):
-        return 'stype:r' + val
+        return 'ssx:r' + val
 
     # TODO: refValue is an index into data_Simplex*. table depends on
     # simplexType.ValueType. 1==Text; 2==Number; 3==Date. 4 indicates that
@@ -139,10 +139,10 @@ class Converter_data_VCommentArchive(Converter):
 class Converter_data_xref_AnyComplex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_AnyComplex_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix dcx: <data_Complex.csv#> .'
 
     def encode_Complex(self, val):
-        return 'cx:r' + val
+        return 'dcx:r' + val
         
     # TODO: What is AnyComplex?
     def encode_AnyComplex(self, val):
@@ -153,47 +153,47 @@ class Converter_data_xref_AnyComplex_Complex(Converter):
 class Converter_data_xref_Comment_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Comment_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix dcx: <data_Complex.csv#> .'
 
     def encode_Complex(self, val):
-        return 'cx:r' + val
+        return 'dcx:r' + val
 
 
 class Converter_data_xref_Comment_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Comment_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix doc: <data_Document.csv#> .'
+        print >>outf, '@prefix dd: <data_Document.csv#> .'
 
     def encode_Document(self, val):
-        return 'doc:r' + val
+        return 'dd:r' + val
 
 
 class Converter_data_xref_Comment_Simplex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Comment_Simplex, self).output_prefixes(outf)
-        print >>outf, '@prefix sx: <data_Simplex.csv#> .'
+        print >>outf, '@prefix dsx: <data_Simplex.csv#> .'
 
     def encode_Simplex(self, val):
-        return 'sx:r' + val
+        return 'dsx:r' + val
 
 
 class Converter_data_xref_Complex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Complex_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data_Complex.csv#> .'
-        print >>outf, '@prefix xref: <setup_xref_Complex_Complex.csv#> .'
+        print >>outf, '@prefix dcx: <data_Complex.csv#> .'
+        print >>outf, '@prefix sxcxcx: <setup_xref_Complex_Complex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_HigherComplex(self, val):
         if val != '-1':
-            return 'cx:r' + val # TODO: verify this relationship
+            return 'dcx:r' + val # TODO: verify this relationship
 
     def encode_LowerComplex(self, val):
         if val != '-1':
-            return 'cx:r' + val # TODO: verify this relationship
+            return 'dcx:r' + val # TODO: verify this relationship
 
     def encode_xrefID(self, val):
-        return 'xref:r' + val
+        return 'sxcxcx:r' + val
 
     def encode_Order(self, val):
         return self._encode_as_integer(val)
@@ -202,15 +202,15 @@ class Converter_data_xref_Complex_Complex(Converter):
 class Converter_data_xref_Complex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Complex_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data_Complex.csv#> .'
-        print >>outf, '@prefix doc: <data_Document.csv#> .'
+        print >>outf, '@prefix dcx: <data_Complex.csv#> .'
+        print >>outf, '@prefix dd: <data_Document.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Complex(self, val):
-        return 'cx:r' + val
+        return 'dcx:r' + val
 
     def encode_Document(self, val):
-        return 'doc:r' + val
+        return 'dd:r' + val
 
     def encode_Complete(self, val):
         return self._encode_as_boolean(val)
@@ -222,19 +222,19 @@ class Converter_data_xref_Complex_Document(Converter):
 class Converter_data_xref_Simplex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data_Complex.csv#> .'
-        print >>outf, '@prefix sx: <data_Simplex.csv#> .'
-        print >>outf, '@prefix xref: <setup_xref_Simplex_Complex.csv#> .'
+        print >>outf, '@prefix dcx: <data_Complex.csv#> .'
+        print >>outf, '@prefix dsx: <data_Simplex.csv#> .'
+        print >>outf, '@prefix sxsxcx: <setup_xref_Simplex_Complex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_xrefID(self, val):
-        return 'xref:r' + val
+        return 'sxsxcx:r' + val
 
     def encode_Simplex(self, val):
-        return 'sx:r' + val
+        return 'dsx:r' + val
 
     def encode_Complex(self, val):
-        return 'cx:r' + val
+        return 'dcx:r' + val
 
     def encode_Order(self, val):
         return self._encode_as_integer(val)
@@ -243,31 +243,31 @@ class Converter_data_xref_Simplex_Complex(Converter):
 class Converter_data_xref_Simplex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix sx: <data_xref_Simplex_Complex.csv#> .'
-        print >>outf, '@prefix doc: <data_Documnet.csv#> .'
+        print >>outf, '@prefix dxsxcx: <data_xref_Simplex_Complex.csv#> .'
+        print >>outf, '@prefix dd: <data_Documnet.csv#> .'
 
     def encode_Simplex(self, val):
-        return 'sx:r' + val
+        return 'dxsxcx:r' + val
 
     def encode_Document(self, val):
-        return 'doc:r' + val
+        return 'dd:r' + val
 
 class Converter_data_xref_Simplex_Simplex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Simplex_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix sx: <data_Simplex.csv#> .'
-        print >>outf, '@prefix doc: <data_Documnet.csv#> .'
-        print >>outf, '@prefix xref: <setup_xref_Simplex_Document.csv#> .'
+        print >>outf, '@prefix dsx: <data_Simplex.csv#> .'
+        print >>outf, '@prefix dd: <data_Documnet.csv#> .'
+        print >>outf, '@prefix sxsxd: <setup_xref_Simplex_Document.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
     
     def encode_xrefID(self, val):
-        return 'xref:r' + val
+        return 'sxsxd:r' + val
 
     def encode_Simplex(self, val):
-        return 'sx:r' + val
+        return 'dsx:r' + val
 
     def encode_Document(self, val):
-        return 'doc:r' + val
+        return 'dd:r' + val
 
     def encode_Order(self, val):
         return self._encode_as_integer(val)
@@ -278,11 +278,11 @@ class Converter_data_xref_VComment(Converter):
 
     def output_prefixes(self, outf):
         super(Converter_data_xref_VComment, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix dcx: <data_Complex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Complex(self, val):
-        return 'cx:r' + val
+        return 'dcx:r' + val
 
     def encode_Completed(self, val):
         return self._encode_as_boolean(val)
@@ -293,11 +293,11 @@ class Converter_data_xref_VComment_Document(Converter):
 
     def output_prefixes(self, outf):
         super(Converter_data_xref_VComment_Document, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <data_Complex.csv#> .'
+        print >>outf, '@prefix dcx: <data_Complex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Complex(self, val):
-        return 'cx:r' + val
+        return 'dcx:r' + val
 
     def encode_Completed(self, val):
         return self._encode_as_boolean(val)
@@ -336,16 +336,16 @@ class Converter_setup_Simplex(Converter):
 class Converter_setup_xref_Complex_Complex(Converter):
     def output_prefixes(self, outf):
         super(Converter_setup_xref_Complex_Complex, self).output_prefixes(outf)
-        print >>outf, '@prefix cx: <setup_Complex.csv#> .'
+        print >>outf, '@prefix scx: <setup_Complex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_HigherComplex(self, val):
         if val != '-1':
-            return 'cx:r' + val
+            return 'scx:r' + val
         
     def encode_LowerComplex(self, val):
         if val != '-1':
-            return 'cx:r' + val
+            return 'scx:r' + val
         
     # TODO: What is Relationship?
 
