@@ -62,11 +62,13 @@ class Converter(object):
             return '"%s"' % (val,)
 
     def _encode_as_integer(self, val):
-        return '"%s"^^xsd:integer' % (val,)
+        if val:
+            return '"%s"^^xsd:integer' % (val,)
 
     def _encode_as_boolean(self, val):
-        xsdval = 'false' if val == '0' else 'true'
-        return '"%s"^^xsd:boolean' % (xsdval,)
+        if val:
+            xsdval = 'false' if val == '0' else 'true'
+            return '"%s"^^xsd:boolean' % (xsdval,)
 
 
 class Converter_data_Complex(Converter):
