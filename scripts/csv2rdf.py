@@ -363,6 +363,61 @@ class Converter_setup_xref_Complex_Complex(Converter):
     # TODO: What is Autoxref?
 
 
+class Converter_setup_xref_Simplex_Complex(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_setup_xref_Simplex_Complex, self).output_prefixes(outf)
+        print >>outf, '@prefix scx: <setup_Complex.csv#> .'
+        print >>outf, '@prefix ssx: <setup_Simplex.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
+
+    def encode_Complex(self, val):
+        return 'scx:r' + val
+
+    def encode_Simplex(self, val):
+        return 'ssx:r' + val
+
+    # TODO: What is Autoxref?
+    # TODO: how do we interpret defaultVal?
+
+    def encode_Order(self, val):
+        return self._encode_as_integer(val)
+
+    # TODO: What is Group?
+
+    def encode_Required(self, val):
+        return self._encode_as_boolean(val)
+
+    def encode_AllowMultiple(self, val):
+        return self._encode_as_boolean(val)
+        
+
+class Converter_setup_xref_Simplex_Document(Converter):
+    def output_prefixes(self, outf):
+        super(Converter_setup_xref_Simplex_Document, self).output_prefixes(outf)
+        print >>outf, '@prefix sd: <setup_Document.csv#> .'
+        print >>outf, '@prefix ssx: <setup_Simplex.csv#> .'
+        print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
+
+    def encode_Document(self, val):
+        return 'sd:r' + val
+
+    def encodeSimplex(self, val):
+        return 'ssx:r' + val
+
+    # TODO: how do we interpret defaultVal?
+
+    def encode_Required(self, val):
+        return self._encode_as_boolean(val)
+
+    def encode_AllowMultiple(self, val):
+        return self._encode_as_boolean(val)
+    
+    def encode_Order(self, val):
+        return self._encode_as_integer(val)
+
+    # TODO: What is Group?
+
+
 def convert_file(fname):
     dirpart, filepart = os.path.split(fname)
     basename, ext = os.path.splitext(filepart)
