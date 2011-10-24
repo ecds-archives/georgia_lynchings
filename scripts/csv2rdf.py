@@ -6,9 +6,17 @@ import os
 import sys
 import urllib
 
+URI_BASE = 'http://galyn.example.com/source_data_files/'
+
+def url_from_path(fpath, base=None):
+    if base is None:
+        base = URI_BASE
+    dirname, fname = os.path.split(fpath)
+    return base + fname
+
 class Converter(object):
     def process_file(self, in_fname):
-        self.in_uri = urllib.pathname2url(in_fname)
+        self.in_uri = url_from_path(in_fname)
         out_fname = self.make_output_filename(in_fname)
         with open(in_fname) as inf, open(out_fname, 'w') as outf:
             reader = csv.reader(inf)
