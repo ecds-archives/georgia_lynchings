@@ -1,0 +1,130 @@
+# This is a SPARQL 1.1 update query. http://www.w3.org/TR/sparql11-update/
+# It assumes that you've already converted relational Georgia Lynchings
+# Project data to RDF using csv2rdf.py and imported them into an RDF
+# triplestore (such as Sesame 2 http://www.openrdf.org/) that understands
+# SPARQL 1.1 update queries.
+#
+# This query creates new explicit statements in the triplestore. The
+# statements are inferred from patterns in the existing data. It does not
+# use implicit RDF inference: Such an implementation could have significant
+# advantages for changing datasets, but server support for such implied
+# statements appears to have very limited portability as of 2011-10-15, so
+# we're skipping it for now.
+
+BASE <http://galyn.example.com/>
+PREFIX dsx: <source_data_files/data_Simplex.csv#>
+PREFIX dsxd: <source_data_files/data_SimplexDate.csv#>
+PREFIX dsxn: <source_data_files/data_SimplexNumber.csv#>
+PREFIX dsxt: <source_data_files/data_SimplexText.csv#>
+PREFIX dxcxcx: <source_data_files/data_xref_Complex_Complex.csv#>
+PREFIX dxsxcx: <source_data_files/data_xref_Simplex_Complex.csv#>
+PREFIX ssx: <source_data_files/setup_Simplex.csv#>
+PREFIX sxcxcx: <source_data_files/setup_xref_Complex_Complex.csv#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+#####
+# First: data_Simplex tuples map complex objects to simplex data through
+# simplex types. Semantically, though, they're used as statements. Interpret
+# these as subject, object, and predicate of a new statement. The simplex
+# data is found in data_SimplexDate, data_SimplexText, data_SimplexNumber,
+# or directly in data_Simplex according to the simplex type.
+
+# Text simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/text> {
+    ?dcx ?ssx ?val .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 1 .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxt dsxt:ID ?ref ;
+        dsxt:Value ?val .
+  ?dxsxcx dxsxcx:Simplex ?dsx ;
+          dxsxcx:Complex ?dcx .
+} ;
+
+# Number simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/number> {
+    ?dcx ?ssx ?val .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 2 .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxn dsxn:ID ?ref ;
+        dsxn:Value ?val .
+  ?dxsxcx dxsxcx:Simplex ?dsx ;
+          dxsxcx:Complex ?dcx .
+} ;
+
+# Date-only simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/date> {
+    ?dcx ?ssx ?date .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 3 .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxd dsxd:ID ?ref ;
+        dsxd:Value ?val .
+  ?dxsxcx dxsxcx:Simplex ?dsx ;
+          dxsxcx:Complex ?dcx .
+  BIND(STRDT(SUBSTR(str(?val), 1, 10), xsd:date) AS ?date) .
+} ;
+
+# Boolean simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/boolean> {
+    ?dcx ?ssx ?canonbool .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 4 .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?val .
+  ?dxsxcx dxsxcx:Simplex ?dsx ;
+          dxsxcx:Complex ?dcx .
+  BIND(STRDT(?val, xsd:boolean) AS ?litbool) .
+  BIND(IF(?litbool, "true"^^xsd:boolean, "false"^^xsd:boolean) AS ?canonbool) .
+} ;
+
+# Datetime simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/datetime> {
+    ?dcx ?ssx ?val .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 5 .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxd dsxd:ID ?ref ;
+        dsxd:Value ?val .
+  ?dxsxcx dxsxcx:Simplex ?dsx ;
+          dxsxcx:Complex ?dcx .
+} ;
+
+#####
+# Second: data_xref_Complex_Complex tuples map one complex object to
+# another through a relationship type defined in the grammar. This
+# relationship type is a tuple in setup_xref_Complex_Complex. Semantically,
+# the data_xref_Complex_Complex tuple is used as an ordered statement with
+# a predicate of the relationship type.
+
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/complex> {
+    ?higher ?sxcxcx ?lower .
+  }
+}
+WHERE {
+  ?dxcxcx a dxcxcx:Row ;
+          dxcxcx:HigherComplex ?higher ;
+          dxcxcx:LowerComplex ?lower ;
+          dxcxcx:xrefID ?sxcxcx .
+}
