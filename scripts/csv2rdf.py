@@ -61,6 +61,10 @@ class Converter(object):
         else:
             return '"%s"' % (val,)
 
+    def _encode_as_decimal(self, val):
+        if val:
+            return '"%s"^^xsd:decimal' % (val,)
+
     def _encode_as_integer(self, val):
         if val:
             return '"%s"^^xsd:integer' % (val,)
@@ -123,7 +127,7 @@ class Converter_data_SimplexNumber(Converter):
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
 
     def encode_Value(self, val):
-        return self._encode_as_integer(val)
+        return self._encode_as_decimal(val)
 
 
 class Converter_data_SimplexText(Converter):
