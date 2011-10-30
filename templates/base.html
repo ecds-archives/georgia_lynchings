@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel=stylesheet type=text/css href="{{ STATIC_URL }}/style/galyn.css" >
+    <link rel="shortcut icon" href="{{ STATIC_URL }}images/favicon.ico" type="image/x-icon" />
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body id="{% block body_id %}{% endblock %}">
+<div class="emorybanner"/> 
+<div class="main"> 
+Lynchings in Georgia (1875-1930)
+</div>
+<div class="query"> 
+<h4>Query the data:</h4>
+<ul>
+<li>List all events ordered by time.</li>
+<li>List all events ordered by location.</li>
+<li>List all articles for an event.</li>
+<li>List events that involve: <i>Sam Hose</i>.</li>
+</ul>
+</div>
+  <div id="footer">
+    {% block footer %}{% endblock %}
+    <p id="copyright">Copyright &copy; Emory University Libraries 2011 - All rights Reserved</p>
+    {% if SW_VERSION %}
+      <div class="sw-version">v{{ SW_VERSION }}</div>
+    {% endif %}
+  </div>
+
+  {% block script_footer %}
+  {% endblock %}
+</body>
+</html>
