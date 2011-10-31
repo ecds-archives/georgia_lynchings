@@ -4,5 +4,4 @@ build
 dist
 #ignore the docs _build directory
 doc/_build/
-static
 georgia_lynchings/test-results
