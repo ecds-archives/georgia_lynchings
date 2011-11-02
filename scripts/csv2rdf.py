@@ -156,9 +156,9 @@ class Converter_data_xref_AnyComplex_Complex(Converter):
             return self._encode_as_string(val)
 
 
-class Converter_data_xref_Comment_Complex(Converter):
+class Converter_data_xref_comment_complex(Converter):
     def output_prefixes(self, outf):
-        super(Converter_data_xref_Comment_Complex, self).output_prefixes(outf)
+        super(Converter_data_xref_comment_complex, self).output_prefixes(outf)
         print >>outf, '@prefix dcx: <data_Complex.csv#> .'
 
     def encode_Complex(self, val):
@@ -424,11 +424,14 @@ class Converter_setup_xref_Simplex_Document(Converter):
     # TODO: What is Group?
 
 
+def converter_for_filename(fname):
+    basename, ext = os.path.splitext(fname)
+    converter_name = 'Converter_' + basename.replace('-', '_')
+    return globals().get(converter_name, Converter)
+
 def convert_file(fname):
     dirpart, filepart = os.path.split(fname)
-    basename, ext = os.path.splitext(filepart)
-    converter_name = 'Converter_' + basename
-    ConverterClass = globals().get(converter_name, Converter)
+    ConverterClass = converter_for_filename(filepart)
     converter = ConverterClass()
     converter.process_file(fname)
             

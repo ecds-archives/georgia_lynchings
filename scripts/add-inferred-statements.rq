@@ -16,10 +16,10 @@ PREFIX dsx: <source_data_files/data_Simplex.csv#>
 PREFIX dsxd: <source_data_files/data_SimplexDate.csv#>
 PREFIX dsxn: <source_data_files/data_SimplexNumber.csv#>
 PREFIX dsxt: <source_data_files/data_SimplexText.csv#>
-PREFIX dxcxcx: <source_data_files/data_xref_Complex_Complex.csv#>
-PREFIX dxsxcx: <source_data_files/data_xref_Simplex_Complex.csv#>
+PREFIX dxcxcx: <source_data_files/data_xref_Complex-Complex.csv#>
+PREFIX dxsxcx: <source_data_files/data_xref_Simplex-Complex.csv#>
 PREFIX ssx: <source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx: <source_data_files/setup_xref_Complex_Complex.csv#>
+PREFIX sxcxcx: <source_data_files/setup_xref_Complex-Complex.csv#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 #####
