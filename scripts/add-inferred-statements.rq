@@ -124,7 +124,7 @@ INSERT {
 WHERE {
   ?dcx a dcx:Row;
        dcx:ComplexType ?scx.
-}
+} ;
 
 #####
 # Third: data_xref_Complex-Complex tuples map one complex object to
