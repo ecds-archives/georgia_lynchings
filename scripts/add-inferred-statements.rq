@@ -19,6 +19,7 @@ PREFIX dsxn: <source_data_files/data_SimplexNumber.csv#>
 PREFIX dsxt: <source_data_files/data_SimplexText.csv#>
 PREFIX dxcxcx: <source_data_files/data_xref_Complex-Complex.csv#>
 PREFIX dxsxcx: <source_data_files/data_xref_Simplex-Complex.csv#>
+PREFIX dxsxsxd: <source_data_files/data_xref_Simplex-Simplex-Document.csv#>
 PREFIX ssx: <source_data_files/setup_Simplex.csv#>
 PREFIX sxcxcx: <source_data_files/setup_xref_Complex-Complex.csv#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -33,7 +34,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 # Text simplex statements
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/text> {
-    ?dcx ?ssx ?val .
+    ?subj ?ssx ?val .
   }
 }
 WHERE {
@@ -42,14 +43,19 @@ WHERE {
        dsx:refValue ?ref .
   ?dsxt dsxt:ID ?ref ;
         dsxt:Value ?val .
-  ?dxsxcx dxsxcx:Simplex ?dsx ;
-          dxsxcx:Complex ?dcx .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
 } ;
 
 # Number simplex statements
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/number> {
-    ?dcx ?ssx ?val .
+    ?subj ?ssx ?val .
   }
 }
 WHERE {
@@ -58,14 +64,19 @@ WHERE {
        dsx:refValue ?ref .
   ?dsxn dsxn:ID ?ref ;
         dsxn:Value ?val .
-  ?dxsxcx dxsxcx:Simplex ?dsx ;
-          dxsxcx:Complex ?dcx .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
 } ;
 
 # Date-only simplex statements
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/date> {
-    ?dcx ?ssx ?date .
+    ?subj ?ssx ?date .
   }
 }
 WHERE {
@@ -74,23 +85,33 @@ WHERE {
        dsx:refValue ?ref .
   ?dsxd dsxd:ID ?ref ;
         dsxd:Value ?val .
-  ?dxsxcx dxsxcx:Simplex ?dsx ;
-          dxsxcx:Complex ?dcx .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
   BIND(STRDT(SUBSTR(str(?val), 1, 10), xsd:date) AS ?date) .
 } ;
 
 # Boolean simplex statements
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/boolean> {
-    ?dcx ?ssx ?canonbool .
+    ?subj ?ssx ?canonbool .
   }
 }
 WHERE {
   ?ssx ssx:ValueType 4 .
   ?dsx dsx:SimplexType ?ssx ;
        dsx:refValue ?val .
-  ?dxsxcx dxsxcx:Simplex ?dsx ;
-          dxsxcx:Complex ?dcx .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
   BIND(STRDT(?val, xsd:boolean) AS ?litbool) .
   BIND(IF(?litbool, "true"^^xsd:boolean, "false"^^xsd:boolean) AS ?canonbool) .
 } ;
@@ -98,7 +119,7 @@ WHERE {
 # Datetime simplex statements
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/datetime> {
-    ?dcx ?ssx ?val .
+    ?subj ?ssx ?val .
   }
 }
 WHERE {
@@ -107,8 +128,13 @@ WHERE {
        dsx:refValue ?ref .
   ?dsxd dsxd:ID ?ref ;
         dsxd:Value ?val .
-  ?dxsxcx dxsxcx:Simplex ?dsx ;
-          dxsxcx:Complex ?dcx .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
 } ;
 
 #####
