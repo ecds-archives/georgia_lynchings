@@ -1,6 +1,6 @@
 from fabric.api import env, local, prefix, put, sudo, task, \
      require, puts, cd, run, abort
-from fabric.colors import green, red, cyan, magenta
+from fabric.colors import green, red, cyan
 from fabric.contrib import files
 from fabric.context_managers import cd, hide, settings
 import georgia_lynchings
@@ -15,16 +15,11 @@ A basic build deploy script for georgia_lynchings, using Fabric 1.1 or greater.
 Usage
 -----
 
-Deployment:
-  fab deploy <path> <user> <url_prefix> <remote_venv_path>
-  Example: fab deploy:path=/home/httpd/sites/georgia_lynchings,url_prefix=/georgia_lynchings,remote_venv_path=/home/httpd/sites/virtual_envs/georgia_lynchings -H username@servername
-
-
-  
-Clean local rm_old_builds <path> <user> <no_input>
-  fab rm_old_builds:path=/home/httpd/sites/georgia_lynchings,url_prefix=/georgia_lynchings,
-  Example: fab rm_old_builds:path=/home/httpd/sites/georgia_lynchings -H username@servername 
-
+To deploy the code, run the **deploy** task with parameters and a
+remote server.  To undo a deploy, run the **revert** task with the
+same parameters.  To clean up local deploy artifacts, use the
+**clean** task.  For more details, use ``fab -d`` with the task name
+that you are interested in.
 
 '''
 
@@ -62,7 +57,6 @@ def config_from_git():
         env.rev_tag = '-r' + env.git_rev
 
 def prep_source():
-    puts(magenta('prep_source 01'))    
     'Export the code from git and do local prep.'
     require('git_rev', 'build_dir',
             used_for='Exporting code from git into build area')
@@ -100,9 +94,7 @@ def prep_source():
         with open(orig_conf) as original:
             text = original.read()
         # replace the virtual path in the wsgi conf file.
-        patn=r'''([\s]*WSGIDaemonProcess[\s]+)([^:]+:)[^\s:]+([\s:]+)([^$]+)$'''
-        replacemt=r'''\1\2%(remote_venv_path)s\3\4''' % env 
-        text = re.sub(patn, replacemt, text)   
+        text = text.replace('[VIRTUAL_ENV]', '%(remote_venv_path)s' % env)
         
         with open(env.apache_conf, 'w') as conf:
             conf.write(text)
@@ -133,30 +125,25 @@ def package_source():
 
 def upload_source():
     'Copy the source tarball to the target server.'
+    puts(cyan('Copy the source tarball to the target server.'))    
     put('dist/%(tarball)s' % env,
         '/tmp/%(tarball)s' % env)
 
 def extract_source():
-    puts(magenta('extract_source 01'))        
     'Extract the remote source tarball under the configured remote directory.'
     with cd(env.remote_path):
-        puts(magenta('extract_source 02'))          
         sudo('tar xjf /tmp/%(tarball)s' % env, user=env.remote_acct)
-        puts(magenta('extract_source 03'))          
         # if the untar succeeded, remove the tarball
         run('rm /tmp/%(tarball)s' % env)
-        puts(magenta('extract_source 04'))          
         # update apache.conf if necessary
 
 def setup_virtualenv():
-    puts(magenta('setup_virtualenv 01'))       
     'Create a virtualenv and install required packages on the remote server.'
-    with cd('%(remote_path)s/%(build_dir)s' % env):  
+    with cd('%(remote_path)s/%(build_dir)s' % env):    
         # create the virtualenv under the build dir
         sudo('virtualenv --no-site-packages %(remote_venv_path)s' % env,
              user=env.remote_acct)
         # activate the environment and install required packages
-        sudo('pwd', user=env.remote_acct)        
         with prefix('source %(remote_venv_path)s/bin/activate' % env):
             pip_cmd = 'pip install -r pip-install-req.txt'
             sudo(pip_cmd, user=env.remote_acct)
@@ -201,7 +188,6 @@ def deploy(path=None, user=None, url_prefix='', remote_venv_path=''):
       remote_venv_path: virtual environment path on the remote server
 
     Example usage: fab deploy:path=/home/httpd/sites/georgia_lynchings,url_prefix=/georgia_lynchings,remote_venv_path=/home/httpd/sites/virtual_envs/georgia_lynchings -H username@servername
-
     '''
     build_source_package(path, user, url_prefix, remote_venv_path)
     upload_source()
@@ -255,7 +241,6 @@ def rm_old_builds(path=None, user=None, noinput=False):
             Default: False
 
     Example usage: fab rm_old_builds:path=/home/httpd/sites/georgia_lynchings -H username@servername
-
     '''
     configure(path, user)
     with cd(env.remote_path):
@@ -287,4 +272,3 @@ def rm_old_builds(path=None, user=None, noinput=False):
         else:
             puts('No old build directories to remove')
  
-
