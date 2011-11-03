@@ -250,7 +250,7 @@ class Converter_data_xref_Simplex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Document, self).output_prefixes(outf)
         print >>outf, '@prefix dxsxcx: <data_xref_Simplex-Complex.csv#> .'
-        print >>outf, '@prefix dd: <data_Documnet.csv#> .'
+        print >>outf, '@prefix dd: <data_Document.csv#> .'
 
     def encode_Simplex(self, val):
         return 'dxsxcx:r' + val
@@ -262,7 +262,7 @@ class Converter_data_xref_Simplex_Simplex_Document(Converter):
     def output_prefixes(self, outf):
         super(Converter_data_xref_Simplex_Simplex_Document, self).output_prefixes(outf)
         print >>outf, '@prefix dsx: <data_Simplex.csv#> .'
-        print >>outf, '@prefix dd: <data_Documnet.csv#> .'
+        print >>outf, '@prefix dd: <data_Document.csv#> .'
         print >>outf, '@prefix sxsxd: <setup_xref_Simplex-Document.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
     
@@ -407,7 +407,7 @@ class Converter_setup_xref_Simplex_Document(Converter):
     def encode_Document(self, val):
         return 'sd:r' + val
 
-    def encodeSimplex(self, val):
+    def encode_Simplex(self, val):
         return 'ssx:r' + val
 
     # TODO: how do we interpret defaultVal?
