@@ -27,12 +27,6 @@ mdbtools package required:: "sudo apt-get install mdbtools"
 
 Usage:: convert_mdb_to_csv.sh <path to access mdb file> <output directory>
 
-Convert CSV files to MYSQL
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-Alternatively you can use a relational database to store the data, instead of the triplestore.
-However, this application only supports the triplestore sesame at this time.
-
-Usage:: csv2mysql.sh <username> <passwd> <databasename> <csv_path>
 
 
 
