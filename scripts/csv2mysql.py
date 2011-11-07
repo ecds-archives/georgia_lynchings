@@ -12,16 +12,16 @@
 # 
 
 # Drop all tables from existing database
-# mysql -u deploy --password=yolped galyn_trunk -e "show tables" | grep -v Tables_in | grep -v "+" | gawk '{print "drop table " $1 ";"}' | mysql -u deploy --password=yolped galyn_trunk
+# mysql -u username --password=1234 -p galyn_db -e "show tables" | grep -v Tables_in | grep -v "+" | gawk '{print "drop table " $1 ";"}' | mysql -u username --password=1234 galyn_db
 # Create all tables
-# mysql -u deploy --password=yolped galyn_trunk < schema_data.sql
+# mysql -u username --password=1234 -p galyn_db < schema_data.sql
 
 import sys
 import MySQLdb
 import csv
 import os
 
-def main(user="deploy", passwd="yolped", db="galyn_trunk", csv_path="../lynching_data/"):
+def main(user="username", passwd="", db, csv_path="../lynching_data/"):
   
   print "\ndb=[%s] csv_path=[%s]\n" % (db, csv_path)   
 

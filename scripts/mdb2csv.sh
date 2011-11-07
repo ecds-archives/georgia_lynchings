@@ -17,9 +17,9 @@ usage ()
 }
 
 # Validate input parameters
-if [ $# -ne 2 ] ; then errmsg="Error: Incorrect number of arguments."; usage; exit;
-elif [ ! -f $1 ] ; then errmsg="Error: \"${1}\" <path to access mdb file> not found"; usage; exit;
-elif [ ! -d $2 ] ; then errmsg="Error: \"${2}\" <output directory> not found"; usage; exit;
+if [ $# -ne 2 ] ; then errmsg="Error: Incorrect number of arguments."; usage; exit 1;
+elif [ ! -f $1 ] ; then errmsg="Error: \"${1}\" <path to access mdb file> not found"; usage; exit 1;
+elif [ ! -d $2 ] ; then errmsg="Error: \"${2}\" <output directory> not found"; usage; exit 1;
 fi
 
 hash mdb-export 2>&- || { echo -e >&2 "\nError: This script requires mdbtools but it's not installed.\nRun 'sudo apt-get install mdbtools'\nAborting."; exit 1; }
