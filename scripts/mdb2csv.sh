@@ -3,8 +3,8 @@
 # DESCRIPTION: This script converts the Georgia Lynchings access mdb file 
 # into csv files for each table.
 
-# USAGE: convert_mdb_to_csv.sh <path to access mdb file> <output directory>
-# EXAMPLE: ./convert_mdb_to_csv.sh ../lynching_data/galyn_no_pw.mdb ../csv
+# USAGE: mdb2csv.sh <path to access mdb file> <output directory>
+# EXAMPLE: ./mdb2csv.sh ../lynching_data/galyn_no_pw.mdb ../csv
 
 # Usage Message Function
 usage ()
@@ -12,7 +12,7 @@ usage ()
   echo " " 
   echo $errmsg
   echo " "  
-  echo "usage: convert_mdb_to_csv.sh <path to access mdb file> <output directory>" 
+  echo "usage: mdb2csv.sh <path to access mdb file> <output directory>" 
   echo " "   
 }
 
