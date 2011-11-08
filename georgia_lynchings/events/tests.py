@@ -1,14 +1,6 @@
 from django.test import TestCase
 from georgia_lynchings.events.models import MacroEvent
 
-
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
-
 class MacroEventTest(TestCase):
     def test_basic_rdf_properties(self):
         # For now, just test that the MacroEvent class has a few basic
