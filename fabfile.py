@@ -1,5 +1,5 @@
 from fabric.api import env, local, prefix, put, sudo, task, \
-     require, puts, cd, run, abort
+     require, puts, cd, run, abort, lcd   
 from fabric.colors import green, red, cyan
 from fabric.contrib import files
 from fabric.context_managers import cd, hide, settings
