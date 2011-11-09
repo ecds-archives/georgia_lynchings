@@ -33,6 +33,13 @@ env.remote_path = '/home/httpd/georgia_lynchings'
 env.remote_acct = 'galyn'
 env.url_prefix = ''
 
+# omit these from the test coverage report
+env.omit_coverage = ','.join([
+    'georgia_lynchings/manage.py',
+    'georgia_lynchings/settings.py',
+    'georgia_lynchings/localsettings.py',
+    ])
+
 @task
 def load_triples(mdb_path, sesame_repo, keep_files=False):
     '''Load RDF triples from a PC-ACE MDB (MS Access) file into a Sesame RDF
@@ -240,14 +247,17 @@ def deploy(path=None, user=None, url_prefix='', remote_venv_path=''):
 
     Example usage: fab deploy:path=/home/httpd/sites/georgia_lynchings,url_prefix=/georgia_lynchings,remote_venv_path=/home/httpd/sites/virtual_envs/georgia_lynchings -H username@servername
     '''
+    # local to jenkins
     build_source_package(path, user, url_prefix, remote_venv_path)
+    test()
+    doc()
+    # local to /home/httpd/georgia_lynchings
     upload_source()
     extract_source()
     setup_virtualenv()
     configure_site()
     update_links()
-    test()
-    doc()
+
 
     puts(green('Successfully deployed %(build_dir)s to %(host)s' % env))
 
