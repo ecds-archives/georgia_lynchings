@@ -72,6 +72,7 @@ TEMPLATE_DIRS = (
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # django default context processors
+    "django.contrib.auth.context_processors.auth",
     "django.core.context_processors.debug",
     "django.core.context_processors.i18n",
     "django.core.context_processors.media",
@@ -79,6 +80,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.messages.context_processors.messages",
     # additional context processors
     "django.core.context_processors.request", # always include request in render context
+
     "georgia_lynchings.version_context", # include app version
 )
 
@@ -89,11 +91,13 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
+
+    'georgia_lynchings.events',
 )
+
+# The URI root for all internally-defined namespaces used by this
+# application.
+APPLICATION_RDF_NS_ROOT = 'http://galyn.example.com/'
 
 try:
     from localsettings import *
