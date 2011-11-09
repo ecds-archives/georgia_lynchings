@@ -15,11 +15,13 @@ A basic build deploy script for georgia_lynchings, using Fabric 1.1 or greater.
 Usage
 -----
 
-To deploy the code, run the **deploy** task with parameters and a
-remote server.  To undo a deploy, run the **revert** task with the
-same parameters.  To clean up local deploy artifacts, use the
-**clean** task.  For more details, use ``fab -d`` with the task name
-that you are interested in.
+To initialize a Sesame RDF triplestore with data from a PC-ACE MDB (MS
+Access) file, run the **load_triples** task with the path to the MDB file
+and the location of the Sesame repository. To deploy the code, run the
+**deploy** task with parameters and a remote server. To undo a deploy, run
+the **revert** task with the same parameters. To clean up local deploy
+artifacts, use the **clean** task. For more details, use ``fab -d`` with
+the task name that you are interested in.
 
 '''
 
@@ -29,6 +31,40 @@ env.remote_venv_path = '/home/httpd/sites/virtual_envs/georgia_lynchings'
 env.remote_path = '/home/httpd/georgia_lynchings'
 env.remote_acct = 'galyn'
 env.url_prefix = ''
+
+@task
+def load_triples(mdb_path, sesame_repo, keep_files=False):
+    '''Load RDF triples from a PC-ACE MDB (MS Access) file into a Sesame RDF
+    triplestore.
+
+    The task will create a temporary directory for intermediary CSV and
+    TTL files, which it will then upload to the triplestore and add any
+    other necessary configuration and RDF statements.
+
+    Usage: fab load_triples:<mdb_path>,<sesame_repo>[,keep_files=True]
+
+    Parameters:
+      mdb_path: path to source MDB file; e.g., path/to/pc-ace.mdb
+      sesame_repo: URL of the target repository. The repository must already
+            exist and should be empty. e.g.:
+                http://server:port/openrdf-sesame/respositories/my-repo
+      keep_files: optional. Specify as "True" to keep the directory of
+            temporary files intact. Without this option, the temporary
+            directory will be deleted after upload is complete.
+    '''
+
+    data_dir = local('mktemp -d', capture=True)
+    try:
+        local('scripts/mdb2csv.sh "%s" "%s"' % (mdb_path, data_dir))
+        local('scripts/csv2rdf.py "%s"/*.csv' % (data_dir,))
+        local('scripts/add-rdf-namespaces.sh -r "%s"' % (sesame_repo,))
+        local('scripts/upload-ttl.sh -r "%s"/statements "%s"/*.ttl' %
+              (sesame_repo, data_dir))
+        local('scripts/add-inferred-statements.sh "%s"/statements' %
+              (sesame_repo,))
+    finally:
+        if not keep_files:
+            local('rm -rf ' + data_dir)
     
 def configure(path=None, user=None, url_prefix=None, remote_venv_path=None):
     'Configuration settings used internally for the build.'
