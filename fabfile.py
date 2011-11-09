@@ -4,6 +4,7 @@ from fabric.colors import green, red, cyan
 from fabric.contrib import files
 from fabric.context_managers import cd, hide, settings
 import georgia_lynchings
+import os
 import re
 
 '''
@@ -205,6 +206,20 @@ def build_source_package(path=None, user=None, url_prefix='', remote_venv_path='
     configure(path, user, url_prefix, remote_venv_path)
     prep_source()
     package_source()
+    
+@task    
+def test():
+    '''Locally run all tests.'''
+    if os.path.exists('test-results'):
+        shutil.rmtree('test-results')
+
+    local('coverage run --branch georgia_lynchings/manage.py test --noinput')
+    local('coverage xml --include=georgia_lynchings**/*.py --omit=%(omit_coverage)s' % env)
+
+def doc():
+    '''Locally build documentation.'''
+    with lcd('doc'):
+        local('make clean html')       
 
 @task
 def deploy(path=None, user=None, url_prefix='', remote_venv_path=''):
@@ -231,6 +246,8 @@ def deploy(path=None, user=None, url_prefix='', remote_venv_path=''):
     setup_virtualenv()
     configure_site()
     update_links()
+    test()
+    doc()
 
     puts(green('Successfully deployed %(build_dir)s to %(host)s' % env))
 
