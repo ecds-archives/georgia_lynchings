@@ -1,11 +1,26 @@
 #!/bin/bash
 
+# Upload turtle (.ttl) RDF files to a Sesame repository. See usage below:
+
 function usage () {
   cat <<EOF
-usage: $0 [-c graph context root] [-r web root] file.ttl ...
+usage: $0 [-r web root] [-c graph context root] file.ttl ...
 
-Post Turtle (.ttl) files into a Sesame or compatible triplestore. Derive the
-graph context URI from the filename (use -c to alter the base for this URI).
+Post Turtle (.ttl) RDF files into a Sesame or compatible triplestore. Derive
+the graph context URI from the filename.
+
+  -r web root: The URI that receives POSTed statements. e.g.:
+        http://host:port/openrdf-sesame/repositories/myrepo/statements
+
+  -c graph context root: You probaby don't want to customize this. It's the
+        URI root to use for uploaded files. Namespaces for this project are
+        rooted in files representing the tables in the source database. Use
+        this argument to specify the base URL representing a directory path
+        in which these table resources reside. Note that if this ever
+        changes to anything other than the default context root, the path
+        will need to change in several places across this project for the
+        code to all work correctly together.
+
 EOF
 }
 

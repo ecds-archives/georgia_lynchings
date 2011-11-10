@@ -1,10 +1,26 @@
 #!/bin/bash
 
+# Add common RDF namespaces for this project to a Sesame repository. See
+# usage below:
+
 function usage () {
   cat <<EOF
 usage: $0 [-b file base URI] [-r Sesame repository]
 
 Initialize a Sesame repository with common namespaces used in this project.
+
+  -r Sesame repository: The URI of the repository to receive the namespace
+        definitions. e.g., http://host:port/openrdf-sesame/repositories/myrepo
+
+  -b file base URI: You probaby don't want to customize this. It's the URI
+        root to use for uploaded files. Namespaces for this project are
+        rooted in files representing the tables in the source database. Use
+        this argument to specify the base URL representing a directory path
+        in which these table resources reside. Note that if this ever
+        changes to anything other than the default URI root, the path will
+        need to change in several places across this project for the code to
+        all work correctly together.
+
 EOF
 }
 
