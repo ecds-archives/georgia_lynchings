@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='uri'/>
+		<variable name='id'/>
+		<variable name='title'/>
+		<variable name='readable'/>
+		<variable name='writable'/>
+	</head>
+	<results>
+		<result>
+			<binding name='id'>
+				<literal>SYSTEM</literal>
+			</binding>
+			<binding name='readable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+			<binding name='title'>
+				<literal>System configuration repository</literal>
+			</binding>
+			<binding name='uri'>
+				<uri>http://wilson.library.emory.edu:8180/openrdf-sesame//repositories/SYSTEM</uri>
+			</binding>
+			<binding name='writable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='id'>
+				<literal>galyn</literal>
+			</binding>
+			<binding name='readable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+			<binding name='title'>
+				<literal>Georgia Lynchings project test data</literal>
+			</binding>
+			<binding name='uri'>
+				<uri>http://wilson.library.emory.edu:8180/openrdf-sesame//repositories/galyn</uri>
+			</binding>
+			<binding name='writable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='id'>
+				<literal>galyn-2011-11-07</literal>
+			</binding>
+			<binding name='readable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+			<binding name='title'>
+				<literal>Georgia Lynchings project test data dump from 2011-11-07</literal>
+			</binding>
+			<binding name='uri'>
+				<uri>http://wilson.library.emory.edu:8180/openrdf-sesame//repositories/galyn-2011-11-07</uri>
+			</binding>
+			<binding name='writable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='id'>
+				<literal>ben-test</literal>
+			</binding>
+			<binding name='readable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+			<binding name='title'>
+				<literal>Ben's Georgia Lynchings test repository</literal>
+			</binding>
+			<binding name='uri'>
+				<uri>http://wilson.library.emory.edu:8180/openrdf-sesame//repositories/ben-test</uri>
+			</binding>
+			<binding name='writable'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#boolean'>true</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

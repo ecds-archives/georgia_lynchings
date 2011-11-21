@@ -1,0 +1,21 @@
+PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+SELECT ?triplet ?role ?trlabel ?event ?evlabel ?macro ?melabel 
+WHERE {
+  dcx:r4569 ^sxcxcx:r31 ?actor. 
+  {
+    ?actor ^sxcxcx:r30 ?participant. 
+    ?triplet sxcxcx:r63 ?participant. 
+    BIND("subject" as ?role)
+  } UNION {
+    ?actor ^sxcxcx:r35 ?participant.  
+    ?triplet sxcxcx:r65 ?participant.  
+    BIND("object" as ?role)
+  } 
+
+  ?triplet dcx:Identifier ?trlabel.
+  ?event sxcxcx:r62 ?triplet;       
+         dcx:Identifier ?evlabel.
+  ?macro sxcxcx:r61 ?event;          
+         dcx:Identifier ?melabel.      
+}

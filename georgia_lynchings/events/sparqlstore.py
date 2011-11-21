@@ -15,6 +15,12 @@ from xml.dom.minidom import Node
 
 logger = logging.getLogger(__name__)
 
+class SparqlStoreException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+        
 class SparqlStore:
     "The main class for communicating with a Sesame Server."
     '''
@@ -68,43 +74,52 @@ class SparqlStore:
             request_method = 'GET'
             
         logger.debug('query %s to %s' % (request_method, endpoint))
-        # send the query to the api
-        (response, content) = self.doRequest(endpoint, request_method, params, headers) 
         
-        # Output the xml to a file 
-        if output:
-            try:
-                a = open("/tmp/query_output.xml", 'w')
-                a.write(content) 
-            except IOError as (errno, strerror):
-                logger.error("I/O error({0}): {1}".format(errno, strerror))
-                logger.error("Failed to open query output file.")
-                return        
-        
-        # output the full response for now
-        #pprint(response)
-        logger.debug("Content Length = %s" % (len(content)))          
-                
-        if (response.status == 200):
-            'HTML Response OK'
-            if (result_type == 'SPARQL_XML'):
-                'XML Results Output'    
-                logger.debug("Result type is SPARQL_XML, before call to Xml2Dict")             
-                return self.Xml2Dict(content)                  
-            elif (result_type == 'SPARQL_JSON'):
-                'JSON Results Output'
-                logger.debug("Result type is SPARQL_JSON")                  
-                return json.loads(content)
-        else:
-            'HTML Response not OK'      
-            logger.error('HTTP Response error code: %s' % response.status)            
-            match = re.search(r'<b>message</b> <u>([^<]+)<', content)            
-            if match: logger.error('HTTP Response error message = [%s]' % match.group(1))            
-            match = re.search(r'<b>description</b> <u>([^<]+)<', content)            
-            if match: logger.error('HTTP Response error description = [%s]' % match.group(1))
+        try:
+            # send the query to the api
+            (response, content) = self.doRequest(endpoint, request_method, params, headers) 
+
+            # Output the xml to a file 
+            if output:
+                try:
+                    a = open("/tmp/query_output.xml", 'w')
+                    a.write(content) 
+                except IOError as (errno, strerror):
+                    logger.error("I/O error({0}): {1}".format(errno, strerror))
+                    logger.error("Failed to open query output file.")
+                    return
+            
+            # output the full response for now
+            #pprint(response)
+            logger.debug("Content Length = %s" % (len(content)))          
+                    
+            if (response.status == 200):
+                'HTML Response OK'
+                if (result_type == 'SPARQL_XML'):
+                    'XML Results Output'    
+                    logger.debug("Result type is SPARQL_XML, before call to Xml2Dict")             
+                    return self.Xml2Dict(content)                  
+                elif (result_type == 'SPARQL_JSON'):
+                    'JSON Results Output'
+                    logger.debug("Result type is SPARQL_JSON")                  
+                    return json.loads(content)
             else:
-                logger.error('HTTP Response failed with response code = [%s]' % response)
-                logger.error('HTTP Response failed with content = [%s]' % content)            
+                'HTML Response not OK'      
+                logger.error('HTTP Response error code: %s' % response.status)            
+                match = re.search(r'<b>message</b> <u>([^<]+)<', content)            
+                if match:
+                    logger.error('HTTP Response error message = [%s]' % match.group(1))      
+                match = re.search(r'<b>description</b> <u>([^<]+)<', content)            
+                if match: 
+                    error_desc='raise Exception description = [%s]' % match.group(1)
+                    logger.error(error_desc)
+                    raise SparqlStoreException(error_desc)
+                else:
+                    logger.error('HTTP Response failed with response code = [%s]' % response)
+                    logger.error('raise Exception [%s]' % content)
+                    raise SparqlStoreException(content)
+        except httplib2.ServerNotFoundError:
+            raise SparqlStoreException("Site is Down: %s" % self.url)                                             
         
     def doRequest(self, endpoint, request_method, params, headers):
         (response, content) = httplib2.Http().request(endpoint, request_method, urlencode(params), headers=headers)
@@ -145,3 +160,4 @@ class SparqlStore:
                 binding[key1]=item
             mapping.append(binding)     
         return mapping
+

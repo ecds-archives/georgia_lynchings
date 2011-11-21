@@ -67,7 +67,7 @@ class Command(BaseCommand):
 
     interrupted = False
     
-    def handle(self,  *args, **options): 
+    def handle(self,  *args, **options):
         
         query=None
         if options['query_key']:
@@ -101,14 +101,14 @@ class Command(BaseCommand):
         result={}
         try:
             output = True if options['output'] else None
+            if output: print "output is true."
+            else: print "output is not defined."
             if query: # Run the defined sparql query
                 result = ss.query("SPARQL_XML", "POST", query, output)
             elif options['list_repos']: #Query the triplestore for available repositories
                 result = ss.query("SPARQL_XML", "GET", None, output)
             else: logger.error('Query not found.')  # Error: Query not found.
         except: logger.error("Failed to run SparqlStore query.")
-        
-
         
         if result:
             logger.debug("Result set size = [%d]" % len(result))
