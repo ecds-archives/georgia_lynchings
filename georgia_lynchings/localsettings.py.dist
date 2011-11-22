@@ -25,10 +25,8 @@ DATABASES = {
 
 # Access URL for the Sesame triplestore - used by SPARQL queries
 SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
-SPARQL_STORE_API_TEST = 'http://server.name.goes.here/openrdf-sesame/'
 # Sesame Triplestore Repository name
-SPARQL_STORE_REPOSITORY = 'repository'
-SPARQL_STORE_REPOSITORY_TEST = 'test-repository'
+SPARQL_STORE_REPOSITORY = 'repository-name-goes-here'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

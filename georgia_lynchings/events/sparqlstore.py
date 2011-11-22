@@ -30,10 +30,21 @@ class SparqlStore:
     url: sparql store API URL
     repository: sparql store repository
     '''
-    def __init__(self, url=settings.SPARQL_STORE_API_TEST, repository=settings.SPARQL_STORE_REPOSITORY_TEST):
-        self.url = url
-        self.repository = repository 
-        logger.debug("SesameConnection begin")
+    def __init__(self, url=None, repository=None):
+        
+        if url: self.url = url
+        else:
+            if not hasattr(settings, 'SPARQL_STORE_API') or not settings.SPARQL_STORE_API:
+                raise SparqlStoreException('SPARQL_STORE_API must be configured in localsettings.py')
+            else: self.url = settings.SPARQL_STORE_API
+        
+        if repository: self.repository = repository
+        else: 
+            if not hasattr(settings, 'SPARQL_STORE_REPOSITORY') or not settings.SPARQL_STORE_REPOSITORY:
+                raise SparqlStoreException('SPARQL_STORE_REPOSITORY must be configured in localsettings.py')
+            else: self.repository = settings.SPARQL_STORE_REPOSITORY 
+
+        logger.debug("SesameConnection begin")    
         logger.debug("url = [%s]" % self.url)      
         logger.debug("repository = [%s]" % self.repository)
         logger.info('SesameConnection starting up...\n')

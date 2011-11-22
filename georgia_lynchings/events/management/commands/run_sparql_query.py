@@ -69,6 +69,11 @@ class Command(BaseCommand):
     
     def handle(self,  *args, **options):
         
+        if not hasattr(settings, 'SPARQL_STORE_API') or not settings.SPARQL_STORE_API:
+            raise CommandError('SPARQL_STORE_API must be configured in localsettings.py')
+        if not hasattr(settings, 'SPARQL_STORE_REPOSITORY') or not settings.SPARQL_STORE_REPOSITORY:
+            raise CommandError('SPARQL_STORE_REPOSITORY must be configured in localsettings.py')
+              
         query=None
         if options['query_key']:
             'Use one of the predefined sparql queries bases on given key.'
@@ -81,8 +86,7 @@ class Command(BaseCommand):
             try:
                 query=open(options['query_file'], 'rU').read()
             except IOError as (errno, strerror):
-                logger.error("I/O error({0}): {1}".format(errno, strerror))
-                logger.error("Failed to read query file [%s]" % options['query_file'])
+                raise CommandError("Failed to read query file [%s]" % options['query_file'])                                 
                 return
                 
         elif options['list_repos']:
@@ -101,6 +105,8 @@ class Command(BaseCommand):
         result={}
         try:
             output = True if options['output'] else None
+            if output: print "output is true."
+            else: print "output is not defined."
             if query: # Run the defined sparql query
                 result = ss.query("SPARQL_XML", "POST", query, output)
             elif options['list_repos']: #Query the triplestore for available repositories
