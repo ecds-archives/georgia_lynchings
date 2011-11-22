@@ -21,7 +21,7 @@ Run a SPARQL query from the canned_sparql_queries::
   
 Run a SPARQL query loaded from a file::
 
-  $ python manage.py run_sparql_query -f events/management/commands/load_query_file.txt
+  $ python manage.py run_sparql_query -f events/management/commands/load_sparql_query.txt
   
 Run a SPARQL query, send the xml response output the query_output.xml file::
 
@@ -101,8 +101,6 @@ class Command(BaseCommand):
         result={}
         try:
             output = True if options['output'] else None
-            if output: print "output is true."
-            else: print "output is not defined."
             if query: # Run the defined sparql query
                 result = ss.query("SPARQL_XML", "POST", query, output)
             elif options['list_repos']: #Query the triplestore for available repositories

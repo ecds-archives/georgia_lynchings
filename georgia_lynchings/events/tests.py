@@ -71,24 +71,43 @@ class SparqlStoreTest(TestCase):
         self.assertEqual(u'http://galyn.example.com/source_data_files/data_Complex.csv#r10', mapping[3]['macro']['value'])          
         self.assertEqual(u'Pulaski (Curry Robertson)', mapping[3]['melabel']['value'])
 
+    # Test raised exception for unknown repository                     
+    def test_query_unknown_repository(self):      
+        self.sparqlstore=SparqlStore(url=settings.SPARQL_STORE_API_TEST, repository="abc")
+        sparql_query_fixture = os.path.join(settings.BASE_DIR, 'events', 'fixtures', 'sparql_query.txt')
+        sparqlquery=open(sparql_query_fixture, 'rU').read()                                     
+        self.assertRaises(Exception, self.sparqlstore.query, "SPARQL_XML", "POST", sparqlquery)  
+    # Test exception message for unknown repository
     def test_query_unknown_repository_exception(self):
         try:
             self.sparqlstore=SparqlStore(url=settings.SPARQL_STORE_API_TEST, repository="abc")
             sparql_query_fixture = os.path.join(settings.BASE_DIR, 'events', 'fixtures', 'sparql_query.txt')                                   
             self.sparqlstore.query("SPARQL_XML", "POST", open(sparql_query_fixture, 'rU').read())
         except SparqlStoreException as e:  
-           self.assertEqual('Unknown repository: abc', e.value)
-           
-    def test_query_unknown_repository(self):
-        self.sparqlstore=SparqlStore(url=settings.SPARQL_STORE_API_TEST, repository="abc")
-        sparql_query_fixture = os.path.join(settings.BASE_DIR, 'events', 'fixtures', 'sparql_query.txt')
-        sparqlquery=open(sparql_query_fixture, 'rU').read()                                     
-        self.assertRaises(Exception, self.sparqlstore.query, ["SPARQL_XML", "POST", sparqlquery])       
-        
-    def test_query_bad_url_exception(self):
+           self.assertEqual('Unknown repository: abc', e.value) 
+
+    # Test for triplestore site not responding
+    def test_query_bad_url_exception(self):        
         try:
             self.sparqlstore=SparqlStore(url='http://server.name.goes.here/openrdf-sesame/',
                                      repository=settings.SPARQL_STORE_REPOSITORY_TEST)                                  
             self.sparqlstore.query("SPARQL_XML", "GET")
         except SparqlStoreException as e:
             self.assertEqual('Site is Down: http://server.name.goes.here/openrdf-sesame/', e.value)               
+
+    # Test to show sesame bug on sparql query with "GROUP BY"
+    # Note: this sparql query work in the GUI but not via the API
+    def test_sesame_GROUP_BY_bug(self):
+        sparql_query_fixture = os.path.join(settings.BASE_DIR, 'events', 'fixtures', 'sparql_query_fail.txt')
+        sparqlquery=open(sparql_query_fixture, 'rU').read()                                          
+        self.assertRaises(Exception, self.sparqlstore.query, "SPARQL_XML", "POST", sparqlquery)
+        
+    # Test malformed query exception for sesame "GROUP BY" bug.
+    # Note: this sparql query work in the GUI but not via the API                         
+    def test_malformed_query_exception(self):        
+        try:
+            sparql_query_fixture = os.path.join(settings.BASE_DIR, 'events', 'fixtures', 'sparql_query_fail.txt')
+            sparqlquery=open(sparql_query_fixture, 'rU').read()                                      
+            result = self.sparqlstore.query("SPARQL_XML", "POST", sparqlquery)
+        except SparqlStoreException as e:
+            self.assertEqual('MALFORMED QUERY', e.value[:15])              

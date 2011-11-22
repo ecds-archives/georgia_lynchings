@@ -78,7 +78,8 @@ class SparqlStore:
         try:
             # send the query to the api
             (response, content) = self.doRequest(endpoint, request_method, params, headers) 
-
+            logger.debug("Response Status = %s" % (response.status))
+            
             # Output the xml to a file 
             if output:
                 try:
@@ -91,7 +92,7 @@ class SparqlStore:
             
             # output the full response for now
             #pprint(response)
-            logger.debug("Content Length = %s" % (len(content)))          
+            logger.debug("Content Length = %s" % (len(content)))                     
                     
             if (response.status == 200):
                 'HTML Response OK'
@@ -116,7 +117,7 @@ class SparqlStore:
                     raise SparqlStoreException(error_desc)
                 else:
                     logger.error('HTTP Response failed with response code = [%s]' % response)
-                    logger.error('raise Exception [%s]' % content)
+                    logger.error('raise Exception [%s ...]' % content[:50])  # only show first 30 chars
                     raise SparqlStoreException(content)
         except httplib2.ServerNotFoundError:
             raise SparqlStoreException("Site is Down: %s" % self.url)                                             
