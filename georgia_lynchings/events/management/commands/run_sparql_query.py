@@ -73,54 +73,64 @@ class Command(BaseCommand):
             raise CommandError('SPARQL_STORE_API must be configured in localsettings.py')
         if not hasattr(settings, 'SPARQL_STORE_REPOSITORY') or not settings.SPARQL_STORE_REPOSITORY:
             raise CommandError('SPARQL_STORE_REPOSITORY must be configured in localsettings.py')
-              
-        query=None
-        if options['query_key']:
+            
+        self.output = True if 'output' in options.keys()  and options['output'] else None
+        self.list_repos = True if 'list_repos' in options.keys()  and options['list_repos'] else None
+        self.ppdict = True if 'ppdict' in options.keys()  and options['ppdict'] else None
+        self.query_key = True if 'query_key' in options.keys()  and options['query_key'] else None 
+        self.query_file = True if 'query_file' in options.keys()  and options['query_file'] else None                            
+                      
+        self.query=None       
+        if self.query_key:
             'Use one of the predefined sparql queries bases on given key.'
             logger.debug("QUERY KEY=[%s]" % options['query_key'])
-            query=canned_sparql_queries.test_sparql_query[options['query_key']]           
+            self.query=canned_sparql_queries.test_sparql_query[options['query_key']]           
 
-        elif options['query_file']:
+        elif self.query_file:
             'Load the sparql query from the given file.'
             logger.debug("QUERY FILE=[%s]" % options['query_file'])
             try:
-                query=open(options['query_file'], 'rU').read()
+                self.query=open(options['query_file'], 'rU').read()
             except IOError as (errno, strerror):
-                raise CommandError("Failed to read query file [%s]" % options['query_file'])                                 
-                return
+                raise CommandError("Failed to read query file [%s]" % options['query_file']) 
                 
-        elif options['list_repos']:
+        elif self.list_repos:
             'Query for a list of available repositories.'
-            query=None                 
+            self.query=None                 
                         
         else:
             'No query given, so get a list of the repositories in the triplestore.'
             logger.debug("No options, get list of repositories.")
 
-        # Open the SparqlStore
-        try:  ss=SparqlStore()
-        except: logger.error("Failed to load SparqlStore.")  
-            
         # Run the SPARQL query
+        self.result = self.runQuery()
+        self.processResult(self.result, self.list_repos, self.ppdict)
+        
+    def runQuery(self):
+        print "--------09---------------"        
+        ss=SparqlStore()
         result={}
         try:
-            output = True if options['output'] else None
-            if output: print "output is true."
-            else: print "output is not defined."
-            if query: # Run the defined sparql query
-                result = ss.query("SPARQL_XML", "POST", query, output)
-            elif options['list_repos']: #Query the triplestore for available repositories
-                result = ss.query("SPARQL_XML", "GET", None, output)
+            if self.query: # Run the defined sparql query           
+                result = ss.query("SPARQL_XML", "POST", self.query, self.output)
+            elif self.list_repos: # Query the triplestore for available repositories
+                result = ss.query("SPARQL_XML", "GET", None, self.output)
             else: logger.error('Query not found.')  # Error: Query not found.
-        except: logger.error("Failed to run SparqlStore query.")
+        except: CommandError("Failed to run SparqlStore query.")  
+        return result  
         
+    def processResult(self, result=None, list_repos=None, ppdict=None):       
         if result:
             logger.debug("Result set size = [%d]" % len(result))
             # For the Repository list, skip pprint dict, and just print the list.
-            if options['list_repos']:
+            if list_repos:               
                 repo_list=[]
                 for item in result:
                     repo_list.append(item['id']['value']);
-                logger.info("Repository List = [%s]" % repo_list)
+                self.stdout.write("Repository List = [%s]" % repo_list)                    
             # Pretty print the dictionary to the console, if option is set.                
-            elif options['ppdict']: pprint (result)
+            elif ppdict:               
+                self.stdout.write("\nPrettyPrint output to command line.\n")
+                pprintfile = open("/tmp/georgia_lynchings_pprint_output.txt", 'w')
+                pprint(result, pprintfile)
+        else: self.stdout.write("\nResult does not exist.\n")       

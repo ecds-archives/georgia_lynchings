@@ -94,7 +94,7 @@ class SparqlStore:
             # Output the xml to a file 
             if output:
                 try:
-                    a = open("/tmp/query_output.xml", 'w')
+                    a = open("/tmp/georgia_lynchings_query_output.xml", 'w')
                     a.write(content) 
                 except IOError as (errno, strerror):
                     logger.error("I/O error({0}): {1}".format(errno, strerror))

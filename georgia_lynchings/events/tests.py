@@ -148,6 +148,34 @@ class RunSparqlQueryCommandTest(TestCase):
 
     def test_missing_sparql_store_repository(self):
         settings.SPARQL_STORE_REPOSITORY = None
-        self.assertRaises(CommandError, self.command.handle)               
-
-   
+        self.assertRaises(CommandError, self.command.handle)
+       
+    # Test for triplestore site not responding
+    def test_list_repos(self):
+        repo_result=[
+        {u'id': {'type': 'literal', 'value': u'SYSTEM'}}, 
+        {u'id': {'type': 'literal', 'value': u'galyn'}}, 
+        {u'id': {'type': 'literal', 'value': u'galyn-2011-11-07'}}, 
+        {u'id': {'type': 'literal', 'value': u'ben-test'}}, 
+        {u'id': {'type': 'literal', 'value': u'galyn-test'}}]
+        self.command.processResult(result=repo_result, list_repos=True)
+        # check script output
+        # output should equal:
+        # "Repository List = [[u'SYSTEM', u'galyn', u'galyn-2011-11-07', u'ben-test', u'galyn-test']]"
+        output = self.command.stdout.getvalue()    
+        self.assert_('Repository List' in output)
+        self.assert_('galyn' in output) 
+               
+    # Test for triplestore site not responding
+    def test_ppdict(self):
+        repo_result=[
+        {u'id': {'type': 'literal', 'value': u'SYSTEM'}}, 
+        {u'id': {'type': 'literal', 'value': u'galyn'}}, 
+        {u'id': {'type': 'literal', 'value': u'galyn-2011-11-07'}}, 
+        {u'id': {'type': 'literal', 'value': u'ben-test'}}, 
+        {u'id': {'type': 'literal', 'value': u'galyn-test'}}]
+        self.command.processResult(result=repo_result, ppdict=True)
+        # check script output
+        # "Repository List = [[u'SYSTEM', u'galyn', u'galyn-2011-11-07', u'ben-test', u'galyn-test']]"
+        output = self.command.stdout.getvalue()
+        self.assert_('PrettyPrint' in output)        
