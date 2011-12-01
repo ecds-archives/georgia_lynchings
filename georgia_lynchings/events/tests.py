@@ -35,6 +35,20 @@ class AbstractQueryTest(TestCase):
     def test_VariableClass(self):       
         result=Variable(value='macro')    
         self.assertEqual('?macro', result.value)
+        
+    def test_setQueryForm(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(None, self.abstractquery.setQueryForm(None))
+        self.assertEqual('SELECT', self.abstractquery.setQueryForm('SELECT')) 
+        self.assertEqual('CONSTRUCT', self.abstractquery.setQueryForm('CONSTRUCT'))
+        self.assertEqual('ASK', self.abstractquery.setQueryForm('ASK'))
+        self.assertEqual('DESCRIBE', self.abstractquery.setQueryForm('DESCRIBE'))                                    
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setQueryForm, 'QUESTION') 
+        # Test for correct AbstractQueryException message
+        try: self.assertEqual(None, self.abstractquery.setQueryForm('BLAH'))
+        except AbstractQueryException as e:
+            self.assertEqual('QueryForm [BLAH] is not one of the accepted values[SELECT, CONSTRUCT, ASK, DESCRIBE].', e.value)          
 
     def test_setDistinct(self):
         self.abstractquery=AbstractQuery()  

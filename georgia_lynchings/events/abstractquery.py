@@ -59,6 +59,13 @@ class AbstractQuery(object):
     def close(self):
         logger.info('AbstractQuery close\n')
         
+    def setQueryForm(self, value=None):
+        'Set the query form. Must be one of the following:[SELECT, CONSTRUCT, ASK, DESCRIBE].'
+        if value in ['SELECT', 'CONSTRUCT', 'ASK', 'DESCRIBE', None]: 
+            self.queryform=value
+        else: raise AbstractQueryException("QueryForm [%s] is not one of the accepted values[SELECT, CONSTRUCT, ASK, DESCRIBE]." % value)      
+        return self.queryform         
+        
     def setDistinct(self, value=False):
         'An optional modifier for Select query. Possible values: True/False'
         if (value==True or value==False): self.distinct = value
