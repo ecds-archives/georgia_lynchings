@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.conf import settings
 from django.core.management.base import CommandError
 
+from georgia_lynchings.events.abstractquery import AbstractQuery, Variable, AbstractQueryException
 from georgia_lynchings.events.models import MacroEvent
 from georgia_lynchings.events.sparqlstore import SparqlStore, SparqlStoreException
 from georgia_lynchings.events.management.commands import run_sparql_query
@@ -28,7 +29,93 @@ class MacroEventTest(TestCase):
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_semantic))
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_details))
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.last_coded))
-        
+
+class AbstractQueryTest(TestCase):                           
+            
+    def test_VariableClass(self):       
+        result=Variable(value='macro')    
+        self.assertEqual('?macro', result.value)
+
+    def test_setDistinct(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(True, self.abstractquery.setDistinct(True))
+        self.assertEqual(False, self.abstractquery.setDistinct(False))         
+        self.assertEqual(False, self.abstractquery.setDistinct())        
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setDistinct, "distinctblah1") 
+        # Test for correct AbstractQueryException message
+        try: self.abstractquery.setDistinct('distinctblah2')
+        except AbstractQueryException as e:
+            self.assertEqual('Invalid value for distinct: distinctblah2', e.value) 
+           
+    def test_setReduced(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(True, self.abstractquery.setReduced(True))
+        self.assertEqual(False, self.abstractquery.setReduced(False))        
+        self.assertEqual(False, self.abstractquery.setReduced())        
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setDistinct, "reducedblah1") 
+        # Test for correct AbstractQueryException message
+        try: self.abstractquery.setReduced('reducedblah2')
+        except AbstractQueryException as e:
+            self.assertEqual('Invalid value for reduced: reducedblah2', e.value)
+            
+    def test_setLimit(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(None, self.abstractquery.setLimit(None))
+        self.assertEqual(None, self.abstractquery.setLimit(0))
+        self.assertEqual(5, self.abstractquery.setLimit(5))
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setLimit, "limitone") 
+        # Test for correct AbstractQueryException message
+        try: self.assertEqual(None, self.abstractquery.setLimit('limittwo'))
+        except AbstractQueryException as e:
+            self.assertEqual('LIMIT value must be an integer: limittwo', e.value)
+
+    def test_setOffset(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(None, self.abstractquery.setOffset(None))
+        self.assertEqual(None, self.abstractquery.setOffset(0))
+        self.assertEqual(6, self.abstractquery.setOffset(6))
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setOffset, "offsetone") 
+        # Test for correct AbstractQueryException message
+        try: self.assertEqual(None, self.abstractquery.setOffset('offsettwo'))
+        except AbstractQueryException as e:
+            self.assertEqual('OFFSET value must be an integer: offsettwo', e.value)
+            
+    def test_setOrderBy(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(None, self.abstractquery.setOrderBy(None))
+        self.assertEqual('person', self.abstractquery.setOrderBy('person'))       
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setOrderBy, 6) 
+        # Test for correct AbstractQueryException message
+        try: self.assertEqual(None, self.abstractquery.setOrderBy(7))
+        except AbstractQueryException as e:
+            self.assertEqual('ORDER BY value must be a string: 7', e.value)
+            
+    def test_setGroupBy(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(None, self.abstractquery.setGroupBy(None))
+        self.assertEqual('place', self.abstractquery.setGroupBy('place'))       
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setGroupBy, 8) 
+        # Test for correct AbstractQueryException message
+        try: self.assertEqual(None, self.abstractquery.setGroupBy(9))
+        except AbstractQueryException as e:
+            self.assertEqual('GROUP BY value must be a string: 9', e.value) 
+            
+    def test_setHaving(self):
+        self.abstractquery=AbstractQuery()  
+        self.assertEqual(None, self.abstractquery.setHaving(None))
+        self.assertEqual('place', self.abstractquery.setHaving('place'))       
+        # Test that a AbstractQueryException is raised                
+        self.assertRaises(AbstractQueryException, self.abstractquery.setHaving, 8) 
+        # Test for correct AbstractQueryException message
+        try: self.assertEqual(None, self.abstractquery.setHaving(9))
+        except AbstractQueryException as e:
+            self.assertEqual('HAVING value must be a string: 9', e.value)                                               
 
 class SparqlStoreTest(TestCase):
     def setUp(self):
