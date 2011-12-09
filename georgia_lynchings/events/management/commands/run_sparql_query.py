@@ -106,8 +106,7 @@ class Command(BaseCommand):
         self.result = self.runQuery()
         self.processResult(self.result, self.list_repos, self.ppdict)
         
-    def runQuery(self):
-        print "--------09---------------"        
+    def runQuery(self):       
         ss=SparqlStore()
         result={}
         try:

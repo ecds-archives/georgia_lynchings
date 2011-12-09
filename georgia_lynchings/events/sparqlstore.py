@@ -37,9 +37,9 @@ class SparqlStore:
             if not hasattr(settings, 'SPARQL_STORE_API') or not settings.SPARQL_STORE_API:
                 raise SparqlStoreException('SPARQL_STORE_API must be configured in localsettings.py')
             else: self.url = settings.SPARQL_STORE_API
-        
+       
         if repository: self.repository = repository
-        else: 
+        else:        
             if not hasattr(settings, 'SPARQL_STORE_REPOSITORY') or not settings.SPARQL_STORE_REPOSITORY:
                 raise SparqlStoreException('SPARQL_STORE_REPOSITORY must be configured in localsettings.py')
             else: self.repository = settings.SPARQL_STORE_REPOSITORY 
@@ -73,8 +73,6 @@ class SparqlStore:
         logger.debug("query endpoint=[%s]" % endpoint)        
         
         if sparql_query:
-            # remove any newlines from sparql_query string
-            sparql_query = sparql_query.translate(None,'\n')
             # add query to params              
             params = { 'query': sparql_query }            
             endpoint += "/%s" % (self.repository)
@@ -117,18 +115,18 @@ class SparqlStore:
                     return json.loads(content)
             else:
                 'HTML Response not OK'      
-                logger.error('HTTP Response error code: %s' % response.status)            
+                logger.warn('HTTP Response error code: %s' % response.status)            
                 match = re.search(r'<b>message</b> <u>([^<]+)<', content)            
                 if match:
-                    logger.error('HTTP Response error message = [%s]' % match.group(1))      
+                    logger.warn('HTTP Response error message = [%s]' % match.group(1))      
                 match = re.search(r'<b>description</b> <u>([^<]+)<', content)            
                 if match: 
                     error_desc='raise Exception description = [%s]' % match.group(1)
-                    logger.error(error_desc)
+                    logger.warn(error_desc)
                     raise SparqlStoreException(error_desc)
                 else:
-                    logger.error('HTTP Response failed with response code = [%s]' % response)
-                    logger.error('raise Exception [%s ...]' % content[:50])  # only show first 30 chars
+                    logger.warn('HTTP Response failed with response code = [%s]' % response)
+                    logger.warn('raise Exception [%s ...]' % content[:50])  # only show first 30 chars
                     raise SparqlStoreException(content)
         except httplib2.ServerNotFoundError:
             raise SparqlStoreException("Site is Down: %s" % self.url)                                             
