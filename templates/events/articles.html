@@ -1,0 +1,7 @@
+<h4>Articles for Macro Event: {{ title }}</h4>
+<table summary="Articles for a Macro Event ({{ row_id }}): {{ title }}" border=1 cellpadding=10px>
+<tr><th>Event</th><th>Article</th></th>
+{% for result in resultSet %}
+    <tr><td>{{ result.evlabel.value }}</td><td>{{ result.docpath.value }}</td></tr>
+{% endfor %}
+</table>
