@@ -1,5 +1,5 @@
 import logging
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect, HttpResponse
 from georgia_lynchings.events.event import Event
 
@@ -13,4 +13,5 @@ def articles(request, row_id):
     event = Event()
     resultSet = event.get_articles(row_id)
     title = resultSet[0]['melabel']['value']
-    return render_to_response('events/articles.html', {'resultSet': resultSet, 'row_id':row_id, 'title':title})    
+    return render(request, 'events/articles.html',
+                  {'resultSet': resultSet, 'row_id':row_id, 'title':title})    
