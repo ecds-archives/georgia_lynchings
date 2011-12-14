@@ -10,8 +10,7 @@ import datetime
 
 
 def home(request):
-    print "STATIC_URL = [%s]\n" % settings.STATIC_URL
-    template = 'base.html'
+    template = 'index.html'
     return render(request, template)
 
 def current_datetime(request):
