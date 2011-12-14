@@ -58,7 +58,8 @@ class SparqlStore:
         elif type=='BINARY_TABLE':  return 'application/x-binary-rdf-results-table' 
         elif type=='BOOLEAN':  return 'text/boolean'
 
-    def query(self, result_type="SPARQL_XML", request_method="POST", sparql_query=None, output=None):
+    def query(self, result_type="SPARQL_XML", request_method="POST",
+              sparql_query=None, output=None, initial_bindings={}):
         'Send a SPARQL query to the triplestore'
         
         logger.debug("query begin ... result_type=[%s]" % result_type)
@@ -81,6 +82,11 @@ class SparqlStore:
                to list the triplestore repositories available.'''
             params = {}                            
             request_method = 'GET'
+
+        # add sesame initial query bindings
+        binding_params = dict(('$' + key, val)
+                               for key, val in initial_bindings.items())
+        params.update(binding_params)
             
         logger.debug('query %s to %s' % (request_method, endpoint))
         

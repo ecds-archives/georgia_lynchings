@@ -1,5 +1,6 @@
 import logging
 from django.db import models
+from georgia_lynchings.events.rdfns import dcx
 from georgia_lynchings.events.sparqlstore import SparqlStore
 
 logger = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ class Event(object):
     def get_articles(self, row_id=None):
         "Get articles for event."
         '''
-        row_id: macro event id, format dcx:r12
+        row_id: macro event id, format 12
         '''         
         logger.debug("get_articles for row = [%s]\n" % row_id)
         query='''
@@ -23,7 +24,7 @@ class Event(object):
         PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
         SELECT DISTINCT ?melabel ?event ?evlabel ?dd ?docpath 
         WHERE {
-          <row_id> a scx:r1;
+          ?macro a scx:r1;
                  dcx:Identifier ?melabel;
                  sxcxcx:r61 ?event.
           ?event dcx:Identifier ?evlabel.
@@ -34,10 +35,12 @@ class Event(object):
         } 
         ORDER BY ?event ?docpath
         '''
-        # Substitute the macro event id into the query.
-        query = query.replace("<row_id>", row_id) 
+        # a SPARQL representation of the URI of the macro event we want, for
+        # initial query bindings
+        macro_uri_rep = '<%s>' % (dcx['r' + row_id],)
         # Post the query       
         ss=SparqlStore()
-        resultSet = ss.query("SPARQL_XML", "POST", query, None) 
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': macro_uri_rep}) 
         # return the dictionary resultset of the query          
         return resultSet

@@ -9,6 +9,6 @@ Patterns:
 '''
   
 urlpatterns = patterns('events.views',
-    url(r'^(?P<row_id>dcx:r\d+)/articles/$', 'articles'),  # articles for macro event id
+    url(r'^(?P<row_id>\d+)/articles/$', 'articles'),  # articles for macro event id
 )
 
