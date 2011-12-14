@@ -200,6 +200,12 @@ def configure_site():
         sudo('cp localsettings.py %(build_dir)s/georgia_lynchings/localsettings.py' % env,
              user=env.remote_acct)
 
+    with cd('%(remote_path)s/%(build_dir)s' % env):
+        with prefix('source %(remote_venv_path)s/bin/activate' % env):
+            sudo('python georgia_lynchings/manage.py collectstatic --noinput',
+                 user=env.remote_acct)
+
+
 def update_links():
     'Update current/previous symlinks on the remote server.'
     with cd(env.remote_path):
