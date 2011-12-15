@@ -1,6 +1,6 @@
 import logging
 from django.shortcuts import render
-from georgia_lynchings.events.models import MacroEvent
+from georgia_lynchings.events.models import MacroEvent, get_events_by_locations
 
 logger = logging.getLogger(__name__)
 
@@ -17,3 +17,11 @@ def articles(request, row_id):
     title = resultSet[0]['melabel']['value']
     return render(request, 'events/articles.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title})    
+
+
+def locations(request):
+    '''List all events, ordered by their location.'''
+
+    results = get_events_by_locations()
+    return render(request, 'events/locations.html',
+                  {'results': results})

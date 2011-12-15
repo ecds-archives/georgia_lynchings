@@ -12,5 +12,7 @@ The :mod:`~georgia_lynchings.events` app
 
       .. automethod:: get_articles
 
+   .. autofunction:: get_events_by_locations
+
 .. automodule:: georgia_lynchings.events.views
    :members:
