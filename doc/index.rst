@@ -2,7 +2,7 @@ Documentation for Georgia Lynchings
 ===================================
 
 Georgia Lynchings is an Emory Libraries DiSC project initially
- designed and maintained by the University Libraries staff.
+designed and maintained by the University Libraries staff.
 
 Contents:
 
