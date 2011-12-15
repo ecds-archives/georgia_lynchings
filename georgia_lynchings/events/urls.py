@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from georgia_lynchings.events.event import Event
+from georgia_lynchings.events.models import MacroEvent
 
 '''
 Patterns: 
