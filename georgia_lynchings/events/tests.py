@@ -44,11 +44,6 @@ class MacroEventTest(TestCase):
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_details))
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.last_coded))
         
-    def test_get_articles_valid_rowid(self):
-        event = MacroEvent('12')
-        resultSet = event.get_articles()       
-        self.assertEqual(4, len(resultSet))
-        
     def test_get_articles_bogus_rowid(self):
         row_id = '0'
         title = 'No records found'
@@ -63,7 +58,7 @@ class MacroEventTest(TestCase):
         self.assertEqual(title, response.context['title'], 
             'Expected %s but returned %s for title' % (row_id, response.context['title']))
             
-    def test_view_articles(self):
+    def test_articles_url(self):
         row_id = '12'
         title = 'Coweta (Sam Hose)'
         # articles_url = '/events/12/articles/'        
@@ -76,7 +71,42 @@ class MacroEventTest(TestCase):
             'Expected len 4 but returned %s for resultSet' % (len(response.context['resultSet'])))
         self.assertEqual(title, response.context['title'], 
             'Expected %s but returned %s for title' % (row_id, response.context['title']))
+ 
+    def test_times_url(self):
+        # times_url = '/events/times/'        
+        times_url = reverse('times')
+        time_response = self.client.get(times_url)
         
+        expected, got = 200, time_response.status_code 
+        self.assertEqual(345, len(time_response.context['results']), 
+            'Expected len 345 but returned %s for results' % (len(time_response.context['results']))) 
+            
+        # test type of macro event label, should be literal
+        expected, got = time_response.context['results'][0]['melabel']['type'], "literal"
+        msg = 'Expected macro event label type [%s] but returned [%s] for results' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        # test value of macro event label        
+        expected, got = time_response.context['results'][0]['melabel']['value'], u'Houston (Henry Walker)'
+        msg = 'Expected macro event label [%s] but returned [%s] for results' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        
+        # test value of mindate format        
+        expected, got = time_response.context['results'][0]['mindate']['value'], u'1879-11-25'
+        msg = 'Expected mindate [%s] but returned [%s] for results' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        msg = 'mindate pattern [%s] does not match yyyy-mm-dd' % (got)
+        pattern = r'1\d\d\d-\d\d-\d\d'
+        self.assertRegexpMatches(got, pattern, msg) 
+        
+        # test value of maxdate format        
+        expected, got = time_response.context['results'][0]['maxdate']['value'], u'1879-11-26'
+        msg = 'Expected maxdate [%s] but returned [%s] for results' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        msg = 'maxdate pattern [%s] does not match yyyy-mm-dd' % (got)
+        pattern = r'1\d\d\d-\d\d-\d\d'
+        self.assertRegexpMatches(got, pattern, msg)                 
+
+                                    
 
 class SparqlStoreTest(TestCase):
     def setUp(self):
@@ -218,7 +248,8 @@ class RunSparqlQueryCommandTest(TestCase):
         output = self.command.stdout.getvalue()    
         self.assert_('Repository List' in output)
         self.assert_('galyn' in output) 
-               
+'''  
+    # TODO: use generated temp files for print and output             
     # Test for triplestore site not responding
     def test_ppdict(self):
         repo_result=[
@@ -232,3 +263,4 @@ class RunSparqlQueryCommandTest(TestCase):
         # "Repository List = [[u'SYSTEM', u'galyn', u'galyn-2011-11-07', u'ben-test', u'galyn-test']]"
         output = self.command.stdout.getvalue()
         self.assert_('PrettyPrint' in output)        
+'''
