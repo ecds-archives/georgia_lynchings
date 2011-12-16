@@ -1,9 +1,10 @@
 import logging
 import os
 
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.conf import settings
 from django.core.management.base import CommandError
+from django.core.urlresolvers import reverse
 
 from georgia_lynchings.events.models import MacroEvent
 from georgia_lynchings.events.sparqlstore import SparqlStore, SparqlStoreException
@@ -12,6 +13,20 @@ import httplib2
 import StringIO
 
 class MacroEventTest(TestCase):
+
+    def setUp(self):
+        self.client = Client()  
+        # override settings
+        self.sparql_store_api_orig = settings.SPARQL_STORE_API
+        settings.SPARQL_STORE_API = settings.TEST_SPARQL_STORE_API
+        self.sparql_store_repo_orig = settings.SPARQL_STORE_REPOSITORY
+        settings.SPARQL_STORE_REPOSITORY = settings.TEST_SPARQL_STORE_REPOSITORY      
+            
+    def tearDown(self):
+        # restore settings
+        settings.SPARQL_STORE_API = self.sparql_store_api_orig
+        settings.SPARQL_STORE_REPOSITORY = self.sparql_store_repo_orig  
+            
     def test_basic_rdf_properties(self):
         # For now, just test that the MacroEvent class has a few basic
         # properties. These properties don't mean much quite yet, so as this
@@ -28,6 +43,40 @@ class MacroEventTest(TestCase):
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_semantic))
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_details))
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.last_coded))
+        
+    def test_get_articles_valid_rowid(self):
+        event = MacroEvent('12')
+        resultSet = event.get_articles()       
+        self.assertEqual(4, len(resultSet))
+        
+    def test_get_articles_bogus_rowid(self):
+        row_id = '0'
+        title = 'No records found'
+        # articles_url = '/events/0/articles/'        
+        articles_url = reverse('articles', kwargs={'row_id': row_id})
+        response = self.client.get(articles_url)
+        expected, got = 200, response.status_code            
+        self.assertEqual(row_id, response.context['row_id'], 
+            'Expected %s but returned %s for row_id' % (row_id, response.context['row_id']))
+        self.assertEqual(0, len(response.context['resultSet']), 
+            'Expected len 0 but returned %s for resultSet' % (len(response.context['resultSet'])))
+        self.assertEqual(title, response.context['title'], 
+            'Expected %s but returned %s for title' % (row_id, response.context['title']))
+            
+    def test_view_articles(self):
+        row_id = '12'
+        title = 'Coweta (Sam Hose)'
+        # articles_url = '/events/12/articles/'        
+        articles_url = reverse('articles', kwargs={'row_id': row_id})
+        response = self.client.get(articles_url)
+        expected, got = 200, response.status_code            
+        self.assertEqual(row_id, response.context['row_id'], 
+            'Expected %s but returned %s for row_id' % (row_id, response.context['row_id']))
+        self.assertEqual(4, len(response.context['resultSet']), 
+            'Expected len 4 but returned %s for resultSet' % (len(response.context['resultSet'])))
+        self.assertEqual(title, response.context['title'], 
+            'Expected %s but returned %s for title' % (row_id, response.context['title']))
+        
 
 class SparqlStoreTest(TestCase):
     def setUp(self):

@@ -14,7 +14,8 @@ def articles(request, row_id):
     '''
     event = MacroEvent(row_id)
     resultSet = event.get_articles()
-    title = resultSet[0]['melabel']['value']
+    if resultSet:   title = resultSet[0]['melabel']['value']
+    else:   title = "No records found"    
     return render(request, 'events/articles.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title})    
 
