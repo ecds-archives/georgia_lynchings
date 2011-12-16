@@ -1,6 +1,6 @@
 import logging
 from django.shortcuts import render
-from georgia_lynchings.events.models import MacroEvent, get_events_by_locations
+from georgia_lynchings.events.models import MacroEvent, get_events_by_locations, get_events_by_times
 
 logger = logging.getLogger(__name__)
 
@@ -25,3 +25,10 @@ def locations(request):
     results = get_events_by_locations()
     return render(request, 'events/locations.html',
                   {'results': results})
+                  
+def times(request):
+    '''List all events, provide the date range as mindate and maxdate.'''
+
+    results = get_events_by_times()
+    return render(request, 'events/times.html',
+                  {'results': results})                  

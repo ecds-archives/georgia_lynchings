@@ -10,5 +10,6 @@ Patterns:
 urlpatterns = patterns('georgia_lynchings.events.views',
     url(r'^(?P<row_id>\d+)/articles/$', 'articles', name='articles'),  # articles for macro event id
     url(r'locations/$', 'locations', name='locations'),                # events by location
+    url(r'times/$', 'times', name='times'),                            # events by times    
 )
 
