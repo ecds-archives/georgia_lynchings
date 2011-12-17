@@ -59,7 +59,7 @@ class SparqlStore:
         elif type=='BOOLEAN':  return 'text/boolean'
 
     def query(self, result_type="SPARQL_XML", request_method="POST",
-              sparql_query=None, output=None, initial_bindings={}):
+              sparql_query=None, initial_bindings={}):
         'Send a SPARQL query to the triplestore'
         
         logger.debug("query begin ... result_type=[%s]" % result_type)
@@ -94,19 +94,6 @@ class SparqlStore:
             # send the query to the api
             (response, content) = self.doRequest(endpoint, request_method, params, headers) 
             logger.debug("Response Status = %s" % (response.status))
-            
-            # Output the xml to a file 
-            if output:
-                try:
-                    a = open("/tmp/georgia_lynchings_query_output.xml", 'w')
-                    a.write(content) 
-                except IOError as (errno, strerror):
-                    logger.error("I/O error({0}): {1}".format(errno, strerror))
-                    logger.error("Failed to open query output file.")
-                    return
-            
-            # output the full response for now
-            #pprint(response)
             logger.debug("Content Length = %s" % (len(content)))                     
                     
             if (response.status == 200):

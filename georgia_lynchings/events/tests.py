@@ -49,38 +49,39 @@ class MacroEventTest(TestCase):
         title = 'No records found'
         # articles_url = '/events/0/articles/'        
         articles_url = reverse('articles', kwargs={'row_id': row_id})
-        response = self.client.get(articles_url)
-        expected, got = 200, response.status_code            
-        self.assertEqual(row_id, response.context['row_id'], 
-            'Expected %s but returned %s for row_id' % (row_id, response.context['row_id']))
-        self.assertEqual(0, len(response.context['resultSet']), 
-            'Expected len 0 but returned %s for resultSet' % (len(response.context['resultSet'])))
-        self.assertEqual(title, response.context['title'], 
-            'Expected %s but returned %s for title' % (row_id, response.context['title']))
+        articles_response = self.client.get(articles_url)
+        expected, got = 200, articles_response.status_code            
+        self.assertEqual(row_id, articles_response.context['row_id'], 
+            'Expected %s but returned %s for row_id' % (row_id, articles_response.context['row_id']))
+        self.assertEqual(0, len(articles_response.context['resultSet']), 
+            'Expected len 0 but returned %s for resultSet' % (len(articles_response.context['resultSet'])))
+        self.assertEqual(title, articles_response.context['title'], 
+            'Expected %s but returned %s for title' % (row_id, articles_response.context['title']))
             
     def test_articles_url(self):
         row_id = '12'
         title = 'Coweta (Sam Hose)'
         # articles_url = '/events/12/articles/'        
         articles_url = reverse('articles', kwargs={'row_id': row_id})
-        response = self.client.get(articles_url)
-        expected, got = 200, response.status_code            
-        self.assertEqual(row_id, response.context['row_id'], 
-            'Expected %s but returned %s for row_id' % (row_id, response.context['row_id']))
-        self.assertEqual(4, len(response.context['resultSet']), 
-            'Expected len 4 but returned %s for resultSet' % (len(response.context['resultSet'])))
-        self.assertEqual(title, response.context['title'], 
-            'Expected %s but returned %s for title' % (row_id, response.context['title']))
+        articles_response = self.client.get(articles_url)
+        expected, got = 200, articles_response.status_code            
+        self.assertEqual(row_id, articles_response.context['row_id'], 
+            'Expected %s but returned %s for row_id' % (row_id, articles_response.context['row_id']))
+        self.assertEqual(4, len(articles_response.context['resultSet']), 
+            'Expected len 4 but returned %s for resultSet' % (len(articles_response.context['resultSet'])))
+        self.assertEqual(title, articles_response.context['title'], 
+            'Expected %s but returned %s for title' % (row_id, articles_response.context['title']))
  
     def test_times_url(self):
         # times_url = '/events/times/'        
-        times_url = reverse('times')
-        time_response = self.client.get(times_url)
+        times_url = reverse('times')       
+        time_response = self.client.get(times_url)       
         
-        expected, got = 200, time_response.status_code 
+        expected, got = 200, time_response.status_code
+        self.assertEqual(expected, got, 'Expected %s status code, got %s' % (expected, got))
         self.assertEqual(345, len(time_response.context['results']), 
             'Expected len 345 but returned %s for results' % (len(time_response.context['results']))) 
-            
+          
         # test type of macro event label, should be literal
         expected, got = time_response.context['results'][0]['melabel']['type'], "literal"
         msg = 'Expected macro event label type [%s] but returned [%s] for results' % (expected, got)
@@ -104,10 +105,8 @@ class MacroEventTest(TestCase):
         self.assertEqual(expected, got, msg)
         msg = 'maxdate pattern [%s] does not match yyyy-mm-dd' % (got)
         pattern = r'1\d\d\d-\d\d-\d\d'
-        self.assertRegexpMatches(got, pattern, msg)                 
-
+        self.assertRegexpMatches(got, pattern, msg)
                                     
-
 class SparqlStoreTest(TestCase):
     def setUp(self):
         
@@ -248,19 +247,4 @@ class RunSparqlQueryCommandTest(TestCase):
         output = self.command.stdout.getvalue()    
         self.assert_('Repository List' in output)
         self.assert_('galyn' in output) 
-'''  
-    # TODO: use generated temp files for print and output             
-    # Test for triplestore site not responding
-    def test_ppdict(self):
-        repo_result=[
-        {u'id': {'type': 'literal', 'value': u'SYSTEM'}}, 
-        {u'id': {'type': 'literal', 'value': u'galyn'}}, 
-        {u'id': {'type': 'literal', 'value': u'galyn-2011-11-07'}}, 
-        {u'id': {'type': 'literal', 'value': u'ben-test'}}, 
-        {u'id': {'type': 'literal', 'value': u'galyn-test'}}]
-        self.command.processResult(result=repo_result, ppdict=True)
-        # check script output
-        # "Repository List = [[u'SYSTEM', u'galyn', u'galyn-2011-11-07', u'ben-test', u'galyn-test']]"
-        output = self.command.stdout.getvalue()
-        self.assert_('PrettyPrint' in output)        
-'''
+
