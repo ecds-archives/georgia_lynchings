@@ -6,3 +6,4 @@ dist
 doc/_build/
 georgia_lynchings/test-results
 sitemedia
+static/documents

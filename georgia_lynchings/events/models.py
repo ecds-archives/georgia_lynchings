@@ -1,6 +1,7 @@
 from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
 from georgia_lynchings.events.sparqlstore import SparqlStore
 from pprint import pprint
+from urllib import quote
 
 class MacroEvent(object):
     '''A Macro Event is an object type defined by the project's (currently
@@ -106,7 +107,11 @@ class MacroEvent(object):
         '''
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri_as_ntriples()}) 
+                             initial_bindings={'macro': self.uri_as_ntriples()})
+        # create a link for the macro event articles
+        for result in resultSet:
+            result['docpath_link'] = quote(result['docpath']['value'].replace('\\', '/')) 
+            result['docpath']['value'] = result['docpath']['value'][10:]                              
         # return the dictionary resultset of the query          
         return resultSet
 

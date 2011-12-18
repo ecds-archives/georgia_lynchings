@@ -97,6 +97,14 @@ tables and initial data using::
 
   $ python manage.py syncdb
 
+Add the georgia lynching newspaper articles pdf file as static files::
+
+  $ cp <path_to_articles>/documents /georgia_lynchings/static/
+  
+Collect the static media::
+  
+  $ python manage.py collectstatic
+
 
 Notes for developers
 ====================
