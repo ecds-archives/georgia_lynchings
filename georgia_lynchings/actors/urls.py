@@ -6,6 +6,6 @@ Patterns:
 '''
   
 urlpatterns = patterns('georgia_lynchings.actors.views',
-    url(r'^(?P<row_id>\d+)/macroevents/$', 'macroevents', name='macroevents'),  # events for actor id
+    url(r'^(?P<row_id>\d+)/events/$', 'macroevents', name='macroevents'),  # events for actor id
 )
 

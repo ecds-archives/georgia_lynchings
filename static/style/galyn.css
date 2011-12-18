@@ -1,5 +1,7 @@
 body {
-background: url('../images/marb022.jpg'); background-repeat: repeat;
+    font-size: 12px;
+    font-family:"Arial";
+    background: url('../images/marb022.jpg'); background-repeat: repeat;
 }
 li {
     font-family:"Century Gothic";
@@ -10,7 +12,7 @@ li {
 .main{
     text-indent:85px;
     padding-top:130px;
-    font-size: 30px;
+    font-size: 20px;
     font-family:"Century Gothic";
 }
 
@@ -47,6 +49,12 @@ li {
     list-style-position: outside;
     list-style-type: square;
     padding: 6px;
+}
+
+table
+{
+    border: 1px solid black;
+    width: 70%
 }
 
 #footer {
