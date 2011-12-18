@@ -4,6 +4,5 @@ build
 dist
 #ignore the docs _build directory
 doc/_build/
-logs
 georgia_lynchings/test-results
 sitemedia
