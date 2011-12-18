@@ -6,8 +6,8 @@ from georgia_lynchings.views import current_datetime
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-
-    url(r'^events/', include('georgia_lynchings.events.urls')),
+    url(r'^actors/', include('georgia_lynchings.actors.urls'), name="actors"),
+    url(r'^events/', include('georgia_lynchings.events.urls'), name="events"),
     url(r'^time', 'georgia_lynchings.views.current_datetime', name="time"),  
     url(r'^$', 'georgia_lynchings.views.home', name="home"), 
     
