@@ -7,11 +7,14 @@
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
   <table summary="Articles for a Macro Event ({{ row_id }}): {{ title }}" border=1 cellpadding=10px>
-  <tr><th>Event</th><th>Article</th></th>
+  <tr><th>Event</th><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></th>
   {% for result in resultSet %}
       <tr>
       <td>{{ result.evlabel.value }}</td>
-      <td><a href="{{ STATIC_PREFIX }}{{ result.docpath_link }}">{{ result.docpath.value }}</a></td>
+      <td>{{ result.papername.value }}</td>
+      <td>{{ result.paperdate.value }}</td>
+      <td>{{ result.articlepage.value }}</td>                  
+      <td><a href="{{ STATIC_PREFIX }}{{ result.docpath_link }}"><img src="{{ STATIC_PREFIX }}/images/pdf-icon.jpg"/></a></td>
       </tr>
   {% endfor %}
   </table>

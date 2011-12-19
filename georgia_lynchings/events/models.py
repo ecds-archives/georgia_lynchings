@@ -87,7 +87,7 @@ class MacroEvent(object):
             PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
             PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
 
-            SELECT DISTINCT ?melabel ?event ?evlabel ?dd ?docpath
+            SELECT DISTINCT ?melabel ?event ?evlabel ?dd ?docpath ?paperdate ?papername ?articlepage
             WHERE {
               # First find all of the Macro events and all of the Events for those
               # Macros. Macros aren't strictly necessary, but they're provided
@@ -101,8 +101,11 @@ class MacroEvent(object):
               # Report URI and file path of each document for the event
               ?dxcxd dxcxd:Complex ?event;
                      dxcxd:Document ?dd.
-              ?dd ssx:r85 ?docpath.              # _documentPath
-            }
+              optional { ?dd ssx:r68 ?paperdate }
+              optional { ?dd ssx:r69 ?papername }
+              optional { ?dd ssx:r73 ?articlepage }
+              optional { ?dd ssx:r85 ?docpath }              
+                            }
             ORDER BY ?event ?docpath
         '''
         ss=SparqlStore()
@@ -110,8 +113,14 @@ class MacroEvent(object):
                              initial_bindings={'macro': self.uri_as_ntriples()})
         # create a link for the macro event articles
         for result in resultSet:
-            result['docpath_link'] = quote(result['docpath']['value'].replace('\\', '/')) 
-            result['docpath']['value'] = result['docpath']['value'][10:]                              
+            # Clean up data, add "n/a" if value does not exist
+            if not result.has_key('docpath'): result.update({'docpath':{'value':'n/a'}})            
+            else: 
+                result['docpath_link'] = quote(result['docpath']['value'].replace('\\', '/'))
+                result['docpath']['value'] = result['docpath']['value'][10:] 
+            if not result.has_key('papername'): result.update({'papername':{'value':'n/a'}})
+            if not result.has_key('paperdate'): result.update({'paperdate':{'value':'n/a'}})
+            if not result.has_key('articlepage'): result.update({'articlepage':{'value':'n/a'}})                                         
         # return the dictionary resultset of the query          
         return resultSet
 
