@@ -2,16 +2,52 @@
 
 {% block title %}Lynchings in Georgia (1875-1930){% endblock %}
 
-{% block content %}
-  <h1 class="main">Lynchings in Georgia (1875-1930)</h1>
+{% comment %}
+  Temporarily skip sitewide shared banner. We're in the middle of a
+  redesign. For now we're wrapping everything on this page inside a
+  #container element, which isn't compatible with the rest of the sitewide
+  design. As the new design develops, this page should be refactored to come
+  back in line with it.
+{% endcomment %}
+{% block banner %}{% endblock %}
 
-  <div class="query"> 
-    <h4>Query the data:</h4>
-    <ul>
-      <li><a target="_blank" href="events/times">List all events ordered by time.</a></li>
-      <li><a target="_blank"href="events/locations">List all events ordered by location.</a></li>
-      <li><a target="_blank"href="articles">List all articles.</a></li>
-      <li><a target="_blank" href="actors/4569/events">List events that involve: <i>Sam Hose</i>.</a></li>
-    </ul>
+{% block style %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/index.css">
+{% endblock %}
+
+{% block content %}
+  <div id="container">
+    <div id="header">
+      <h1>Lynchings in Georgia (1875-1930)</h1>
+    </div>
+
+    <!-- floaters handle vertical centering. see index.css -->
+    <div class="pane" id="topleft">
+      <div class="floater"></div>
+      <div class="panecontent"><a href="{% url times %}">events by time</a></div>
+    </div>
+
+    <div class="pane" id="topright">
+      <div class="floater"></div>
+      <div class="panecontent"><a href="{% url locations %}">events by location</a></div>
+    </div>
+
+    <div class="pane" id="bottomleft">
+      <div class="floater"></div>
+      <div class="panecontent"><a href="{% url newspaper_articles %}">articles</a></div>
+    </div>
+
+    <div class="pane" id="bottomright">
+      <div class="floater"></div>
+      <div class="panecontent"><a href="{% url macroevents row_id=4569 %}">Sam Hose</a></div>
+    </div>
+
+    <div id="insidefooter">
+      <!-- 
+        since the content is all floating, this cleared div makes sure
+        #container properly contains it.
+      -->
+    </div>
   </div>
 {% endblock %}
