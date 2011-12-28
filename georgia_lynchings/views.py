@@ -7,11 +7,13 @@ from django.template import Context
 from django.template.context import RequestContext
 from django.template.loader import get_template
 import datetime
+from georgia_lynchings.forms import SearchForm
 
 
 def home(request):
     template = 'index.html'
-    return render(request, template)
+    return render(request, template, {'search_form': SearchForm()})
+
 
 def current_datetime(request):
     now = datetime.datetime.now()

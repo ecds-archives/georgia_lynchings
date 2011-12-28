@@ -4,23 +4,27 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel=stylesheet type=text/css href="{{ STATIC_URL }}style/galyn.css" >
+    {% block style %}
+      {# extend (or override) this block for page-specific style #}
+      <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/galyn.css">
+    {% endblock %}
     <link rel="shortcut icon" href="{{ STATIC_URL }}images/favicon.ico" type="image/x-icon" />
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body id="{% block body_id %}{% endblock %}">
-<div class="emorybanner"/> 
-{% block content %}{% endblock %}
+  {% block banner %}<div class="emorybanner"/>{% endblock %}
 
-  <div id="footer">
-    {% block footer %}{% endblock %}
-    <p id="copyright">Copyright &copy; Emory University Libraries 2011 - All rights Reserved</p>
-    {% if SW_VERSION %}
-      <div class="sw-version">v{{ SW_VERSION }}</div>
-    {% endif %}
-  </div>
+  {% block content %}{% endblock %}
 
-  {% block script_footer %}
+  {% block footer %}
+    <div id="footer">
+      <p id="copyright">Copyright &copy; Emory University Libraries 2011 - All rights Reserved</p>
+      {% if SW_VERSION %}
+        <div class="sw-version">v{{ SW_VERSION }}</div>
+      {% endif %}
+    </div>
   {% endblock %}
+
+  {% block script_footer %}{% endblock %}
 </body>
 </html>
