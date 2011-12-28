@@ -33,6 +33,7 @@
 #topright { float:right }
 #bottomleft { float:left; clear:both }
 #bottomright { float:right }
+#bottomright .floater { margin-bottom: -1.5em; }
 
 /* drag bottom of #container down to contain floating panes */
 #insidefooter { clear:both }

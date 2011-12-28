@@ -25,13 +25,15 @@
     <!-- floaters handle vertical centering. see index.css -->
     <div class="pane" id="topleft">
       <div class="floater"></div>
-      <div class="panecontent"><a href="{% url times %}">events by time</a></div>
+      <div class="panecontent">events by <a href="{% url times %}">time</a>
+        or <a href="{% url locations %}">location</a></div>
     </div>
 
     <div class="pane" id="topright">
       <div class="floater"></div>
-      <div class="panecontent"><a href="{% url locations %}">events by location</a></div>
+      <div class="panecontent"><a href="{% url macroevents row_id=4569 %}">Sam Hose</a></div>
     </div>
+
 
     <div class="pane" id="bottomleft">
       <div class="floater"></div>
@@ -40,7 +42,12 @@
 
     <div class="pane" id="bottomright">
       <div class="floater"></div>
-      <div class="panecontent"><a href="{% url macroevents row_id=4569 %}">Sam Hose</a></div>
+      <div class="panecontent">
+        <form action="" method="get">
+          {{ search_form.q }}
+          <input type="submit" value="search">
+        </form>
+      </div>
     </div>
 
     <div id="insidefooter">
