@@ -1,5 +1,5 @@
-from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
-from georgia_lynchings.events.sparqlstore import SparqlStore
+from georgia_lynchings.rdf.ns import dcx, scx, ssx, sxcxcx
+from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from pprint import pprint
 from urllib import quote
 

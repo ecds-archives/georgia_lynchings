@@ -21,7 +21,7 @@ Run a SPARQL query from the canned_sparql_queries::
   
 Run a SPARQL query loaded from a file::
 
-  $ python manage.py run_sparql_query -f events/management/commands/load_sparql_query.txt
+  $ python manage.py run_sparql_query -f rdf/management/commands/load_sparql_query.txt
 
 ----
 '''
@@ -35,7 +35,7 @@ import sys
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from georgia_lynchings.events.sparqlstore import SparqlStore
+from georgia_lynchings.rdf.sparqlstore import SparqlStore
 import canned_sparql_queries
 
 logger = logging.getLogger(__name__)

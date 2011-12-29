@@ -1,5 +1,5 @@
-from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
-from georgia_lynchings.events.sparqlstore import SparqlStore
+from georgia_lynchings.rdf.ns import dcx
+from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
 class Actor(object):
     '''An Actor is an object type defined by the project's (currently

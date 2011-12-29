@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'georgia_lynchings.articles',    
     'georgia_lynchings.actors',
     'georgia_lynchings.events',
+    'georgia_lynchings.rdf',
 )
 
 # The URI root for all internally-defined namespaces used by this
