@@ -124,6 +124,32 @@ class MacroEvent(object):
         # return the dictionary resultset of the query          
         return resultSet
 
+    def get_victim(self):
+        '''Get the victim associated with this macro event.
+
+        :rtype: unicode
+        '''
+        # TODO: generate this query from the victim attribute definition
+        # above
+
+        query = '''
+            PREFIX scx: <http://galyn.example.com/source_data_files/setup_Complex.csv#>
+            PREFIX ssx: <http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+
+            SELECT ?victim
+            WHERE {
+              ?macro a scx:r1;
+                     ssx:r82 ?victim .
+            }
+        '''
+        ss = SparqlStore()
+        resultSet = ss.query(sparql_query=query,
+                             initial_bindings={'macro': self.uri_as_ntriples()})
+        # database should have exactly one result if this macro event exists
+        if resultSet:
+            return resultSet[0]['victim']['value']
+        # else None
+
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.

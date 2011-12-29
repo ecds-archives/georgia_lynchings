@@ -21,7 +21,11 @@ class MacroEventTest(TestCase):
         settings.SPARQL_STORE_API = settings.TEST_SPARQL_STORE_API
         self.sparql_store_repo_orig = settings.SPARQL_STORE_REPOSITORY
         settings.SPARQL_STORE_REPOSITORY = settings.TEST_SPARQL_STORE_REPOSITORY      
-            
+
+        # some handy fixtures from test data
+        self.NONEXISTENT_MACRO_ID = '0'
+        self.SAM_HOSE_MACRO_ID = '12'
+
     def tearDown(self):
         # restore settings
         settings.SPARQL_STORE_API = self.sparql_store_api_orig
@@ -43,9 +47,16 @@ class MacroEventTest(TestCase):
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_semantic))
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_details))
         self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.last_coded))
+
+    def test_get_victim(self):
+        macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        self.assertEqual(macro.get_victim(), 'Sam Hose')
+
+        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
+        self.assertEqual(macro.get_victim(), None)
         
     def test_get_articles_bogus_rowid(self):
-        row_id = '0'
+        row_id = self.NONEXISTENT_MACRO_ID
         title = 'No records found'
         # articles_url = '/events/0/articles/'        
         articles_url = reverse('articles', kwargs={'row_id': row_id})
@@ -57,9 +68,9 @@ class MacroEventTest(TestCase):
             'Expected len 0 but returned %s for resultSet' % (len(articles_response.context['resultSet'])))
         self.assertEqual(title, articles_response.context['title'], 
             'Expected %s but returned %s for title' % (row_id, articles_response.context['title']))
-            
+
     def test_articles_url(self):
-        row_id = '12'
+        row_id = self.SAM_HOSE_MACRO_ID
         title = 'Coweta (Sam Hose)'
         # articles_url = '/events/12/articles/'        
         articles_url = reverse('articles', kwargs={'row_id': row_id})
