@@ -40,8 +40,8 @@ class NewspaperArticles(object):
         '''
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query)
-        if resultSet: print "\nLength of resultSet = [%d]\n" % len(resultSet)
-        else: print "\nResultSet is empty.\n"
+        if resultSet: logger.debug("\nLength of resultSet = [%d]\n" % len(resultSet))
+        else: logger.debug("\nResultSet is empty.\n")
         for result in resultSet:
             # Clean up data, add "n/a" if value does not exist
             if not result.has_key('docpath'): result.update({'docpath':{'value':'n/a'}})            
