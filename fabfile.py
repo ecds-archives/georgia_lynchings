@@ -66,8 +66,11 @@ def load_triples(mdb_path, sesame_repo, keep_files=False):
         local('scripts/mdb2csv.sh "%s" "%s"' % (mdb_path, data_dir))
         local('scripts/csv2rdf.py "%s"/*.csv' % (data_dir,))
         local('scripts/add-rdf-namespaces.sh -r "%s"' % (sesame_repo,))
-        local('scripts/upload-ttl.sh -r "%s"/statements "%s"/*.ttl' %
+        # only load tables prefixed with "data" or "setup"
+        local('scripts/upload-ttl.sh -r "%s"/statements "%s"/d*.ttl' %
               (sesame_repo, data_dir))
+        local('scripts/upload-ttl.sh -r "%s"/statements "%s"/s*.ttl' %
+              (sesame_repo, data_dir))              
         local('scripts/add-inferred-statements.sh "%s"/statements' %
               (sesame_repo,))
     finally:
