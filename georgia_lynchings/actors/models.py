@@ -1,22 +1,12 @@
+from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import dcx
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
-class Actor(object):
+class Actor(ComplexObject):
     '''An Actor is an object type defined by the project's (currently
     private) PC-ACE database. It represents a participant in a lynching 
     event and all of the events associated with it.
     '''
-
-    def __init__(self, id):
-        self.uri = dcx['r' + str(id)]
-
-    def uri_as_ntriples(self):
-        '''Encode object URI as an `N-Triples
-        <http://www.w3.org/2001/sw/RDFCore/ntriples/>`_ URIRef for use in
-        SPARQL initial bindings.'''
-        # TODO: Properly escape the URI. For now we conveniently limit
-        # ourselves to URIs that don't need encoding.
-        return '<%s>' % (self.uri,)
 
     def get_macroevents(self):
         '''Get all articles associated with this macro event, along with the
@@ -61,6 +51,6 @@ class Actor(object):
         '''
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'individual': self.uri_as_ntriples()}) 
+                             initial_bindings={'individual': self.uri.n3()}) 
         # return the dictionary resultset of the query          
         return resultSet

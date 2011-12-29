@@ -28,23 +28,22 @@ class MacroEventTest(TestCase):
         # property-interpretation code is fleshed out these tests will
         # likely grow to test something more meaningful.
         self.assertTrue('setup_Complex.csv#r' in unicode(MacroEvent.rdf_type))
-        self.assertTrue('data_Complex.csv#Identifier' in unicode(MacroEvent.label))
+        self.assertTrue('data_Complex.csv#Identifier' in unicode(MacroEvent.label.prop))
 
-        self.assertTrue('setup_xref_Complex-Complex.csv#r' in unicode(MacroEvent.events))
-
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.county))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.victim))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.case_number))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_semantic))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_details))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.last_coded))
+        self.assertTrue('setup_xref_Complex-Complex.csv#r' in unicode(MacroEvent.events.prop))
+        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.county.prop))
+        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.victim.prop))
+        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.case_number.prop))
+        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_semantic.prop))
+        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_details.prop))
+        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.last_coded.prop))
 
     def test_get_victim(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
-        self.assertEqual(macro.get_victim(), 'Sam Hose')
+        self.assertEqual(macro.victim, 'Sam Hose')
 
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
-        self.assertEqual(macro.get_victim(), None)
+        self.assertEqual(macro.victim, None)
         
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID

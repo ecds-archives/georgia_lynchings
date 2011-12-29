@@ -1,8 +1,9 @@
+from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from pprint import pprint
 from urllib import quote
 
-class NewspaperArticles(object):
+class NewspaperArticles(ComplexObject):
 
     def all_articles(self):
         '''Get all articles associated with this macro event, along with the

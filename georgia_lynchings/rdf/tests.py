@@ -4,9 +4,13 @@ import StringIO
 from django.conf import settings
 from django.core.management.base import CommandError
 from django.test import TestCase
+from mock import patch
+from rdflib import Literal, Namespace, Variable, RDF, RDFS
 
+from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
 from georgia_lynchings.rdf.management.commands import run_sparql_query
+from georgia_lynchings.rdf.models import ComplexObject
 
 class SparqlStoreTest(TestCase):
     def setUp(self):
@@ -148,5 +152,113 @@ class RunSparqlQueryCommandTest(TestCase):
         output = self.command.stdout.getvalue()    
         self.assert_('Repository List' in output)
         self.assert_('galyn' in output) 
+
+
+class SelectQueryTest(TestCase):
+    def test_bare_query(self):
+        q = SelectQuery()
+        self.assertEqual(unicode(q), 'SELECT * WHERE {  }')
+
+    def test_append_tuple(self):
+        q = SelectQuery()
+        q.append((Variable('prop'), RDF.type, RDF.Property))
+        q.append((Variable('prop'), RDFS.label, Literal('property')))
+        expect_sparql = ('SELECT * WHERE { ' +
+            '?prop ' +
+                '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ' +
+                '<http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> . ' +
+            '?prop ' +
+                '<http://www.w3.org/2000/01/rdf-schema#label> ' +
+                '"property" . ' +
+            '}')
+        self.assertEqual(unicode(q), expect_sparql)
+
+    def test_variables(self):
+        q = SelectQuery(results=['s', 'p', 'o'])
+        q.append((Variable('s'), Variable('p'), Variable('o')))
+        self.assertEqual(unicode(q), 'SELECT ?s ?p ?o WHERE { ?s ?p ?o . }')
+
+
+class ComplexObjectTest(TestCase):
+    sample = Namespace('http://example.com/#')
+
+    def setUp(self):
+        # create two ComplexObject subclasses in setUp() because if class
+        # construction fails then we want the test to error. if this were
+        # outside setUp, the whole module could fail to load in case of an
+        # error.
+
+        class SampleThingie(ComplexObject):
+            # a ComplexObject without an rdf_type
+            data = self.sample.data
+        self.SampleThingie = SampleThingie
+        self.thingie = SampleThingie(42)
+
+        class SampleWidget(ComplexObject):
+            # a ComplexObject with an rdf_type
+            rdf_type = self.sample.Widget
+            value = self.sample.value
+        self.SampleWidget = SampleWidget
+        self.widget = SampleWidget(13)
+
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    def test_sparql_generation_without_type_no_match(self, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = []
+        
+        data = self.thingie.data
+
+        self.assertEqual(mock_query.call_count, 1)
+        args, kwargs = mock_query.call_args
+        self.assertEqual(kwargs['sparql_query'],
+            u'SELECT ?result WHERE { ?obj <http://example.com/#data> ?result . }')
+        self.assertEqual(kwargs['initial_bindings'],
+            {'obj': self.thingie.uri.n3()})
+        self.assertEqual(data, None)
+
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    def test_sparql_generation_without_type_with_match(self, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = [{'result': {'value': 'stuff'}}]
+        
+        data = self.thingie.data
+
+        self.assertEqual(mock_query.call_count, 1)
+        args, kwargs = mock_query.call_args
+        self.assertEqual(kwargs['sparql_query'],
+            u'SELECT ?result WHERE { ?obj <http://example.com/#data> ?result . }')
+        self.assertEqual(kwargs['initial_bindings'],
+            {'obj': self.thingie.uri.n3()})
+        self.assertEqual(data, 'stuff')
+
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    def test_sparql_generation_with_type_no_match(self, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = []
+        
+        value = self.widget.value
+
+        self.assertEqual(mock_query.call_count, 1)
+        args, kwargs = mock_query.call_args
+        self.assertEqual(kwargs['sparql_query'],
+            u'SELECT ?result WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Widget> . ?obj <http://example.com/#value> ?result . }')
+        self.assertEqual(kwargs['initial_bindings'],
+            {'obj': self.widget.uri.n3()})
+        self.assertEqual(value, None)
+
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    def test_sparql_generation_with_type_with_match(self, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = [{'result': {'value': 'stuff'}}]
+        
+        value = self.widget.value
+
+        self.assertEqual(mock_query.call_count, 1)
+        args, kwargs = mock_query.call_args
+        self.assertEqual(kwargs['sparql_query'],
+            u'SELECT ?result WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Widget> . ?obj <http://example.com/#value> ?result . }')
+        self.assertEqual(kwargs['initial_bindings'],
+            {'obj': self.widget.uri.n3()})
+        self.assertEqual(value, 'stuff')
 
 
