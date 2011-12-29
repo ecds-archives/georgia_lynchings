@@ -2,6 +2,9 @@ from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
 from georgia_lynchings.events.sparqlstore import SparqlStore
 from pprint import pprint
 from urllib import quote
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NewspaperArticles(object):
 
@@ -21,7 +24,7 @@ class NewspaperArticles(object):
 
                 The matches are ordered by `event` and `docpath`.
         '''
-
+        logger.debug("articles all_articles")
         query='''
             prefix dd: <http://galyn.example.com/source_data_files/data_Document.csv#>
             prefix ssx: <http://galyn.example.com/source_data_files/setup_Simplex.csv#>

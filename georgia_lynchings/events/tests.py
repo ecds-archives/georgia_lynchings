@@ -60,7 +60,7 @@ class MacroEventTest(TestCase):
             
     def test_articles_url(self):
         row_id = '12'
-        title = 'Coweta (Sam Hose)'
+        title = 'Coweta'
         # articles_url = '/events/12/articles/'        
         articles_url = reverse('articles', kwargs={'row_id': row_id})
         articles_response = self.client.get(articles_url)
@@ -69,8 +69,8 @@ class MacroEventTest(TestCase):
             'Expected %s but returned %s for row_id' % (row_id, articles_response.context['row_id']))
         self.assertEqual(4, len(articles_response.context['resultSet']), 
             'Expected len 4 but returned %s for resultSet' % (len(articles_response.context['resultSet'])))
-        self.assertEqual(title, articles_response.context['title'], 
-            'Expected %s but returned %s for title' % (row_id, articles_response.context['title']))
+        self.assertEqual(title, articles_response.context['title'][:6], 
+            'Expected %s but returned %s for title' % (row_id, articles_response.context['title'][:6]))
  
     def test_times_url(self):
         # times_url = '/events/times/'        
@@ -79,15 +79,15 @@ class MacroEventTest(TestCase):
         
         expected, got = 200, time_response.status_code
         self.assertEqual(expected, got, 'Expected %s status code, got %s' % (expected, got))
-        self.assertEqual(345, len(time_response.context['results']), 
-            'Expected len 345 but returned %s for results' % (len(time_response.context['results']))) 
+        self.assertGreater(len(time_response.context['results']), 325, 
+            'Expected len is greater than 325 but returned %s for results' % (len(time_response.context['results']))) 
           
         # test type of macro event label, should be literal
         expected, got = time_response.context['results'][0]['melabel']['type'], "literal"
         msg = 'Expected macro event label type [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
         # test value of macro event label        
-        expected, got = time_response.context['results'][0]['melabel']['value'], u'Houston (Henry Walker)'
+        expected, got = time_response.context['results'][0]['melabel']['value'][:7], u'Houston'
         msg = 'Expected macro event label [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
         

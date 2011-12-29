@@ -2,6 +2,9 @@ from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
 from georgia_lynchings.events.sparqlstore import SparqlStore
 from pprint import pprint
 from urllib import quote
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MacroEvent(object):
     '''A Macro Event is an object type defined by the project's (currently
@@ -79,7 +82,7 @@ class MacroEvent(object):
 
                 The matches are ordered by `event` and `docpath`.
         '''
-
+        logger.debug("events get_articles %s" % self.uri_as_ntriples())
         query='''
             PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
             PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
@@ -142,7 +145,7 @@ def get_events_by_locations():
 
             The matches are ordered by `city`, `county`, `state`, `evlabel`, and `event`.
     '''
-
+    logger.debug("events get_events_by_locations")
     query = '''
         PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
         PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
@@ -241,7 +244,7 @@ def get_events_by_times():
 
             The matches are ordered by `mindate`.
     '''
-
+    logger.debug("events get_events_by_times")
     query = '''
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
 PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>

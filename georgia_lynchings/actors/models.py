@@ -1,5 +1,8 @@
 from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
 from georgia_lynchings.events.sparqlstore import SparqlStore
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Actor(object):
     '''An Actor is an object type defined by the project's (currently
@@ -34,7 +37,7 @@ class Actor(object):
                   * `macro`: the uri of the associated macro event
                   * `melabel`: the macro event label
         '''
-
+        logger.debug("actors get_macroevents %s" % self.uri_as_ntriples())
         query='''
         PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
         PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
