@@ -1,4 +1,4 @@
-from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
+from georgia_lynchings.events.rdfns import dcx
 from georgia_lynchings.events.sparqlstore import SparqlStore
 import logging
 
@@ -22,14 +22,15 @@ class Actor(object):
         return '<%s>' % (self.uri,)
 
     def get_macroevents(self):
-        '''Get all articles associated with this macro event, along with the
-        particular events that the articles are attached to.
+        '''Get all macro events associated with this actor/participant.
 
         :rtype: a mapping list of the type returned by
                 :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
                 It has the following bindings:
-
-                  * `triplet`: the Semantic Triplet of an event
+                  * `individual`: the data_Complex Indentifier
+                  
+                It retrieves the following data:
+                  * `triplet`: the Semantic Triplet of an event for actor/participant
                   * `role`: either subject(Participant-S) or object(Participant-O)
                   * `trlabel`: the triplet label
                   * `event`: the uri of the event associated with this article
