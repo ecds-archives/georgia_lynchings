@@ -55,5 +55,21 @@ class NewspaperArticlesTest(TestCase):
         msg = 'Expected papername [%s] but returned [%s] for resultSet' % (expected, got)
         self.assertEqual(expected, got, msg) 
         
-        # TODO add paperdate and articlepage          
+        # test type of articlepage, should be literal
+        expected, got = articles_response.context['resultSet'][0]['articlepage']['type'], "literal"
+        msg = 'Expected articlepage type [%s] but returned [%s] for resultSet' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        # test value of articlepage        
+        expected, got = articles_response.context['resultSet'][0]['articlepage']['value'], u'1'
+        msg = 'Expected articlepage [%s] but returned [%s] for resultSet' % (expected, got)
+        self.assertEqual(expected, got, msg) 
+        
+        # test type of paperdate, should be literal
+        expected, got = articles_response.context['resultSet'][0]['paperdate']['type'], "literal"
+        msg = 'Expected paperdate type [%s] but returned [%s] for resultSet' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        # test value of paperdate        
+        expected, got = articles_response.context['resultSet'][0]['paperdate']['value'], u'1879-11-26'
+        msg = 'Expected paperdate [%s] but returned [%s] for resultSet' % (expected, got)
+        self.assertEqual(expected, got, msg) 
       
