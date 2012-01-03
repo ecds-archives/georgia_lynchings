@@ -127,7 +127,6 @@ class MacroEvent(object):
         # return the dictionary resultset of the query          
         return resultSet
 
-
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.
 
@@ -246,58 +245,58 @@ def get_events_by_times():
     '''
     logger.debug("events get_events_by_times")
     query = '''
-PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-SELECT ?macro ?melabel ?event ?evlabel (MIN(?evdate) as ?mindate) (MAX(?evdate) as ?maxdate)
-WHERE {
-  ?macro a scx:r1;                  
-         dcx:Identifier ?melabel;
-         sxcxcx:r61 ?event.         
-  ?event dcx:Identifier ?evlabel;
-         sxcxcx:r62 ?_1.            
-  ?_1 sxcxcx:r64 ?_2.               
-  {
-    ?_2 sxcxcx:r78 ?_3. 
-    ?_3 sxcxcx:r103 ?_4. 
-    ?_4 sxcxcx:r104 ?_5. 
-  } UNION {
-    ?_2 sxcxcx:r47 ?_6.    
-    ?_6 sxcxcx:r79 ?_7. 
-    ?_7 sxcxcx:r103 ?_8. 
-    ?_8 sxcxcx:r104 ?_5. 
-  } UNION {
-    ?_2 sxcxcx:r47 ?_6.    
-    ?_6 sxcxcx:r80 ?_9. 
-    ?_9 sxcxcx:52 ?_7.    
-    ?_7 sxcxcx:r103 ?_8. 
-    ?_8 sxcxcx:r104 ?_5. 
-  } UNION {
-    ?_2 sxcxcx:r47 ?_6.    
-    ?_6 sxcxcx:r80 ?_9. 
-    ?_9 sxcxcx:r53 ?_10. 
-    ?_10 sxcxcx:r60 ?_5. 
-  }
+        PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+        PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+        PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+        PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+        SELECT ?macro ?melabel ?event ?evlabel (MIN(?evdate) as ?mindate) (MAX(?evdate) as ?maxdate)
+        WHERE {
+          ?macro a scx:r1;                  
+                 dcx:Identifier ?melabel;
+                 sxcxcx:r61 ?event.         
+          ?event dcx:Identifier ?evlabel;
+                 sxcxcx:r62 ?_1.            
+          ?_1 sxcxcx:r64 ?_2.               
+          {
+            ?_2 sxcxcx:r78 ?_3. 
+            ?_3 sxcxcx:r103 ?_4. 
+            ?_4 sxcxcx:r104 ?_5. 
+          } UNION {
+            ?_2 sxcxcx:r47 ?_6.    
+            ?_6 sxcxcx:r79 ?_7. 
+            ?_7 sxcxcx:r103 ?_8. 
+            ?_8 sxcxcx:r104 ?_5. 
+          } UNION {
+            ?_2 sxcxcx:r47 ?_6.    
+            ?_6 sxcxcx:r80 ?_9. 
+            ?_9 sxcxcx:52 ?_7.    
+            ?_7 sxcxcx:r103 ?_8. 
+            ?_8 sxcxcx:r104 ?_5. 
+          } UNION {
+            ?_2 sxcxcx:r47 ?_6.    
+            ?_6 sxcxcx:r80 ?_9. 
+            ?_9 sxcxcx:r53 ?_10. 
+            ?_10 sxcxcx:r60 ?_5. 
+          }
 
-  ?_5 sxcxcx:r20 ?_11.  
+          ?_5 sxcxcx:r20 ?_11.  
 
-  {
-    ?_11 sxcxcx:r97 ?_12.     
-    ?_12 ssx:r66 ?evdate      
-  } UNION {
-    ?_11 sxcxcx:r22 ?_13.     
-    ?_13 sxcxcx:r4 ?_14.      
-    ?_14 ssx:r66 ?evdate      
-  } UNION {
-    ?_11 sxcxcx:r22 ?_13.     
-    ?_13 sxcxcx:r4 ?_14.      
-    ?_14 ssx:r68 ?evdate 
-  }
-}
-GROUP BY ?macro ?melabel ?event ?evlabel
-ORDER BY ?mindate
-'''
+          {
+            ?_11 sxcxcx:r97 ?_12.     
+            ?_12 ssx:r66 ?evdate      
+          } UNION {
+            ?_11 sxcxcx:r22 ?_13.     
+            ?_13 sxcxcx:r4 ?_14.      
+            ?_14 ssx:r66 ?evdate      
+          } UNION {
+            ?_11 sxcxcx:r22 ?_13.     
+            ?_13 sxcxcx:r4 ?_14.      
+            ?_14 ssx:r68 ?evdate 
+          }
+        }
+        GROUP BY ?macro ?melabel ?event ?evlabel
+        ORDER BY ?mindate
+    '''
     ss=SparqlStore()
     resultSet = ss.query(sparql_query=query)
     # create a link for the macro event articles
@@ -306,3 +305,49 @@ ORDER BY ?mindate
         result['macro_link'] = '../%s/articles' % row_id
     # return the dictionary resultset of the query          
     return resultSet    
+    
+def get_all_macro_events():
+    '''Get a list of macro events along with number of linked articles.
+
+    :rtype: a mapping list of the type returned by
+            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+            It has the following bindings:
+
+              * `macro`: the uri of the associated macro event
+              * `melabel`: the macro event label
+              * `articleTotal`: article count.
+
+    '''
+    logger.debug("events get_events_by_times")
+    query = '''
+        PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+        PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
+        PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+        PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+        PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+
+        SELECT ?macro ?melabel (COUNT(?dd) AS ?articleTotal)
+        WHERE {
+          ?macro a scx:r1;                   # Macro event
+                 dcx:Identifier ?melabel;
+                 sxcxcx:r61 ?event.          # Event
+          ?event dcx:Identifier ?evlabel.
+
+          # Report count of documents for macro event
+          ?dxcxd dxcxd:Complex ?event;
+                 dxcxd:Document ?dd.    
+
+        }
+        GROUP BY ?macro ?melabel
+    '''
+    ss=SparqlStore()
+    resultSet = ss.query(sparql_query=query)
+    # create a link for the macro event articles
+    for result in resultSet:
+        row_id = result['macro']['value'].split('#r')[1]
+        result['macro_link'] = '%s/articles' % row_id
+    # return the dictionary resultset of the query          
+    return resultSet       
+
+
+

@@ -106,6 +106,31 @@ class MacroEventTest(TestCase):
         msg = 'maxdate pattern [%s] does not match yyyy-mm-dd' % (got)
         pattern = r'1\d\d\d-\d\d-\d\d'
         self.assertRegexpMatches(got, pattern, msg)
+        
+    def test_macro_events_url(self):
+        # times_url = '/events/'        
+        macro_events_url = reverse('macro_events')       
+        macro_events_response = self.client.get(macro_events_url)       
+        
+        expected, got = 200, macro_events_response.status_code
+        self.assertEqual(expected, got, 'Expected %s status code, got %s' % (expected, got))
+        self.assertGreater(len(macro_events_response.context['results']), 325, 
+            'Expected len is greater than 325 but returned %s for results' % (len(macro_events_response.context['results']))) 
+          
+        # test type of macro event label, should be literal
+        expected, got = macro_events_response.context['results'][0]['melabel']['type'], "literal"
+        msg = 'Expected macro event label type [%s] but returned [%s] for results' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        # test value of macro event label  for first item     
+        expected, got = macro_events_response.context['results'][0]['melabel']['value'][:7], u'Houston'
+        msg = 'Expected macro event label [%s] but returned [%s] for results' % (expected, got)
+        self.assertEqual(expected, got, msg)
+        
+        # test value of article count for first item       
+        expected, got = macro_events_response.context['results'][0]['articleTotal']['value'], u'3'
+        msg = 'Expected macro event article count [%s] but returned [%s] for results' % (expected, got)
+        self.assertEqual(expected, got, msg)        
+
                                     
 class SparqlStoreTest(TestCase):
     def setUp(self):

@@ -12,8 +12,14 @@
       <tr>
       <td>{{ result.papername.value }}</td>
       <td>{{ result.paperdate.value }}</td>
-      <td>{{ result.articlepage.value }}</td>                  
-      <td><a href="{{ STATIC_PREFIX }}{{ result.docpath_link }}">{{ result.docpath.value }}</a></td>
+      <td>{{ result.articlepage.value }}</td> 
+      <td>
+        {% if result.docpath.value == 'n/a' %}
+            n/a             
+        {% else %}
+            <a href="{{ STATIC_PREFIX }}{{ result.docpath_link }}">{{ result.docpath.value }}</a>            
+        {% endif %}          
+      </td>     
       </tr>
   {% endfor %}
   </table>
