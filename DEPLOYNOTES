@@ -97,9 +97,10 @@ tables and initial data using::
 
   $ python manage.py syncdb
 
-Add the georgia lynching newspaper articles pdf file as static files::
-
-  $ cp <path_to_articles>/documents /georgia_lynchings/static/
+Add the georgia lynching documents directory as an apache alias::
+  
+  Example:
+  Alias /georgia_lynchings/documents/ /home/galyn/documents/
   
 Collect the static media::
   
