@@ -1,22 +1,17 @@
-from georgia_lynchings.events.rdfns import dcx, scx, ssx, sxcxcx
-from georgia_lynchings.events.sparqlstore import SparqlStore
+from georgia_lynchings.rdf.models import ComplexObject
+from georgia_lynchings.rdf.ns import scx, ssx, sxcxcx
+from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from pprint import pprint
 from urllib import quote
 import logging
 
 logger = logging.getLogger(__name__)
 
-class MacroEvent(object):
+class MacroEvent(ComplexObject):
     '''A Macro Event is an object type defined by the project's (currently
     private) PC-ACE database. It represents a lynching case and all of the
     individual events associated with it.
     '''
-
-    # RDF relationships: We expect future code will use the below
-    # relationships to make it easier to generate SPARQL queries and other
-    # graph traversals from idiomatic Python code. That code doesn't exist
-    # yet, so for now these properties serve more as handy documentation of
-    # common RDF properties on MacroEvent objects
 
     # NOTE: Many of these relationships are defined in the private PC-ACE
     # database for this project. The URIs were found a priori by examining
@@ -24,11 +19,6 @@ class MacroEvent(object):
 
     rdf_type = scx.r1
     'the URI of the RDF Class describing macro event objects'
-
-    # Every PC-ACE complex object has a label. TODO: Consider extracting a
-    # parent class to reflect this?
-    label = dcx.Identifier
-    'a human-readable label for this macro event'
 
     # complex fields potentially attached to a MacroEvent
     events = sxcxcx.r61
@@ -55,17 +45,6 @@ class MacroEvent(object):
     # hope in time to be able to generate these queries from the RDF
     # properties above.
 
-    def __init__(self, id):
-        self.uri = dcx['r' + str(id)]
-
-    def uri_as_ntriples(self):
-        '''Encode object URI as an `N-Triples
-        <http://www.w3.org/2001/sw/RDFCore/ntriples/>`_ URIRef for use in
-        SPARQL initial bindings.'''
-        # TODO: Properly escape the URI. For now we conveniently limit
-        # ourselves to URIs that don't need encoding.
-        return '<%s>' % (self.uri,)
-
     def get_articles(self):
         '''Get all articles associated with this macro event, along with the
         particular events that the articles are attached to.
@@ -82,7 +61,7 @@ class MacroEvent(object):
 
                 The matches are ordered by `event` and `docpath`.
         '''
-        logger.debug("events get_articles %s" % self.uri_as_ntriples())
+
         query='''
             PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
             PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
@@ -113,7 +92,7 @@ class MacroEvent(object):
         '''
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri_as_ntriples()})
+                             initial_bindings={'macro': self.uri.n3()})
         # create a link for the macro event articles
         for result in resultSet:
             # Clean up data, add "n/a" if value does not exist

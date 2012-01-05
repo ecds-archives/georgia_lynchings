@@ -3,9 +3,8 @@ import os
 
 from django.test import TestCase, Client
 from django.conf import settings
-from django.core.management.base import CommandError
 from django.core.urlresolvers import reverse
-from georgia_lynchings.articles.models import NewspaperArticles
+from georgia_lynchings.articles.models import all_articles
 
 
 class NewspaperArticlesTest(TestCase):
@@ -22,7 +21,7 @@ class NewspaperArticlesTest(TestCase):
         # restore settings
         settings.SPARQL_STORE_API = self.sparql_store_api_orig
         settings.SPARQL_STORE_REPOSITORY = self.sparql_store_repo_orig
-        
+       
     def test_articles_url(self):       
         articles_url = reverse('newspaper_articles')       
         articles_response = self.client.get(articles_url)
@@ -71,5 +70,4 @@ class NewspaperArticlesTest(TestCase):
         # test value of paperdate        
         expected, got = articles_response.context['resultSet'][0]['paperdate']['value'], u'1879-11-26'
         msg = 'Expected paperdate [%s] but returned [%s] for resultSet' % (expected, got)
-        self.assertEqual(expected, got, msg) 
-      
+        self.assertEqual(expected, got, msg)     
