@@ -4,7 +4,6 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from georgia_lynchings.events.models import MacroEvent
 
-
 class MacroEventTest(TestCase):
 
     def setUp(self):
@@ -45,7 +44,17 @@ class MacroEventTest(TestCase):
         self.assertEqual(macro.victim, 'Sam Hose')
 
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
-        self.assertEqual(macro.victim, None)        
+        self.assertEqual(macro.victim, None) 
+        
+    def test_get_cities(self):
+        macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        resultSet = macro.get_cities()
+        if resultSet:
+            citylist = []        
+            for result in resultSet:              
+                citylist.append(result['city']['value'])
+        expected, got = [u'palmetto'], citylist 
+        self.assertEqual(expected, got, 'Expected %s city list, got %s' % (expected, got))          
         
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID
@@ -53,7 +62,8 @@ class MacroEventTest(TestCase):
         # articles_url = '/events/0/articles/'        
         articles_url = reverse('articles', kwargs={'row_id': row_id})
         articles_response = self.client.get(articles_url)
-        expected, got = 200, articles_response.status_code            
+        expected, got = 200, articles_response.status_code  
+        self.assertEqual(expected, got, 'Expected %s status code, got %s' % (expected, got))                  
         self.assertEqual(row_id, articles_response.context['row_id'], 
             'Expected %s but returned %s for row_id' % (row_id, articles_response.context['row_id']))
         self.assertEqual(0, len(articles_response.context['resultSet']), 
@@ -67,41 +77,14 @@ class MacroEventTest(TestCase):
         # articles_url = '/events/12/articles/'        
         articles_url = reverse('articles', kwargs={'row_id': row_id})
         articles_response = self.client.get(articles_url)
-        expected, got = 200, articles_response.status_code            
+        expected, got = 200, articles_response.status_code
+        self.assertEqual(expected, got, 'Expected %s status code, got %s' % (expected, got))
         self.assertEqual(row_id, articles_response.context['row_id'], 
             'Expected %s but returned %s for row_id' % (row_id, articles_response.context['row_id']))
         self.assertEqual(4, len(articles_response.context['resultSet']), 
             'Expected len 4 but returned %s for resultSet' % (len(articles_response.context['resultSet'])))
         self.assertEqual(title, articles_response.context['title'][:6], 
             'Expected %s but returned %s for title' % (row_id, articles_response.context['title'][:6]))
-            
-    def test_get_cities_bogus_rowid(self):
-        row_id = self.NONEXISTENT_MACRO_ID
-        title = 'No records found'
-        # cities_url = '/events/0/cities/'        
-        cities_url = reverse('cities', kwargs={'row_id': row_id})
-        cities_response = self.client.get(cities_url)
-        expected, got = 200, cities_response.status_code            
-        self.assertEqual(row_id, cities_response.context['row_id'], 
-            'Expected %s but returned %s for row_id' % (row_id, cities_response.context['row_id']))
-        self.assertEqual(0, len(cities_response.context['resultSet']), 
-            'Expected len 0 but returned %s for resultSet' % (len(cities_response.context['resultSet'])))
-        self.assertEqual(title, cities_response.context['title'], 
-            'Expected %s but returned %s for title' % (row_id, cities_response.context['title']))
-            
-    def test_cities_url(self):
-        row_id = self.SAM_HOSE_MACRO_ID
-        title = 'Coweta'
-        # cities_url = '/events/12/cities/'        
-        cities_url = reverse('cities', kwargs={'row_id': row_id})
-        cities_response = self.client.get(cities_url)
-        expected, got = 200, cities_response.status_code            
-        self.assertEqual(row_id, cities_response.context['row_id'], 
-            'Expected %s but returned %s for row_id' % (row_id, cities_response.context['row_id']))
-        self.assertEqual(1, len(cities_response.context['resultSet']), 
-            'Expected len 1 but returned %s for resultSet' % (len(cities_response.context['resultSet'])))
-        self.assertEqual(title, cities_response.context['title'][:6], 
-            'Expected %s but returned %s for title' % (row_id, cities_response.context['title'][:6]))            
  
     def test_times_url(self):
         # times_url = '/events/times/'        
