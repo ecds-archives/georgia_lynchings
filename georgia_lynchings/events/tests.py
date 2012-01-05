@@ -74,6 +74,34 @@ class MacroEventTest(TestCase):
             'Expected len 4 but returned %s for resultSet' % (len(articles_response.context['resultSet'])))
         self.assertEqual(title, articles_response.context['title'][:6], 
             'Expected %s but returned %s for title' % (row_id, articles_response.context['title'][:6]))
+            
+    def test_get_cities_bogus_rowid(self):
+        row_id = self.NONEXISTENT_MACRO_ID
+        title = 'No records found'
+        # cities_url = '/events/0/cities/'        
+        cities_url = reverse('cities', kwargs={'row_id': row_id})
+        cities_response = self.client.get(cities_url)
+        expected, got = 200, cities_response.status_code            
+        self.assertEqual(row_id, cities_response.context['row_id'], 
+            'Expected %s but returned %s for row_id' % (row_id, cities_response.context['row_id']))
+        self.assertEqual(0, len(cities_response.context['resultSet']), 
+            'Expected len 0 but returned %s for resultSet' % (len(cities_response.context['resultSet'])))
+        self.assertEqual(title, cities_response.context['title'], 
+            'Expected %s but returned %s for title' % (row_id, cities_response.context['title']))
+            
+    def test_cities_url(self):
+        row_id = self.SAM_HOSE_MACRO_ID
+        title = 'Coweta'
+        # cities_url = '/events/12/cities/'        
+        cities_url = reverse('cities', kwargs={'row_id': row_id})
+        cities_response = self.client.get(cities_url)
+        expected, got = 200, cities_response.status_code            
+        self.assertEqual(row_id, cities_response.context['row_id'], 
+            'Expected %s but returned %s for row_id' % (row_id, cities_response.context['row_id']))
+        self.assertEqual(1, len(cities_response.context['resultSet']), 
+            'Expected len 1 but returned %s for resultSet' % (len(cities_response.context['resultSet'])))
+        self.assertEqual(title, cities_response.context['title'][:6], 
+            'Expected %s but returned %s for title' % (row_id, cities_response.context['title'][:6]))            
  
     def test_times_url(self):
         # times_url = '/events/times/'        

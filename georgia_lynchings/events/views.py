@@ -17,7 +17,28 @@ def articles(request, row_id):
     if resultSet:   title = resultSet[0]['melabel']['value']
     else:   title = "No records found"    
     return render(request, 'events/articles.html',
-                  {'resultSet': resultSet, 'row_id':row_id, 'title':title})    
+                  {'resultSet': resultSet, 'row_id':row_id, 'title':title}) 
+                  
+def cities(request, row_id):
+    '''
+    List all cities for a
+    :class:`~georgia_lynchings.events.models.MacroEvent`.
+    
+    :param row_id: the numeric identifier for the 
+                   :class:`~georgia_lynchings.events.models.MacroEvent`.
+    '''
+    
+    topic = 'City'
+    event = MacroEvent(row_id)
+    resultSet = event.get_cities()
+    if resultSet:   
+        title = resultSet[0]['melabel']['value']
+        if len(resultSet) > 1: topic = "Cities" 
+    else:   title = "No records found"  
+    headings = ['City', 'Event']
+    return render(request, 'events/cities.html',
+                  {'resultSet': resultSet, 'row_id':row_id, 'topic':topic,
+                  'title':title, 'headings':headings}) 
 
 
 def locations(request):

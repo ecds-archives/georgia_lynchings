@@ -105,6 +105,92 @@ class MacroEvent(ComplexObject):
             if not result.has_key('articlepage'): result.update({'articlepage':{'value':'n/a'}})                                         
         # return the dictionary resultset of the query          
         return resultSet
+        
+    def get_cities(self):
+        '''Get all cities associated with this macro event.
+
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                It has the following bindings:
+                  * `city`: the city
+                  * `event`: the uri of the event associated with this article                  
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `evlabel`: the event label
+
+                The matches are ordered by `event` and `docpath`.
+        '''
+
+        query='''
+            PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+            PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+            PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+            PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+
+            SELECT DISTINCT ?city ?event ?evlabel ?melabel
+            WHERE {
+              # First find all the Macro events, all fo the Events for those macros,
+              # and all fo the Triplets for those events. We'll be looking in these
+              # triplets for locations.
+              # Note: Technically we don't need the Macro events. They're provided here
+              # only for context.
+              ?macro a scx:r1;                    # Macro event
+                     dcx:Identifier ?melabel;
+                     sxcxcx:r61 ?event.           # Event
+              ?event dcx:Identifier ?evlabel;
+                     sxcxcx:r62 ?_1.              # Semantic Triplet
+
+              # Every Triplet has a Process
+              ?_1 sxcxcx:r64 ?_2.                 # Process
+
+              # We need all of the places for that Process. There are four ways
+              # they might be expressed:
+              {
+                ?_2 sxcxcx:r78 ?_3.               # Simple process
+                ?_3 sxcxcx:r103 ?_4.              # Circumstances
+                ?_4 sxcxcx:r106 ?_5.              # Space
+              } UNION {
+                ?_2 sxcxcx:r47 ?_6.               # Complex process
+                ?_6 sxcxcx:r79 ?_3.               # Simple process
+                ?_3 sxcxcx:r103 ?_4.              # Circumstances
+                ?_4 sxcxcx:r106 ?_5.              # Space
+              } UNION {
+                ?_2 sxcxcx:r47 ?_6.               # Complex process
+                ?_6 sxcxcx:r80 ?_7.               # Other process
+                ?_7 sxcxcx:52 ?_3.                # Simple process
+                ?_3 sxcxcx:r103 ?_4.              # Circumstances
+                ?_4 sxcxcx:r106 ?_5.              # Space
+              } UNION {
+                ?_2 sxcxcx:r47 ?_6.               # Complex process
+                ?_6 sxcxcx:r80 ?_7.               # Other process
+                ?_7 sxcxcx:r53 ?_8.               # Nominalization
+                ?_8 sxcxcx:r59 ?_5.               # Space
+              }
+
+              # Regardless of which way we came, ?_5 is some sort of place. If
+              # we're going to get from there to location simplex data, this
+              # is how we get there:
+              {
+                ?_5 sxcxcx:r3 ?_10.               # City
+              }
+
+              # Grab the simplex data we're interested in, whichever are
+              # available (but note that "?" is equivalent to missing data)
+              OPTIONAL {
+                ?_10 ssx:r55 ?city.               # City
+                FILTER (?city != "?")
+              }
+
+              # And grab only those records that have at least one data point.
+              FILTER (BOUND(?city))
+            }
+            # Order by UCASE to fold case.
+            ORDER BY UCASE(?city) ?event ?evlabel
+        '''
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                                       
+        # return the dictionary resultset of the query        
+        return resultSet        
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %} Cities related to Macro Event: {{ title }}{% endblock %}
+
+{% block content %}
+  <h1 class="main">Cities related to Macro Event: {{ title }}</h1>
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+  <table summary="Cities related to Macro Event ({{ row_id }}): {{ melabel }}" border=1 cellpadding=10px>
+  <tr>
+  {% for heading in headings %}
+    <th>{{ heading }}</th>
+  {% endfor %}
+  </tr>
+
+  {% for result in resultSet %}
+    <tr>  
+      <td>{{ result.city.value }}</td>
+      <td>{{ result.evlabel.value }}</td>
+    </tr>  
+  {% endfor %}
+
+  </table>
+{% endblock %}
