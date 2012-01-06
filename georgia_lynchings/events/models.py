@@ -98,8 +98,43 @@ class MacroEvent(ComplexObject):
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})                                       
-        # return the dictionary resultset of the query        
-        return resultSet              
+        # return the list of cities
+        if resultSet:
+            citylist = []        
+            for result in resultSet:              
+                citylist.append(result['city']['value'])
+            return citylist
+        else: return None
+        
+    def get_date_range(self):
+        '''Get minimum and maximum date range associated with this macro event.
+
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                It has the following bindings:
+                  * `mindate`: the minimum date related to this event
+                  * `maxdate`: the maximum date related to this event                  
+                  * `event`: the uri of the event associated with this article                  
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `evlabel`: the event label
+
+                The matches are ordered by `event` and `docpath`.
+        '''
+
+        query=query_bank.events['date_range']
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                                       
+        # return a dictionary with min and max keys
+        if resultSet:
+            datedict = {}        
+            for result in resultSet:
+                if 'mindate' in result:
+                    datedict['mindate']=result['mindate']['value']
+                    datedict['maxdate']=result['maxdate']['value']
+                else: return None
+            return datedict
+        else: return None                       
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.

@@ -48,13 +48,24 @@ class MacroEventTest(TestCase):
         
     def test_get_cities(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
-        resultSet = macro.get_cities()
-        if resultSet:
-            citylist = []        
-            for result in resultSet:              
-                citylist.append(result['city']['value'])
-        expected, got = [u'palmetto'], citylist 
-        self.assertEqual(expected, got, 'Expected %s city list, got %s' % (expected, got))          
+        expected, got = [u'palmetto'], macro.get_cities() 
+        self.assertEqual(expected, got, 'Expected %s city list, got %s' % (expected, got))
+        
+        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
+        expected, got = None, macro.get_cities() 
+        self.assertEqual(expected, got, 'Expected %s city list, got %s' % (expected, got))
+        
+    def test_get_date_range(self):
+        macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        datedict = macro.get_date_range()
+        expected, got = u'1899-12-04', datedict['mindate'] 
+        self.assertEqual(expected, got, 'Expected %s minimum date, got %s' % (expected, got))
+        expected, got = u'1899-12-04', datedict['maxdate'] 
+        self.assertEqual(expected, got, 'Expected %s maximum date, got %s' % (expected, got))
+        
+        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
+        expected, got = None, macro.get_date_range() 
+        self.assertEqual(expected, got, 'Expected %s not, got %s' % (expected, got))        
         
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID
