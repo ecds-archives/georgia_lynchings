@@ -1,6 +1,7 @@
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import scx, ssx, sxcxcx
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
+from georgia_lynchings import query_bank
 from pprint import pprint
 from urllib import quote
 import logging
@@ -62,34 +63,7 @@ class MacroEvent(ComplexObject):
                 The matches are ordered by `event` and `docpath`.
         '''
 
-        query='''
-            PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-            PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
-            PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-            PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-            PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-
-            SELECT DISTINCT ?melabel ?event ?evlabel ?dd ?docpath ?paperdate ?papername ?articlepage
-            WHERE {
-              # First find all of the Macro events and all of the Events for those
-              # Macros. Macros aren't strictly necessary, but they're provided
-              # here for
-              # context.
-              ?macro a scx:r1;                   # Macro event
-                     dcx:Identifier ?melabel;
-                     sxcxcx:r61 ?event.          # Event
-              ?event dcx:Identifier ?evlabel.
-
-              # Report URI and file path of each document for the event
-              ?dxcxd dxcxd:Complex ?event;
-                     dxcxd:Document ?dd.
-              optional { ?dd ssx:r68 ?paperdate }
-              optional { ?dd ssx:r69 ?papername }
-              optional { ?dd ssx:r73 ?articlepage }
-              optional { ?dd ssx:r85 ?docpath }              
-                            }
-            ORDER BY ?event ?docpath
-        '''
+        query=query_bank.events['articles']
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
@@ -120,77 +94,12 @@ class MacroEvent(ComplexObject):
                 The matches are ordered by `event` and `docpath`.
         '''
 
-        query='''
-            PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-            PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-            PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-            PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-
-            SELECT DISTINCT ?city ?event ?evlabel ?melabel
-            WHERE {
-              # First find all the Macro events, all fo the Events for those macros,
-              # and all fo the Triplets for those events. We'll be looking in these
-              # triplets for locations.
-              # Note: Technically we don't need the Macro events. They're provided here
-              # only for context.
-              ?macro a scx:r1;                    # Macro event
-                     dcx:Identifier ?melabel;
-                     sxcxcx:r61 ?event.           # Event
-              ?event dcx:Identifier ?evlabel;
-                     sxcxcx:r62 ?_1.              # Semantic Triplet
-
-              # Every Triplet has a Process
-              ?_1 sxcxcx:r64 ?_2.                 # Process
-
-              # We need all of the places for that Process. There are four ways
-              # they might be expressed:
-              {
-                ?_2 sxcxcx:r78 ?_3.               # Simple process
-                ?_3 sxcxcx:r103 ?_4.              # Circumstances
-                ?_4 sxcxcx:r106 ?_5.              # Space
-              } UNION {
-                ?_2 sxcxcx:r47 ?_6.               # Complex process
-                ?_6 sxcxcx:r79 ?_3.               # Simple process
-                ?_3 sxcxcx:r103 ?_4.              # Circumstances
-                ?_4 sxcxcx:r106 ?_5.              # Space
-              } UNION {
-                ?_2 sxcxcx:r47 ?_6.               # Complex process
-                ?_6 sxcxcx:r80 ?_7.               # Other process
-                ?_7 sxcxcx:52 ?_3.                # Simple process
-                ?_3 sxcxcx:r103 ?_4.              # Circumstances
-                ?_4 sxcxcx:r106 ?_5.              # Space
-              } UNION {
-                ?_2 sxcxcx:r47 ?_6.               # Complex process
-                ?_6 sxcxcx:r80 ?_7.               # Other process
-                ?_7 sxcxcx:r53 ?_8.               # Nominalization
-                ?_8 sxcxcx:r59 ?_5.               # Space
-              }
-
-              # Regardless of which way we came, ?_5 is some sort of place. If
-              # we're going to get from there to location simplex data, this
-              # is how we get there:
-              {
-                ?_5 sxcxcx:r3 ?_10.               # City
-              }
-
-              # Grab the simplex data we're interested in, whichever are
-              # available (but note that "?" is equivalent to missing data)
-              OPTIONAL {
-                ?_10 ssx:r55 ?city.               # City
-                FILTER (?city != "?")
-              }
-
-              # And grab only those records that have at least one data point.
-              FILTER (BOUND(?city))
-            }
-            # Order by UCASE to fold case.
-            ORDER BY UCASE(?city) ?event ?evlabel
-        '''
+        query=query_bank.events['cities']
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})                                       
         # return the dictionary resultset of the query        
-        return resultSet        
+        return resultSet              
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.
@@ -210,83 +119,7 @@ def get_events_by_locations():
             The matches are ordered by `city`, `county`, `state`, `evlabel`, and `event`.
     '''
     logger.debug("events get_events_by_locations")
-    query = '''
-        PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-        PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-        PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-        PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-
-        SELECT DISTINCT ?state ?county ?city ?event ?evlabel ?melabel
-        WHERE {
-          # First find all the Macro events, all fo the Events for those macros,
-          # and all fo the Triplets for those events. We'll be looking in these
-          # triplets for locations.
-          # Note: Technically we don't need the Macro events. They're provided here
-          # only for context.
-          ?macro a scx:r1;                    # Macro event
-                 dcx:Identifier ?melabel;
-                 sxcxcx:r61 ?event.           # Event
-          ?event dcx:Identifier ?evlabel;
-                 sxcxcx:r62 ?_1.              # Semantic Triplet
-
-          # Every Triplet has a Process
-          ?_1 sxcxcx:r64 ?_2.                 # Process
-
-          # We need all of the places for that Process. There are four ways
-          # they might be expressed:
-          {
-            ?_2 sxcxcx:r78 ?_3.               # Simple process
-            ?_3 sxcxcx:r103 ?_4.              # Circumstances
-            ?_4 sxcxcx:r106 ?_5.              # Space
-          } UNION {
-            ?_2 sxcxcx:r47 ?_6.               # Complex process
-            ?_6 sxcxcx:r79 ?_3.               # Simple process
-            ?_3 sxcxcx:r103 ?_4.              # Circumstances
-            ?_4 sxcxcx:r106 ?_5.              # Space
-          } UNION {
-            ?_2 sxcxcx:r47 ?_6.               # Complex process
-            ?_6 sxcxcx:r80 ?_7.               # Other process
-            ?_7 sxcxcx:52 ?_3.                # Simple process
-            ?_3 sxcxcx:r103 ?_4.              # Circumstances
-            ?_4 sxcxcx:r106 ?_5.              # Space
-          } UNION {
-            ?_2 sxcxcx:r47 ?_6.               # Complex process
-            ?_6 sxcxcx:r80 ?_7.               # Other process
-            ?_7 sxcxcx:r53 ?_8.               # Nominalization
-            ?_8 sxcxcx:r59 ?_5.               # Space
-          }
-
-          # Regardless of which way we came, ?_5 is some sort of place. If
-          # we're going to get from there to location simplex data, there
-          # are two different ways we can get there:
-          {
-            ?_5 sxcxcx:r2 ?_9.                # Territory
-            ?_9 sxcxcx:r41 ?_10.              # Type of territory
-          } UNION {
-            ?_5 sxcxcx:r3 ?_10.               # City
-          }
-
-          # Grab the simplex data we're interested in, whichever are
-          # available (but note that "?" is equivalent to missing data)
-          OPTIONAL {
-            ?_10 ssx:r18 ?county.             # County
-            FILTER (?county != "?")
-          }
-          OPTIONAL {
-            ?_10 ssx:r30 ?state.              # State
-            FILTER (?state != "?")
-          }
-          OPTIONAL {
-            ?_10 ssx:r55 ?city.               # City
-            FILTER (?city != "?")
-          }
-
-          # And grab only those records that have at least one data point.
-          FILTER (BOUND(?state) || BOUND(?county) || BOUND(?city))
-        }
-        # Order by UCASE to fold case.
-        ORDER BY UCASE(?city) UCASE(?county) UCASE(?state) ?event ?evlabel
-    '''
+    query=query_bank.events['locations']    
     ss=SparqlStore()
     resultSet = ss.query(sparql_query=query)
     # return the dictionary resultset of the query          
@@ -309,59 +142,7 @@ def get_events_by_times():
             The matches are ordered by `mindate`.
     '''
     logger.debug("events get_events_by_times")
-    query = '''
-        PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-        PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-        PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-        PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-        SELECT ?macro ?melabel ?event ?evlabel (MIN(?evdate) as ?mindate) (MAX(?evdate) as ?maxdate)
-        WHERE {
-          ?macro a scx:r1;                  
-                 dcx:Identifier ?melabel;
-                 sxcxcx:r61 ?event.         
-          ?event dcx:Identifier ?evlabel;
-                 sxcxcx:r62 ?_1.            
-          ?_1 sxcxcx:r64 ?_2.               
-          {
-            ?_2 sxcxcx:r78 ?_3. 
-            ?_3 sxcxcx:r103 ?_4. 
-            ?_4 sxcxcx:r104 ?_5. 
-          } UNION {
-            ?_2 sxcxcx:r47 ?_6.    
-            ?_6 sxcxcx:r79 ?_7. 
-            ?_7 sxcxcx:r103 ?_8. 
-            ?_8 sxcxcx:r104 ?_5. 
-          } UNION {
-            ?_2 sxcxcx:r47 ?_6.    
-            ?_6 sxcxcx:r80 ?_9. 
-            ?_9 sxcxcx:52 ?_7.    
-            ?_7 sxcxcx:r103 ?_8. 
-            ?_8 sxcxcx:r104 ?_5. 
-          } UNION {
-            ?_2 sxcxcx:r47 ?_6.    
-            ?_6 sxcxcx:r80 ?_9. 
-            ?_9 sxcxcx:r53 ?_10. 
-            ?_10 sxcxcx:r60 ?_5. 
-          }
-
-          ?_5 sxcxcx:r20 ?_11.  
-
-          {
-            ?_11 sxcxcx:r97 ?_12.     
-            ?_12 ssx:r66 ?evdate      
-          } UNION {
-            ?_11 sxcxcx:r22 ?_13.     
-            ?_13 sxcxcx:r4 ?_14.      
-            ?_14 ssx:r66 ?evdate      
-          } UNION {
-            ?_11 sxcxcx:r22 ?_13.     
-            ?_13 sxcxcx:r4 ?_14.      
-            ?_14 ssx:r68 ?evdate 
-          }
-        }
-        GROUP BY ?macro ?melabel ?event ?evlabel
-        ORDER BY ?mindate
-    '''
+    query=query_bank.events['date_range']    
     ss=SparqlStore()
     resultSet = ss.query(sparql_query=query)
     # create a link for the macro event articles
@@ -384,27 +165,7 @@ def get_all_macro_events():
 
     '''
     logger.debug("events get_events_by_times")
-    query = '''
-        PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-        PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
-        PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-        PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-        PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-
-        SELECT ?macro ?melabel (COUNT(?dd) AS ?articleTotal)
-        WHERE {
-          ?macro a scx:r1;                   # Macro event
-                 dcx:Identifier ?melabel;
-                 sxcxcx:r61 ?event.          # Event
-          ?event dcx:Identifier ?evlabel.
-
-          # Report count of documents for macro event
-          ?dxcxd dxcxd:Complex ?event;
-                 dxcxd:Document ?dd.    
-
-        }
-        GROUP BY ?macro ?melabel
-    '''
+    query=query_bank.events['all']    
     ss=SparqlStore()
     resultSet = ss.query(sparql_query=query)
     # create a link for the macro event articles
@@ -413,6 +174,3 @@ def get_all_macro_events():
         result['macro_link'] = '%s/articles' % row_id
     # return the dictionary resultset of the query          
     return resultSet       
-
-
-

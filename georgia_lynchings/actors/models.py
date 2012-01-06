@@ -1,6 +1,7 @@
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import dcx
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
+from georgia_lynchings import query_bank
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,30 +30,7 @@ class Actor(ComplexObject):
                   * `melabel`: the macro event label
         '''
 
-        query='''
-        PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-        PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-        SELECT ?actorlabel ?triplet ?role ?trlabel ?event ?evlabel ?macro ?melabel 
-        WHERE {
-          ?individual ^sxcxcx:r31 ?actor;
-                dcx:Identifier ?actorlabel.
-          {
-            ?actor ^sxcxcx:r30 ?participant. 
-            ?triplet sxcxcx:r63 ?participant. 
-            BIND("subject" as ?role)
-          } UNION {
-            ?actor ^sxcxcx:r35 ?participant.  
-            ?triplet sxcxcx:r65 ?participant.  
-            BIND("object" as ?role)
-          } 
-
-          ?triplet dcx:Identifier ?trlabel.
-          ?event sxcxcx:r62 ?triplet;       
-                 dcx:Identifier ?evlabel.
-          ?macro sxcxcx:r61 ?event;          
-                 dcx:Identifier ?melabel.      
-        }
-        '''
+        query=query_bank.actors['events']
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'individual': self.uri.n3()})

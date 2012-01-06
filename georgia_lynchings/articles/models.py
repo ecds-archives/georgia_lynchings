@@ -1,5 +1,6 @@
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
+from georgia_lynchings import query_bank
 from pprint import pprint
 from urllib import quote
 import logging
@@ -23,19 +24,7 @@ def all_articles():
             The matches are ordered by `event` and `docpath`.
     '''
 
-    query='''
-        prefix dd: <http://galyn.example.com/source_data_files/data_Document.csv#>
-        prefix ssx: <http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-
-        select ?id ?paperdate ?papername ?articlepage ?docpath where {
-        ?dd a dd:Row;
-            dd:ID ?id.
-        optional { ?dd ssx:r68 ?paperdate }
-        optional { ?dd ssx:r69 ?papername }
-        optional { ?dd ssx:r73 ?articlepage }
-        optional { ?dd ssx:r85 ?docpath }
-        }
-    '''
+    query=query_bank.articles['all']
     ss=SparqlStore()
     resultSet = ss.query(sparql_query=query)
     if resultSet: logger.debug("\nLength of resultSet = [%d]\n" % len(resultSet))
