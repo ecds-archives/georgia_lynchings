@@ -300,3 +300,26 @@ events['all']="""
     GROUP BY ?macro ?melabel
 """
 
+'Find semantic triplets related to a MacroEvent'
+events['triplets']="""
+    PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+
+    SELECT DISTINCT ?triplet ?trlabel ?event ?evlabel ?melabel
+    WHERE {
+      # First find all the Macro events, all fo the Events for those macros,
+      # and all fo the Triplets for those events. 
+      ?macro a scx:r1;                    # Macro event
+             dcx:Identifier ?melabel;
+             sxcxcx:r61 ?event.           # Event
+      ?event dcx:Identifier ?evlabel;
+             sxcxcx:r62 ?triplet.         # Semantic Triplet
+      ?triplet dcx:Identifier ?trlabel.             
+
+    }
+    # Order by UCASE to fold case.
+    ORDER BY ?event UCASE(?trlabel)
+"""
+

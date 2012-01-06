@@ -16,7 +16,8 @@ class MacroEventTest(TestCase):
         
         # some handy fixtures from test data
         self.NONEXISTENT_MACRO_ID = '0'
-        self.SAM_HOSE_MACRO_ID = '12'  
+        self.SAM_HOSE_MACRO_ID = '12'
+        self.CAMPBELL_MACRO_ID = '360'          
             
     def tearDown(self):
         # restore settings
@@ -53,19 +54,33 @@ class MacroEventTest(TestCase):
         
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
         expected, got = None, macro.get_cities() 
-        self.assertEqual(expected, got, 'Expected %s city list, got %s' % (expected, got))
+        self.assertEqual(expected, got, 'Expected %s for nonexistant city macro id, got %s' % (expected, got))         
         
     def test_get_date_range(self):
-        macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        macro = MacroEvent(self.CAMPBELL_MACRO_ID)
         datedict = macro.get_date_range()
-        expected, got = u'1899-12-04', datedict['mindate'] 
+        expected, got = u'1882-05-28', datedict['mindate'] 
         self.assertEqual(expected, got, 'Expected %s minimum date, got %s' % (expected, got))
-        expected, got = u'1899-12-04', datedict['maxdate'] 
+        expected, got = u'1882-08-10', datedict['maxdate'] 
         self.assertEqual(expected, got, 'Expected %s maximum date, got %s' % (expected, got))
         
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
         expected, got = None, macro.get_date_range() 
-        self.assertEqual(expected, got, 'Expected %s not, got %s' % (expected, got))        
+        self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got))         
+        
+    def test_get_triplets(self):
+        macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        eventdict = macro.get_triplets()       
+        expected, got = 2, len(eventdict[u'lynching law creation (columbia)'] )
+        self.assertEqual(expected, got, 'Expected %s triplet length, got %s' % (expected, got))
+        expected, got = 8, len(eventdict[ u'seeking of a negro (palmetto)'] )
+        self.assertEqual(expected, got, 'Expected %s triplet length, got %s' % (expected, got))
+        expected, got = u'mob lynch', eventdict[u'seeking of a negro (palmetto)'][1][:9] 
+        self.assertEqual(expected, got, 'Expected %s triplet length, got %s' % (expected, got))                    
+                
+        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
+        expected, got = None, macro.get_triplets() 
+        self.assertEqual(expected, got, 'Expected %s for nonexistant triplet macro id, got %s' % (expected, got))                
         
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID
@@ -154,6 +169,4 @@ class MacroEventTest(TestCase):
         # test value of article count for first item       
         expected, got = macro_events_response.context['results'][0]['articleTotal']['value'], u'3'
         msg = 'Expected macro event article count [%s] but returned [%s] for results' % (expected, got)
-        self.assertEqual(expected, got, msg)        
-
-                                    
+        self.assertEqual(expected, got, msg)

@@ -134,7 +134,36 @@ class MacroEvent(ComplexObject):
                     datedict['maxdate']=result['maxdate']['value']
                 else: return None
             return datedict
-        else: return None                       
+        else: return None
+        
+    def get_triplets(self):
+        '''Get the semantic triplets related to this macro event.
+
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                It has the following bindings:
+                  * `triplets`: the semantic triplets related to this event               
+                  * `event`: the uri of the event associated with this article                  
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `evlabel`: the event label
+
+                The matches are ordered by `event` and `docpath`.
+        '''
+
+        query=query_bank.events['triplets']
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                                       
+        # return a dictionary of events that contains a list of triplets
+        if resultSet:
+            events = {}
+            tripletlist = []        
+            for result in resultSet:
+                if result['evlabel']['value'] not in events:
+                    events[result['evlabel']['value']]=[]
+                events[result['evlabel']['value']].append(result['trlabel']['value'])
+            return events
+        else: return None                           
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.
