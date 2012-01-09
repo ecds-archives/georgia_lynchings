@@ -1,12 +1,12 @@
+from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import scx, ssx, sxcxcx
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
-from georgia_lynchings import query_bank
-from pprint import pprint
 from urllib import quote
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class MacroEvent(ComplexObject):
     '''A Macro Event is an object type defined by the project's (currently

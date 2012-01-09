@@ -1,11 +1,11 @@
+from urllib import quote
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from georgia_lynchings import query_bank
-from pprint import pprint
-from urllib import quote
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 def all_articles():
     '''Get all articles associated with this macro event, along with the

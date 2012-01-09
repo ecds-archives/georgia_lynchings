@@ -1,10 +1,11 @@
+import logging
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import dcx
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from georgia_lynchings import query_bank
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 class Actor(ComplexObject):
     '''An Actor is an object type defined by the project's (currently
