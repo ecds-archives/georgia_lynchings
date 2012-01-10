@@ -9,10 +9,10 @@
   <tr><th>Role</th><th>Macro Event</th><th>Event</th><th>Semantic Triplet</th></th></tr>
   {% for result in resultSet %}
       <tr>
-      <td>{{ result.role.value }}</td>
-      <td>{{ result.melabel.value }}</td>
-      <td>{{ result.evlabel.value }}</td>
-      <td>{{ result.trlabel.value }}</td>
+      <td>{{ result.role }}</td>
+      <td>{{ result.melabel }}</td>
+      <td>{{ result.evlabel }}</td>
+      <td>{{ result.trlabel }}</td>
       </tr>
   {% endfor %}
   </table>

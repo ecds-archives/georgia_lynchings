@@ -10,14 +10,14 @@
   <tr><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></th>
   {% for result in resultSet %}
       <tr>
-      <td>{{ result.papername.value }}</td>
-      <td>{{ result.paperdate.value }}</td>
-      <td>{{ result.articlepage.value }}</td> 
+      <td>{{ result.papername }}</td>
+      <td>{{ result.paperdate }}</td>
+      <td>{{ result.articlepage }}</td> 
       <td>
-        {% if result.docpath.value == 'n/a' %}
+        {% if result.docpath == 'n/a' %}
             n/a             
         {% else %}
-            <a href="{{ STATIC_PREFIX }}../{{ result.docpath_link }}">{{ result.docpath.value }}</a>            
+            <a href="{{ STATIC_PREFIX }}../{{ result.docpath_link }}">{{ result.docpath }}</a>            
         {% endif %}          
       </td>     
       </tr>

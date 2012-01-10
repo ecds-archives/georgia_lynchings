@@ -1,7 +1,8 @@
-import logging
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
+from rdflib import Literal
+
 from georgia_lynchings.events.models import MacroEvent
 
 class MacroEventTest(TestCase):
@@ -89,50 +90,50 @@ class MacroEventTest(TestCase):
         macro = MacroEvent(self.RANDOLPH_MACRO_ID)
         resultSet = macro.get_participant_O()
         # Test macro event
-        expected, got = 'Randolph', resultSet[7]['melabel']['value']
+        expected, got = 'Randolph', resultSet[7]['melabel']
         self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
         # Test name_of_indivd_actor
-        expected, got = 'mother', resultSet[7]['name_of_indivd_actor']['value']
+        expected, got = 'mother', resultSet[7]['name_of_indivd_actor']
         self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
         # Test quantitative age
-        expected, got = 'elderly', resultSet[7]['quantitative_age']['value']
+        expected, got = 'elderly', resultSet[7]['quantitative_age']
         self.assertEqual(expected, got, 'Expected %s quantitative_age, got %s' % (expected, got))
         # Test gender
-        expected, got = 'female', resultSet[7]['gender']['value']
+        expected, got = 'female', resultSet[7]['gender']
         self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
         # Test lname
-        expected, got = 'taylor', resultSet[0]['lname']['value']
+        expected, got = 'taylor', resultSet[0]['lname']
         self.assertEqual(expected, got, 'Expected %s lname, got %s' % (expected, got))
         # Test race
-        expected, got = 'white', resultSet[0]['race']['value']
+        expected, got = 'white', resultSet[0]['race']
         self.assertEqual(expected, got, 'Expected %s race, got %s' % (expected, got))
         # Test name_of_indivd_actor
-        expected, got = 'sheriff', resultSet[0]['name_of_indivd_actor']['value']
+        expected, got = 'sheriff', resultSet[0]['name_of_indivd_actor']
         self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))
         
     def test_parts(self):
         macro = MacroEvent(self.CRISP_MACRO_ID)
         resultSet = macro.get_participant_S()
         # Test macro event
-        expected, got = 'Crisp', resultSet[7]['melabel']['value']
+        expected, got = 'Crisp', resultSet[7]['melabel']
         self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
         # Test name_of_indivd_actor
-        expected, got = 'sheriff', resultSet[5]['name_of_indivd_actor']['value']
+        expected, got = 'sheriff', resultSet[5]['name_of_indivd_actor']
         self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
         # Test quantitative age
-        expected, got = 'young', resultSet[7]['quantitative_age']['value']
+        expected, got = 'young', resultSet[7]['quantitative_age']
         self.assertEqual(expected, got, 'Expected %s quantitative_age, got %s' % (expected, got))
         # Test gender
-        expected, got = 'male', resultSet[7]['gender']['value']
+        expected, got = 'male', resultSet[7]['gender']
         self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
         # Test lname
-        expected, got = 'simmons', resultSet[7]['lname']['value']
+        expected, got = 'simmons', resultSet[7]['lname']
         self.assertEqual(expected, got, 'Expected %s lname, got %s' % (expected, got))
         # Test race
-        expected, got = 'white', resultSet[7]['race']['value']
+        expected, got = 'white', resultSet[7]['race']
         self.assertEqual(expected, got, 'Expected %s race, got %s' % (expected, got))
         # Test name_of_indivd_actor
-        expected, got = 'coroner', resultSet[6]['name_of_indivd_actor']['value']
+        expected, got = 'coroner', resultSet[6]['name_of_indivd_actor']
         self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))                                             
         
     def test_get_articles_bogus_rowid(self):
@@ -176,16 +177,15 @@ class MacroEventTest(TestCase):
             'Expected len is greater than 325 but returned %s for results' % (len(time_response.context['results']))) 
           
         # test type of macro event label, should be literal
-        expected, got = time_response.context['results'][0]['melabel']['type'], "literal"
-        msg = 'Expected macro event label type [%s] but returned [%s] for results' % (expected, got)
-        self.assertEqual(expected, got, msg)
+        self.assertTrue(isinstance(time_response.context['results'][0]['melabel'], Literal),
+                        'Expected melabel type Literal')
         # test value of macro event label        
-        expected, got = time_response.context['results'][0]['melabel']['value'][:7], u'Houston'
+        expected, got = time_response.context['results'][0]['melabel'][:7], u'Houston'
         msg = 'Expected macro event label [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
         
         # test value of mindate format        
-        expected, got = time_response.context['results'][0]['mindate']['value'], u'1879-11-25'
+        expected, got = time_response.context['results'][0]['mindate'], u'1879-11-25'
         msg = 'Expected mindate [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
         msg = 'mindate pattern [%s] does not match yyyy-mm-dd' % (got)
@@ -193,7 +193,7 @@ class MacroEventTest(TestCase):
         self.assertRegexpMatches(got, pattern, msg) 
         
         # test value of maxdate format        
-        expected, got = time_response.context['results'][0]['maxdate']['value'], u'1879-11-26'
+        expected, got = time_response.context['results'][0]['maxdate'], u'1879-11-26'
         msg = 'Expected maxdate [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
         msg = 'maxdate pattern [%s] does not match yyyy-mm-dd' % (got)
@@ -211,15 +211,14 @@ class MacroEventTest(TestCase):
             'Expected len is greater than 325 but returned %s for results' % (len(macro_events_response.context['results']))) 
           
         # test type of macro event label, should be literal
-        expected, got = macro_events_response.context['results'][0]['melabel']['type'], "literal"
-        msg = 'Expected macro event label type [%s] but returned [%s] for results' % (expected, got)
-        self.assertEqual(expected, got, msg)
+        self.assertTrue(isinstance(macro_events_response.context['results'][0]['melabel'], Literal),
+                        'Expected melabel type Literal')
         # test value of macro event label  for first item     
-        expected, got = macro_events_response.context['results'][0]['melabel']['value'][:7], u'Houston'
+        expected, got = macro_events_response.context['results'][0]['melabel'][:7], u'Houston'
         msg = 'Expected macro event label [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
         
         # test value of article count for first item       
-        expected, got = macro_events_response.context['results'][0]['articleTotal']['value'], u'3'
+        expected, got = macro_events_response.context['results'][0]['articleTotal'], u'3'
         msg = 'Expected macro event article count [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)

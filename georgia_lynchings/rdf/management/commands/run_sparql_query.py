@@ -115,6 +115,6 @@ class Command(BaseCommand):
             if list_repos:               
                 repo_list=[]
                 for item in result:
-                    repo_list.append(item['id']['value']);
+                    repo_list.append(item['id']);
                 self.stdout.write("Repository List = [%s]" % repo_list)                    
         else: self.stdout.write("\nResult does not exist.\n")       

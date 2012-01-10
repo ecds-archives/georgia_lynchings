@@ -9,8 +9,10 @@ against project data.
 ... 
 >>> mac = MacroEvent(12)
 >>> mac.label
+rdflib.term.Literal(u'Coweta')
+>>> unicode(mac.label)
 u'Coweta'
->>> mac.victim
+>>> unicode(mac.victim)
 u'Sam Hose'
 '''
 
@@ -51,7 +53,7 @@ class RdfPropertyField(object):
         if bindings:
             # FIXME: for now assume one row and a literal value. can't
             # assume these for long.
-            return bindings[0]['result']['value']
+            return bindings[0]['result']
         # else None
 
 
@@ -99,8 +101,25 @@ class ComplexObject(object):
     __metaclass__ = ComplexObjectType
 
     def __init__(self, id):
-        self.id = id
-        self.uri = dcx['r' + str(id)]
+        if isinstance(id, URIRef):
+            self.uri = id
+            self.id = None
+        else:
+            self.id = id
+            self.uri = dcx['r' + str(id)]
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.uri)
 
     label = dcx.Identifier
     'a human-readable label for this object'
+
+    @classmethod
+    def all_instances(cls):
+        rdf_type = getattr(cls, 'rdf_type', dcx.Row)
+        q = SelectQuery(results=['obj'])
+        q.append((Variable('obj'), RDF.type, rdf_type))
+
+        store = SparqlStore()
+        bindings = store.query(sparql_query=unicode(q))
+        return [cls(b['obj']) for b in bindings]

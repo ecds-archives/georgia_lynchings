@@ -14,7 +14,7 @@ def macroevents(request, row_id):
     '''
     actor = Actor(row_id)
     resultSet = actor.get_macroevents()
-    if resultSet:   title = resultSet[0]['actorlabel']['value']
+    if resultSet:   title = resultSet[0]['actorlabel']
     else:   title = "No records found"    
     return render(request, 'actors/macroevents.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title})    

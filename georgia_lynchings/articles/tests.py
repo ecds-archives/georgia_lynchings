@@ -1,9 +1,8 @@
-import logging
-import os
-
 from django.test import TestCase, Client
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from rdflib import Literal
+
 from georgia_lynchings.articles.models import all_articles
 
 
@@ -31,12 +30,13 @@ class NewspaperArticlesTest(TestCase):
         self.assertGreater(len(articles_response.context['resultSet']), 325, 
             'Expected len is greater than 325 but returned %s for resultSet' % (len(articles_response.context['resultSet']))) 
           
-        # test type of docpath, should be literal
-        expected, got = articles_response.context['resultSet'][0]['docpath']['type'], "literal"
-        msg = 'Expected docpath type [%s] but returned [%s] for resultSet' % (expected, got)
-        self.assertEqual(expected, got, msg)
+        # docpath would normally be a Literal, but it's currently being
+        # manually patched in # georgia_lynchings.articles.models.all_articles,
+        # making it a unicode.
+        self.assertTrue(isinstance(articles_response.context['resultSet'][0]['docpath'], unicode),
+                        'Expected docpath type unicode (got %s)' % (articles_response.context['resultSet'][0]['docpath'].__class__.__name__,))
         # test value of docpath        
-        expected, got = articles_response.context['resultSet'][0]['docpath']['value'], u'The Atlanta Daily Constitution_11-26-1879_1.pdf'
+        expected, got = str(articles_response.context['resultSet'][0]['docpath']), 'The Atlanta Daily Constitution_11-26-1879_1.pdf'
         msg = 'Expected docpath [%s] but returned [%s] for resultSet' % (expected, got)
         self.assertEqual(expected, got, msg)
         
@@ -46,28 +46,28 @@ class NewspaperArticlesTest(TestCase):
         self.assertEqual(expected, got, msg)
         
         # test type of papername, should be literal
-        expected, got = articles_response.context['resultSet'][0]['papername']['type'], "literal"
-        msg = 'Expected papername type [%s] but returned [%s] for resultSet' % (expected, got)
+        self.assertTrue(isinstance(articles_response.context['resultSet'][0]['papername'], Literal),
+                        'Expected papername type Literal')
         self.assertEqual(expected, got, msg)
         # test value of papername        
-        expected, got = articles_response.context['resultSet'][0]['papername']['value'], u'The Atlanta Daily Constitution'
+        expected, got = str(articles_response.context['resultSet'][0]['papername']), 'The Atlanta Daily Constitution'
         msg = 'Expected papername [%s] but returned [%s] for resultSet' % (expected, got)
         self.assertEqual(expected, got, msg) 
         
         # test type of articlepage, should be literal
-        expected, got = articles_response.context['resultSet'][0]['articlepage']['type'], "literal"
-        msg = 'Expected articlepage type [%s] but returned [%s] for resultSet' % (expected, got)
+        self.assertTrue(isinstance(articles_response.context['resultSet'][0]['articlepage'], Literal),
+                        'Expected articlepage type Literal')
         self.assertEqual(expected, got, msg)
         # test value of articlepage        
-        expected, got = articles_response.context['resultSet'][0]['articlepage']['value'], u'1'
+        expected, got = articles_response.context['resultSet'][0]['articlepage'], u'1'
         msg = 'Expected articlepage [%s] but returned [%s] for resultSet' % (expected, got)
         self.assertEqual(expected, got, msg) 
         
         # test type of paperdate, should be literal
-        expected, got = articles_response.context['resultSet'][0]['paperdate']['type'], "literal"
-        msg = 'Expected paperdate type [%s] but returned [%s] for resultSet' % (expected, got)
+        self.assertTrue(isinstance(articles_response.context['resultSet'][0]['paperdate'], Literal),
+                        'Expected paperdate type Literal')
         self.assertEqual(expected, got, msg)
         # test value of paperdate        
-        expected, got = articles_response.context['resultSet'][0]['paperdate']['value'], u'1879-11-26'
+        expected, got = str(articles_response.context['resultSet'][0]['paperdate']), u'1879-11-26'
         msg = 'Expected paperdate [%s] but returned [%s] for resultSet' % (expected, got)
         self.assertEqual(expected, got, msg)     

@@ -9,10 +9,10 @@
   <tr><th>Macro Event</th><th>Event</th><th>Min Date</th><th>Max Date</th></th>
   {% for result in results %}
       <tr>       
-      <td><a href={{ result.macro_link }}>{{ result.melabel.value }}</a></td>
-      <td>{{ result.evlabel.value }}</td>
-      <td>{{ result.mindate.value }}</td>
-      <td>{{ result.maxdate.value }}</td>
+      <td><a href={{ result.macro_link }}>{{ result.melabel }}</a></td>
+      <td>{{ result.evlabel }}</td>
+      <td>{{ result.mindate }}</td>
+      <td>{{ result.maxdate }}</td>
         </tr>
   {% endfor %}
   </table>

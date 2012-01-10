@@ -5,11 +5,11 @@
 {% block content %}
   <h1 class="main">Events by location</h1>
 
-  {% regroup results by city.value as city_list %}
+  {% regroup results by city as city_list %}
   {% for city in city_list %}
-    {% regroup city.list by county.value as county_list %}
+    {% regroup city.list by county as county_list %}
     {% for county in county_list %}
-      {% regroup county.list by state.value as state_list %}
+      {% regroup county.list by state as state_list %}
       {% for state in state_list %}
         {% spaceless %}
           <h2>
@@ -30,7 +30,7 @@
 
         <ul>
           {% for event in state.list %}
-            <li>{{ event.evlabel.value }}</li>
+            <li>{{ event.evlabel }}</li>
           {% endfor %}
         </ul>
       {% endfor %} {# state in state_list #}

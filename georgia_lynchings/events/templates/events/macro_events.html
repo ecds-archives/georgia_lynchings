@@ -9,8 +9,8 @@
   <tr><th>Macro Event</th><th>Articles</th></th>
   {% for result in results %}
     <tr>          
-      <td>{{ result.melabel.value }}</td>
-      <td><a href={{ result.macro_link }}>{{ result.articleTotal.value }}</a></td>      
+      <td>{{ result.melabel }}</td>
+      <td><a href={{ result.macro_link }}>{{ result.articleTotal }}</a></td>      
     </tr>
   {% endfor %}
   </table>

@@ -10,10 +10,10 @@
   <tr><th>Event</th><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></th>
   {% for result in resultSet %}
       <tr>
-      <td>{{ result.evlabel.value }}</td>
-      <td>{{ result.papername.value }}</td>
-      <td>{{ result.paperdate.value }}</td>
-      <td>{{ result.articlepage.value }}</td>                  
+      <td>{{ result.evlabel }}</td>
+      <td>{{ result.papername }}</td>
+      <td>{{ result.paperdate }}</td>
+      <td>{{ result.articlepage }}</td>                  
       <td><a href="{{ STATIC_PREFIX }}../{{ result.docpath_link }}"><img src="{{ STATIC_PREFIX }}/images/pdf-icon.jpg"/></a></td>
       </tr>
   {% endfor %}

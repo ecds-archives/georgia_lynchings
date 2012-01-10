@@ -31,12 +31,12 @@ def all_articles():
     else: logger.debug("\nResultSet is empty.\n")
     for result in resultSet:
         # Clean up data, add "n/a" if value does not exist
-        if not result.has_key('docpath'): result.update({'docpath':{'value':'n/a'}})            
+        if 'docpath' not in result: result['docpath'] = 'n/a'
         else: 
-            result['docpath_link'] = quote(result['docpath']['value'].replace('\\', '/'))
-            result['docpath']['value'] = result['docpath']['value'][10:] 
-        if not result.has_key('papername'): result.update({'papername':{'value':'n/a'}})
-        if not result.has_key('paperdate'): result.update({'paperdate':{'value':'n/a'}})
-        if not result.has_key('articlepage'): result.update({'articlepage':{'value':'n/a'}})                                         
+            result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
+            result['docpath'] = result['docpath'][10:] 
+        if 'papername' not in result: result['papername'] = 'n/a'
+        if 'paperdate' not in result: result['paperdate'] = 'n/a'
+        if 'articlepage' not in result: result['articlepage'] = 'n/a'
     # return the dictionary resultset of the query          
     return resultSet

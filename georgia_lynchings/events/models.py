@@ -70,13 +70,13 @@ class MacroEvent(ComplexObject):
         # create a link for the macro event articles
         for result in resultSet:
             # Clean up data, add "n/a" if value does not exist
-            if not result.has_key('docpath'): result.update({'docpath':{'value':'n/a'}})            
+            if 'docpath' not in result: result['docpath'] = 'n/a'
             else: 
-                result['docpath_link'] = quote(result['docpath']['value'].replace('\\', '/'))
-                result['docpath']['value'] = result['docpath']['value'][10:] 
-            if not result.has_key('papername'): result.update({'papername':{'value':'n/a'}})
-            if not result.has_key('paperdate'): result.update({'paperdate':{'value':'n/a'}})
-            if not result.has_key('articlepage'): result.update({'articlepage':{'value':'n/a'}})                                         
+                result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
+                result['docpath'] = result['docpath'][10:] 
+            if 'papername' not in result: result['papername'] = 'n/a'
+            if 'paperdate' not in result: result['paperdate'] = 'n/a'
+            if 'articlepage' not in result: result['articlepage'] = 'n/a'
         # return the dictionary resultset of the query          
         return resultSet
         
@@ -102,7 +102,7 @@ class MacroEvent(ComplexObject):
         if resultSet:
             citylist = []        
             for result in resultSet:              
-                citylist.append(result['city']['value'])
+                citylist.append(result['city'])
             return citylist
         else: return None
         
@@ -130,8 +130,8 @@ class MacroEvent(ComplexObject):
             datedict = {}        
             for result in resultSet:
                 if 'mindate' in result:
-                    datedict['mindate']=result['mindate']['value']
-                    datedict['maxdate']=result['maxdate']['value']
+                    datedict['mindate']=result['mindate']
+                    datedict['maxdate']=result['maxdate']
                 else: return None
             return datedict
         else: return None
@@ -159,9 +159,9 @@ class MacroEvent(ComplexObject):
             events = {}
             tripletlist = []        
             for result in resultSet:
-                if result['evlabel']['value'] not in events:
-                    events[result['evlabel']['value']]=[]
-                events[result['evlabel']['value']].append(result['trlabel']['value'])
+                if result['evlabel'] not in events:
+                    events[result['evlabel']]=[]
+                events[result['evlabel']].append(result['trlabel'])
             return events
         else: return None  
         
@@ -274,7 +274,7 @@ def get_events_by_times():
     resultSet = ss.query(sparql_query=query)
     # create a link for the macro event articles
     for result in resultSet:
-        row_id = result['macro']['value'].split('#r')[1]
+        row_id = result['macro'].split('#r')[1]
         result['macro_link'] = '../%s/articles' % row_id
     # return the dictionary resultset of the query          
     return resultSet    
@@ -297,7 +297,7 @@ def get_all_macro_events():
     resultSet = ss.query(sparql_query=query)
     # create a link for the macro event articles
     for result in resultSet:
-        row_id = result['macro']['value'].split('#r')[1]
+        row_id = result['macro'].split('#r')[1]
         result['macro_link'] = '%s/articles' % row_id
     # return the dictionary resultset of the query          
     return resultSet  

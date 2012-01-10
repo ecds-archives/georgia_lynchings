@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management.base import CommandError
 from django.test import TestCase
 from mock import patch
-from rdflib import Literal, Namespace, Variable, RDF, RDFS
+from rdflib import URIRef, Literal, Namespace, Variable, RDF, RDFS
 
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
@@ -40,33 +40,33 @@ class SparqlStoreTest(TestCase):
         self.assertEqual('application/x-binary-rdf-results-table', self.sparqlstore.getResultType('BINARY_TABLE'))
         self.assertEqual('text/boolean', self.sparqlstore.getResultType('BOOLEAN'))
         
-    def test_Xml2Dict_list_repositories(self):
+    def test_parse_xml_list_repositories(self):
         content_file = os.path.join(settings.BASE_DIR, 'rdf', 'fixtures', 'list_repositories.xml')
         content=open(content_file, 'rU').read()
         self.assertEqual(2568, len(content))        
-        mapping=self.sparqlstore.Xml2Dict(content)
+        mapping=self.sparqlstore._parse_xml_results(content)
         self.assertEqual(4, len(mapping))
-        self.assertIn('id', mapping[1].keys())
-        self.assertEqual('SYSTEM', mapping[0]['id']['value'])
+        self.assertIn('id', mapping[1])
+        self.assertEqual('SYSTEM', mapping[0]['id'])
         
-    def test_Xml2Dict_sparql_query(self):        
+    def test_parse_xml_sparql_query(self):        
         content_file = os.path.join(settings.BASE_DIR, 'rdf', 'fixtures', 'articles_for_events.xml')
         content=open(content_file, 'rU').read()
         self.assertEqual(8428, len(content))        
-        mapping=self.sparqlstore.Xml2Dict(content)
+        mapping=self.sparqlstore._parse_xml_results(content)
         self.assertEqual(12, len(mapping))
-        self.assertIn('dd', mapping[1].keys())
-        self.assertIn('docpath', mapping[1].keys()) 
-        self.assertIn('event', mapping[1].keys())
-        self.assertIn('evlabel', mapping[1].keys()) 
-        self.assertIn('macro', mapping[1].keys())
-        self.assertIn('melabel', mapping[1].keys())                        
-        self.assertEqual(u'http://galyn.example.com/source_data_files/data_Document.csv#r843', mapping[3]['dd']['value'])
-        self.assertEqual(u'documents\\The Atlanta Constitution_04-21-1899_1.pdf', mapping[3]['docpath']['value'])
-        self.assertEqual(u'http://galyn.example.com/source_data_files/data_Complex.csv#r3851', mapping[3]['event']['value']) 
-        self.assertEqual(u'lynching (hawkinsville)', mapping[3]['evlabel']['value'])                 
-        self.assertEqual(u'http://galyn.example.com/source_data_files/data_Complex.csv#r10', mapping[3]['macro']['value'])          
-        self.assertEqual(u'Pulaski (Curry Robertson)', mapping[3]['melabel']['value'])
+        self.assertIn('dd', mapping[1])
+        self.assertIn('docpath', mapping[1]) 
+        self.assertIn('event', mapping[1])
+        self.assertIn('evlabel', mapping[1]) 
+        self.assertIn('macro', mapping[1])
+        self.assertIn('melabel', mapping[1])                        
+        self.assertEqual(URIRef(u'http://galyn.example.com/source_data_files/data_Document.csv#r843'), mapping[3]['dd'])
+        self.assertEqual(u'documents\\The Atlanta Constitution_04-21-1899_1.pdf', mapping[3]['docpath'])
+        self.assertEqual(URIRef(u'http://galyn.example.com/source_data_files/data_Complex.csv#r3851'), mapping[3]['event']) 
+        self.assertEqual(u'lynching (hawkinsville)', mapping[3]['evlabel'])
+        self.assertEqual(URIRef(u'http://galyn.example.com/source_data_files/data_Complex.csv#r10'), mapping[3]['macro'])
+        self.assertEqual(u'Pulaski (Curry Robertson)', mapping[3]['melabel'])
 
     def test_missing_sparql_store_api(self):
         settings.SPARQL_STORE_API = None        
@@ -140,11 +140,12 @@ class RunSparqlQueryCommandTest(TestCase):
     # Test for triplestore site not responding
     def test_list_repos(self):
         repo_result=[
-        {u'id': {'type': 'literal', 'value': u'SYSTEM'}}, 
-        {u'id': {'type': 'literal', 'value': u'galyn'}}, 
-        {u'id': {'type': 'literal', 'value': u'galyn-2011-11-07'}}, 
-        {u'id': {'type': 'literal', 'value': u'ben-test'}}, 
-        {u'id': {'type': 'literal', 'value': u'galyn-test'}}]
+            {u'id': Literal('SYSTEM')},
+            {u'id': Literal('galyn')},
+            {u'id': Literal('galyn-2011-11-07')}, 
+            {u'id': Literal('ben-test')}, 
+            {u'id': Literal('galyn-test')},
+        ]
         self.command.processResult(result=repo_result, list_repos=True)
         # check script output
         # output should equal:
@@ -219,7 +220,7 @@ class ComplexObjectTest(TestCase):
     @patch('georgia_lynchings.rdf.models.SparqlStore')
     def test_sparql_generation_without_type_with_match(self, MockStore):
         mock_query = MockStore.return_value.query
-        mock_query.return_value = [{'result': {'value': 'stuff'}}]
+        mock_query.return_value = [{'result': Literal('stuff')}]
         
         data = self.thingie.data
 
@@ -249,7 +250,7 @@ class ComplexObjectTest(TestCase):
     @patch('georgia_lynchings.rdf.models.SparqlStore')
     def test_sparql_generation_with_type_with_match(self, MockStore):
         mock_query = MockStore.return_value.query
-        mock_query.return_value = [{'result': {'value': 'stuff'}}]
+        mock_query.return_value = [{'result': Literal('stuff')}]
         
         value = self.widget.value
 
