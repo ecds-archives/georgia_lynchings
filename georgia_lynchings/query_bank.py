@@ -300,6 +300,135 @@ events['all']="""
     GROUP BY ?macro ?melabel
 """
 
+'Find detail information about Participant-O Actor'
+events['parto']="""
+    PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
+    SELECT DISTINCT ?lname ?quantitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parto ?actor ?event ?evlabel ?melabel ?macro
+    WHERE {
+        # First find all the Macro events, and all the Events for those macros,
+        # and all of the Triplets for those events, and all the Participant-O
+        # for each triplet. We'll be looking in these for detail information.
+        ?macro a scx:r1; # Macro event
+            dcx:Identifier ?melabel;
+            sxcxcx:r61 ?event. # Event
+        ?event dcx:Identifier ?evlabel;
+            sxcxcx:r62 ?_1. # Semantic Triplet
+        # Every Triplet has a Participant-O
+        ?_1 sxcxcx:r65 ?parto. # Participant-O
+
+        # We need all of the individuals for that Semantic Triplet.
+        {
+            ?parto sxcxcx:r35 ?actor. # Participant-O has an Actor
+            ?actor sxcxcx:r31 ?individual. # Actor has a Individual
+        }
+
+        # Provide Name_of_individual_actor, if it exists
+        OPTIONAL {
+            ?individual ssx:r45 ?name_of_indivd_actor. # Name_of_individual_actor
+            FILTER (?name_of_indivd_actor != "?")
+        }
+
+        # Provide Gender, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar ssx:r11 ?gender. # Gender
+            FILTER (?gender != "?")
+        }
+
+        # Provide Race, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar ssx:r53 ?race. # Race
+            FILTER (?race != "?")
+        }
+
+        # Provide Quantitative Age, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
+            ?age ssx:r76 ?quantitative_age. # Quantitative Age
+            FILTER (?quantitative_age != "?")
+        }
+
+        # Provide Last Name, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
+            ?name ssx:r10 ?lname. # Last Name
+            FILTER (?lname != "?")
+        }
+    }
+"""
+
+
+'Find detail information about Participant-S Actor'
+events['parts']="""
+    PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
+    SELECT DISTINCT ?lname ?quantitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parts ?actor ?event ?evlabel ?melabel ?macro
+    WHERE {
+        # First find all the Macro events, and all the Events for those macros,
+        # and all of the Triplets for those events, and all the Participant-S
+        # for each triplet. We'll be looking in these for detail information.
+        ?macro a scx:r1; # Macro event
+            dcx:Identifier ?melabel;
+            sxcxcx:r61 ?event. # Event
+        ?event dcx:Identifier ?evlabel;
+            sxcxcx:r62 ?_1. # Semantic Triplet
+        # Every Triplet has a Participant-S
+        ?_1 sxcxcx:r63 ?parto. # Participant-S
+
+        # We need all of the individuals for that Semantic Triplet.
+        {
+            ?parto sxcxcx:r30 ?actor. # Participant-S has an Actor
+            ?actor sxcxcx:r31 ?individual. # Actor has a Individual
+        }
+
+        # Provide Name_of_individual_actor, if it exists
+        OPTIONAL {
+            ?individual ssx:r45 ?name_of_indivd_actor. # Name_of_individual_actor
+            FILTER (?name_of_indivd_actor != "?")
+        }
+
+        # Provide Gender, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar ssx:r11 ?gender. # Gender
+            FILTER (?gender != "?")
+        }
+
+        # Provide Race, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar ssx:r53 ?race. # Race
+            FILTER (?race != "?")
+        }
+
+        # Provide Quantitative Age, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
+            ?age ssx:r76 ?quantitative_age. # Quantitative Age
+            FILTER (?quantitative_age != "?")
+        }
+
+        # Provide Last Name, if it exists
+        OPTIONAL {
+            ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
+            ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
+            ?name ssx:r10 ?lname. # Last Name
+            FILTER (?lname != "?")
+        }
+    }
+"""
+
 'Find semantic triplets related to a MacroEvent'
 events['triplets']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>

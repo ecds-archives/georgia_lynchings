@@ -163,7 +163,70 @@ class MacroEvent(ComplexObject):
                     events[result['evlabel']['value']]=[]
                 events[result['evlabel']['value']].append(result['trlabel']['value'])
             return events
-        else: return None                           
+        else: return None  
+        
+    def get_participant_O(self):
+        '''Get the information of particpant-O related to this macro event.
+
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                It has the following bindings:
+                  * `lname`: lname of this actor 
+                  * `quantitative_age`: quantitative_age of this actor                                   
+                  * `race`: race of this actor 
+                  * `gender`: gender of this actor 
+                  * `name_of_indivd_actor`: Name of Individual Actor
+                  * `actor`: actor of this participant-O 
+                  * `parto`: participant-O of this triplet                                                                                         
+                  * `triplets`: the semantic triplets related to this event               
+                  * `event`: the uri of the event associated with this article                  
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `evlabel`: the event label
+                  * `macro`: the macro event ID
+                  
+
+                The matches are ordered by `event` and `docpath`.
+        '''
+
+        query=query_bank.events['parto']
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                                       
+        # return a dictionary of the resultSet
+        if resultSet: return resultSet
+        else: return None                                   
+                                 
+    def get_participant_S(self):
+        '''Get the information of particpant-S related to this macro event.
+
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                It has the following bindings:
+                  * `lname`: lname of this actor 
+                  * `quantitative_age`: quantitative_age of this actor                                   
+                  * `race`: race of this actor 
+                  * `gender`: gender of this actor 
+                  * `name_of_indivd_actor`: Name of Individual Actor
+                  * `actor`: actor of this participant-S 
+                  * `parto`: participant-O of this triplet                                                                                         
+                  * `triplets`: the semantic triplets related to this event               
+                  * `event`: the uri of the event associated with this article                  
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `evlabel`: the event label
+                  * `macro`: the macro event ID
+                  
+
+                The matches are ordered by `event` and `docpath`.
+        '''
+
+        query=query_bank.events['parts']
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                                       
+        # return a dictionary of the resultSet
+        if resultSet: return resultSet
+        else: return None                                   
+                                 
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.
@@ -237,4 +300,4 @@ def get_all_macro_events():
         row_id = result['macro']['value'].split('#r')[1]
         result['macro_link'] = '%s/articles' % row_id
     # return the dictionary resultset of the query          
-    return resultSet       
+    return resultSet  

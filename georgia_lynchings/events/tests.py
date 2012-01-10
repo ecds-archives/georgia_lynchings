@@ -15,8 +15,12 @@ class MacroEventTest(TestCase):
         
         # some handy fixtures from test data
         self.NONEXISTENT_MACRO_ID = '0'
+        self.CRISP_MACRO_ID = '3'           
         self.SAM_HOSE_MACRO_ID = '12'
+        self.RANDOLPH_MACRO_ID = '208'        
         self.CAMPBELL_MACRO_ID = '360'
+ 
+               
 
     def tearDown(self):
         # restore settings
@@ -79,7 +83,57 @@ class MacroEventTest(TestCase):
                 
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
         expected, got = None, macro.get_triplets() 
-        self.assertEqual(expected, got, 'Expected %s for nonexistant triplet macro id, got %s' % (expected, got))                
+        self.assertEqual(expected, got, 'Expected %s for nonexistant triplet macro id, got %s' % (expected, got)) 
+                               
+    def test_parto(self):
+        macro = MacroEvent(self.RANDOLPH_MACRO_ID)
+        resultSet = macro.get_participant_O()
+        # Test macro event
+        expected, got = 'Randolph', resultSet[7]['melabel']['value']
+        self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
+        # Test name_of_indivd_actor
+        expected, got = 'mother', resultSet[7]['name_of_indivd_actor']['value']
+        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
+        # Test quantitative age
+        expected, got = 'elderly', resultSet[7]['quantitative_age']['value']
+        self.assertEqual(expected, got, 'Expected %s quantitative_age, got %s' % (expected, got))
+        # Test gender
+        expected, got = 'female', resultSet[7]['gender']['value']
+        self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
+        # Test lname
+        expected, got = 'taylor', resultSet[0]['lname']['value']
+        self.assertEqual(expected, got, 'Expected %s lname, got %s' % (expected, got))
+        # Test race
+        expected, got = 'white', resultSet[0]['race']['value']
+        self.assertEqual(expected, got, 'Expected %s race, got %s' % (expected, got))
+        # Test name_of_indivd_actor
+        expected, got = 'sheriff', resultSet[0]['name_of_indivd_actor']['value']
+        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))
+        
+    def test_parts(self):
+        macro = MacroEvent(self.CRISP_MACRO_ID)
+        resultSet = macro.get_participant_S()
+        # Test macro event
+        expected, got = 'Crisp', resultSet[7]['melabel']['value']
+        self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
+        # Test name_of_indivd_actor
+        expected, got = 'sheriff', resultSet[5]['name_of_indivd_actor']['value']
+        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
+        # Test quantitative age
+        expected, got = 'young', resultSet[7]['quantitative_age']['value']
+        self.assertEqual(expected, got, 'Expected %s quantitative_age, got %s' % (expected, got))
+        # Test gender
+        expected, got = 'male', resultSet[7]['gender']['value']
+        self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
+        # Test lname
+        expected, got = 'simmons', resultSet[7]['lname']['value']
+        self.assertEqual(expected, got, 'Expected %s lname, got %s' % (expected, got))
+        # Test race
+        expected, got = 'white', resultSet[7]['race']['value']
+        self.assertEqual(expected, got, 'Expected %s race, got %s' % (expected, got))
+        # Test name_of_indivd_actor
+        expected, got = 'coroner', resultSet[6]['name_of_indivd_actor']['value']
+        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))                                             
         
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID
