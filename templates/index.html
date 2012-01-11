@@ -45,7 +45,7 @@
     <div class="pane" id="bottomright">
       <div class="floater"></div>
       <div class="panecontent">
-        <form action="" method="get">
+        <form action="{% url search %}" method="get">
           {{ search_form.q }}
           <input type="submit" value="search">
         </form>

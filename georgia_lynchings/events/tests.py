@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
+from mock import patch, MagicMock
 from rdflib import Literal
 
 from georgia_lynchings.events.models import MacroEvent
@@ -21,7 +22,6 @@ class MacroEventTest(TestCase):
         self.SAM_HOSE_MACRO_ID = '12'
         self.RANDOLPH_MACRO_ID = '208'        
         self.CAMPBELL_MACRO_ID = '360'
- 
 
     def tearDown(self):
         # restore settings
@@ -222,6 +222,27 @@ class MacroEventTest(TestCase):
         expected, got = macro_events_response.context['results'][0]['articleTotal'], u'3'
         msg = 'Expected macro event article count [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
+
+    @patch('sunburnt.SolrInterface')
+    def test_search_url(self, mock_solr_interface):
+        mocksolr = MagicMock()
+        mock_solr_interface.return_value = mocksolr
+        mocksolr.query.return_value = mocksolr
+
+        results = [
+            # currently we use only victim in our template. we can fill
+            # these matches out later as we need.
+            {'victim': 'Sam Hose'},
+            {'victim': 'Sam Holt'},
+        ]
+        mocksolr.execute.return_value = results
+
+        search_url = reverse('search')
+        response = self.client.get(search_url, {'q': 'coweta'})
+
+        self.assertContains(response, 'search results for')
+        self.assertEqual(response.context['term'], 'coweta')
+        self.assertEqual(response.context['results'], results)
 
     def test_index_data(self):
         hose = MacroEvent(self.SAM_HOSE_MACRO_ID)
