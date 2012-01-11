@@ -123,3 +123,12 @@ class ComplexObject(object):
         store = SparqlStore()
         bindings = store.query(sparql_query=unicode(q))
         return [cls(b['obj']) for b in bindings]
+
+    def index_data(self):
+        data = { 'uri': self.uri }
+
+        label = self.label
+        if label:
+            data['label'] = label
+
+        return data

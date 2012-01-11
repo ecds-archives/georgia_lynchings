@@ -41,6 +41,49 @@ class MacroEvent(ComplexObject):
     last_coded = ssx.r94
     'the date this case most recently had coding data added'
 
+    def index_data(self):
+        data = super(MacroEvent, self).index_data().copy()
+        
+        victim = self.victim
+        if victim:
+            data['victim'] = victim
+
+        datedict = self.get_date_range()
+        if datedict:
+            data['min_date'] = datedict['mindate']
+            data['max_date'] = datedict['maxdate']
+
+        cities = self.get_cities()
+        if cities:
+            data['city'] = cities
+
+        data['participant_uri'] = []
+        data['participant_last_name'] = []
+        data['participant_qualitative_age'] = []
+        data['participant_race'] = []
+        data['participant_gender'] = []
+        data['participant_actor_name'] = []
+
+        participant_rows = self.get_statement_object_data() + \
+                           self.get_statement_subject_data()
+        for participant_row in participant_rows:
+            if 'parto' in participant_row:
+                data['participant_uri'].append(participant_row['parto'])
+            if 'parts' in participant_row:
+                data['participant_uri'].append(participant_row['parts'])
+            if 'lname' in participant_row:
+                data['participant_last_name'].append(participant_row['lname'])
+            if 'qualitative_age' in participant_row:
+                data['participant_qualitative_age'].append(participant_row['qualitative_age'])
+            if 'race' in participant_row:
+                data['participant_race'].append(participant_row['race'])
+            if 'gender' in participant_row:
+                data['participant_gender'].append(participant_row['gender'])
+            if 'name_of_indivd_actor' in participant_row:
+                data['participant_actor_name'].append(participant_row['name_of_indivd_actor'])
+
+        return data
+
     # methods for wrapping a MacroEvent around a URI and querying utility
     # data about it. For now these methods have hard-coded SPARQL, but we
     # hope in time to be able to generate these queries from the RDF
@@ -83,15 +126,9 @@ class MacroEvent(ComplexObject):
     def get_cities(self):
         '''Get all cities associated with this macro event.
 
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:
-                  * `city`: the city
-                  * `event`: the uri of the event associated with this article                  
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `evlabel`: the event label
-
-                The matches are ordered by `event` and `docpath`.
+        :rtype: a list of city names associated with this macro event,
+                expressed as :class:`rdflib.Literal` objects (a subclass of
+                ``unicode``)
         '''
 
         query=query_bank.events['cities']
@@ -99,12 +136,7 @@ class MacroEvent(ComplexObject):
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})                                       
         # return the list of cities
-        if resultSet:
-            citylist = []        
-            for result in resultSet:              
-                citylist.append(result['city'])
-            return citylist
-        else: return None
+        return [result['city'] for result in resultSet]
         
     def get_date_range(self):
         '''Get minimum and maximum date range associated with this macro event.
@@ -165,14 +197,15 @@ class MacroEvent(ComplexObject):
             return events
         else: return None  
         
-    def get_participant_O(self):
-        '''Get the information of particpant-O related to this macro event.
+    def get_statement_object_data(self):
+        '''Get data about the particpant-O (sentence object) of statements
+        related to this macro event.
 
         :rtype: a mapping list of the type returned by
                 :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
                 It has the following bindings:
                   * `lname`: lname of this actor 
-                  * `quantitative_age`: quantitative_age of this actor                                   
+                  * `qualitative_age`: qualitative_age of this actor                                   
                   * `race`: race of this actor 
                   * `gender`: gender of this actor 
                   * `name_of_indivd_actor`: Name of Individual Actor
@@ -183,9 +216,6 @@ class MacroEvent(ComplexObject):
                   * `melabel`: the :class:`MacroEvent` label
                   * `evlabel`: the event label
                   * `macro`: the macro event ID
-                  
-
-                The matches are ordered by `event` and `docpath`.
         '''
 
         query=query_bank.events['parto']
@@ -193,30 +223,27 @@ class MacroEvent(ComplexObject):
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})                                       
         # return a dictionary of the resultSet
-        if resultSet: return resultSet
-        else: return None                                   
+        return resultSet
                                  
-    def get_participant_S(self):
-        '''Get the information of particpant-S related to this macro event.
+    def get_statement_subject_data(self):
+        '''Get data about the particpant-S (sentence subject) of statements
+        related to this macro event.
 
         :rtype: a mapping list of the type returned by
                 :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
                 It has the following bindings:
                   * `lname`: lname of this actor 
-                  * `quantitative_age`: quantitative_age of this actor                                   
+                  * `qualitative_age`: qualitative_age of this actor                                   
                   * `race`: race of this actor 
                   * `gender`: gender of this actor 
                   * `name_of_indivd_actor`: Name of Individual Actor
                   * `actor`: actor of this participant-S 
-                  * `parto`: participant-O of this triplet                                                                                         
+                  * `parts`: participant-S of this triplet                                                                                         
                   * `triplets`: the semantic triplets related to this event               
                   * `event`: the uri of the event associated with this article                  
                   * `melabel`: the :class:`MacroEvent` label
                   * `evlabel`: the event label
                   * `macro`: the macro event ID
-                  
-
-                The matches are ordered by `event` and `docpath`.
         '''
 
         query=query_bank.events['parts']
@@ -224,9 +251,8 @@ class MacroEvent(ComplexObject):
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})                                       
         # return a dictionary of the resultSet
-        if resultSet: return resultSet
-        else: return None                                   
-                                 
+        return resultSet
+
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.

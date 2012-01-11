@@ -41,7 +41,22 @@ types and options, see:
   </types>
 
   <fields>
+    <!-- fields on every ComplexObject -->
     <field name="uri" type="string" indexed="true" stored="true" required="true"/>
+    <field name="label" type="text" indexed="true" stored="true"/>
+
+    <!-- fields for MacroEvent -->
+    <field name="victim" type="text" indexed="true" stored="true"/>
+    <field name="min_date" type="string" indexed="true" stored="true"/>
+    <field name="max_date" type="string" indexed="true" stored="true"/>
+    <field name="city" type="text" indexed="true" stored="true" multiValued="true"/>
+    <!-- MacroEvent participant data -->
+    <field name="participant_uri" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="participant_last_name" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="participant_qualitative_age" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="participant_race" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="participant_gender" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="participant_actor_name" type="text" indexed="true" stored="true" multiValued="true"/>
 
     <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
@@ -67,5 +82,21 @@ types and options, see:
 
   <!-- fields that should be included in the default search -->
   <copyField source="uri" dest="text"/>
+  <copyField source="label" dest="text"/>
+  <copyField source="victim" dest="text"/>
+  <copyField source="city" dest="text"/>
+  <copyField source="participant_last_name" dest="text"/>
+  <copyField source="participant_qualitative_age" dest="text"/>
+  <copyField source="participant_race" dest="text"/>
+  <copyField source="participant_gender" dest="text"/>
+  <copyField source="participant_actor_name" dest="text"/>
+
+  <!-- MacroEvent fields that are probably also interesting as facets -->
+  <copyField source="city" dest="city_facet"/>
+  <copyField source="participant_last_name" dest="participant_last_name_facet"/>
+  <copyField source="participant_qualitative_age" dest="participant_qualitative_age_facet"/>
+  <copyField source="participant_race" dest="participant_race_facet"/>
+  <copyField source="participant_gender" dest="participant_gender_facet"/>
+  <copyField source="participant_actor_name" dest="participant_actor_name_facet"/>
 
 </schema>

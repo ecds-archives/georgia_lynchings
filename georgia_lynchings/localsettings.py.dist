@@ -30,6 +30,9 @@ TEST_SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
 SPARQL_STORE_REPOSITORY = 'repository-name-goes-here'
 TEST_SPARQL_STORE_REPOSITORY = 'repository-name-goes-here'
 
+# Index the data (and access indexed data) here
+SOLR_INDEX_URL = 'http://server.example.com/solr/georgia_lynchings/'
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -55,7 +58,6 @@ SECRET_KEY = ''
 
 # for Developers only: to use sessions in runserver, uncomment this line (override configuration in settings.py)
 #SESSION_COOKIE_SECURE = False
-
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

@@ -75,20 +75,19 @@ events['articles']="""
     ORDER BY ?event ?docpath
 """
 
-'Find cities related to a MacroEvent'
+'Find cities related to a Macro Event'
 events['cities']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
     PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
     PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
     PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
 
-    SELECT DISTINCT ?city ?event ?evlabel ?melabel
+    SELECT DISTINCT ?city
     WHERE {
-      # First find all the Macro events, all fo the Events for those macros,
-      # and all fo the Triplets for those events. We'll be looking in these
-      # triplets for locations.
-      # Note: Technically we don't need the Macro events. They're provided here
-      # only for context.
+      # For a pre-bound ?macro (or for all Macro Events), find all of the
+      # Events for those macros, and all of the Triplets for those events.
+      # We'll be looking in these triplets for locations.
+
       ?macro a scx:r1;                    # Macro event
              dcx:Identifier ?melabel;
              sxcxcx:r61 ?event.           # Event
@@ -139,8 +138,6 @@ events['cities']="""
       # And grab only those records that have at least one data point.
       FILTER (BOUND(?city))
     }
-    # Order by UCASE to fold case.
-    ORDER BY UCASE(?city) ?event ?evlabel
 """
 
 'Find date range for a MacroEvent'
@@ -307,7 +304,7 @@ events['parto']="""
     PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
     PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
     PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
-    SELECT DISTINCT ?lname ?quantitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parto ?actor ?event ?evlabel ?melabel ?macro
+    SELECT DISTINCT ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parto ?actor ?event ?evlabel ?melabel ?macro
     WHERE {
         # First find all the Macro events, and all the Events for those macros,
         # and all of the Triplets for those events, and all the Participant-O
@@ -346,12 +343,12 @@ events['parto']="""
             FILTER (?race != "?")
         }
 
-        # Provide Quantitative Age, if it exists
+        # Provide Qualitative Age, if it exists
         OPTIONAL {
             ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
             ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
-            ?age ssx:r76 ?quantitative_age. # Quantitative Age
-            FILTER (?quantitative_age != "?")
+            ?age ssx:r76 ?qualitative_age. # Qualitative Age
+            FILTER (?qualitative_age != "?")
         }
 
         # Provide Last Name, if it exists
@@ -372,7 +369,7 @@ events['parts']="""
     PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
     PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
     PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
-    SELECT DISTINCT ?lname ?quantitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parts ?actor ?event ?evlabel ?melabel ?macro
+    SELECT DISTINCT ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parts ?actor ?event ?evlabel ?melabel ?macro
     WHERE {
         # First find all the Macro events, and all the Events for those macros,
         # and all of the Triplets for those events, and all the Participant-S
@@ -411,12 +408,12 @@ events['parts']="""
             FILTER (?race != "?")
         }
 
-        # Provide Quantitative Age, if it exists
+        # Provide Qualitative Age, if it exists
         OPTIONAL {
             ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
             ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
-            ?age ssx:r76 ?quantitative_age. # Quantitative Age
-            FILTER (?quantitative_age != "?")
+            ?age ssx:r76 ?qualitative_age. # Qualitative Age
+            FILTER (?qualitative_age != "?")
         }
 
         # Provide Last Name, if it exists

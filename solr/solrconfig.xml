@@ -7,7 +7,8 @@ documentation and more examples, see:
   http://svn.apache.org/repos/asf/lucene/dev/trunk/solr/example/solr/conf/solrconfig.xml
 -->
 <config>
-  <luceneMatchVersion>LUCENE_33</luceneMatchVersion>
+  <!-- we could use stuff more recent than this, but currently we don't -->
+  <luceneMatchVersion>LUCENE_31</luceneMatchVersion>
 
   <updateHandler class="solr.DirectUpdateHandler2">
     <autoCommit>

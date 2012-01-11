@@ -4,6 +4,7 @@ from django.test import TestCase, Client
 from rdflib import Literal
 
 from georgia_lynchings.events.models import MacroEvent
+from georgia_lynchings.rdf.ns import dcx
 
 class MacroEventTest(TestCase):
     def setUp(self):
@@ -21,7 +22,6 @@ class MacroEventTest(TestCase):
         self.RANDOLPH_MACRO_ID = '208'        
         self.CAMPBELL_MACRO_ID = '360'
  
-               
 
     def tearDown(self):
         # restore settings
@@ -57,8 +57,8 @@ class MacroEventTest(TestCase):
         self.assertEqual(expected, got, 'Expected %s city list, got %s' % (expected, got))
         
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
-        expected, got = None, macro.get_cities() 
-        self.assertEqual(expected, got, 'Expected %s for nonexistant city macro id, got %s' % (expected, got))         
+        expected, got = [], macro.get_cities() 
+        self.assertEqual(expected, got, 'Expected %s for nonexistant city macro id, got %s' % (expected, got))
         
     def test_get_date_range(self):
         macro = MacroEvent(self.CAMPBELL_MACRO_ID)
@@ -88,16 +88,16 @@ class MacroEventTest(TestCase):
                                
     def test_parto(self):
         macro = MacroEvent(self.RANDOLPH_MACRO_ID)
-        resultSet = macro.get_participant_O()
+        resultSet = macro.get_statement_object_data()
         # Test macro event
         expected, got = 'Randolph', resultSet[7]['melabel']
         self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
         # Test name_of_indivd_actor
         expected, got = 'mother', resultSet[7]['name_of_indivd_actor']
         self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
-        # Test quantitative age
-        expected, got = 'elderly', resultSet[7]['quantitative_age']
-        self.assertEqual(expected, got, 'Expected %s quantitative_age, got %s' % (expected, got))
+        # Test qualitative age
+        expected, got = 'elderly', resultSet[7]['qualitative_age']
+        self.assertEqual(expected, got, 'Expected %s qualitative_age, got %s' % (expected, got))
         # Test gender
         expected, got = 'female', resultSet[7]['gender']
         self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
@@ -113,16 +113,16 @@ class MacroEventTest(TestCase):
         
     def test_parts(self):
         macro = MacroEvent(self.CRISP_MACRO_ID)
-        resultSet = macro.get_participant_S()
+        resultSet = macro.get_statement_subject_data()
         # Test macro event
         expected, got = 'Crisp', resultSet[7]['melabel']
         self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
         # Test name_of_indivd_actor
         expected, got = 'sheriff', resultSet[5]['name_of_indivd_actor']
         self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
-        # Test quantitative age
-        expected, got = 'young', resultSet[7]['quantitative_age']
-        self.assertEqual(expected, got, 'Expected %s quantitative_age, got %s' % (expected, got))
+        # Test qualitative age
+        expected, got = 'young', resultSet[7]['qualitative_age']
+        self.assertEqual(expected, got, 'Expected %s qualitative_age, got %s' % (expected, got))
         # Test gender
         expected, got = 'male', resultSet[7]['gender']
         self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
@@ -222,3 +222,33 @@ class MacroEventTest(TestCase):
         expected, got = macro_events_response.context['results'][0]['articleTotal'], u'3'
         msg = 'Expected macro event article count [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
+
+    def test_index_data(self):
+        hose = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        hose_data = hose.index_data()
+
+        self.assertEqual(hose_data['victim'], 'Sam Hose')
+        self.assertEqual(hose_data['min_date'], '1899-12-04')
+        self.assertEqual(hose_data['max_date'], '1899-12-04')
+
+        self.assertEqual(len(hose_data['participant_uri']), 5)
+        self.assertEqual(hose_data['participant_uri'][0], dcx.r4586)
+        self.assertEqual(len(hose_data['participant_last_name']), 5)
+        self.assertEqual(hose_data['participant_last_name'][0], 'cranford')
+        self.assertEqual(len(hose_data['participant_qualitative_age']), 0)
+        self.assertEqual(len(hose_data['participant_race']), 1)
+        self.assertEqual(hose_data['participant_race'][0], 'white')
+        self.assertEqual(len(hose_data['participant_gender']), 7)
+        self.assertEqual(hose_data['participant_gender'][0], 'male')
+        self.assertEqual(len(hose_data['participant_actor_name']), 0)
+        self.assertEqual(len(hose_data['city']), 1)
+        self.assertEqual(hose_data['city'][0], 'palmetto')
+
+        # test cases for fields that are empty in hose
+        crisp = MacroEvent(self.CRISP_MACRO_ID)
+        crisp_data = crisp.index_data()
+
+        self.assertEqual(len(crisp_data['participant_qualitative_age']), 1)
+        self.assertEqual(crisp_data['participant_qualitative_age'][0], 'young')
+        self.assertEqual(len(crisp_data['participant_actor_name']), 3)
+        self.assertEqual(crisp_data['participant_actor_name'][0], 'accomplice')
