@@ -3,7 +3,13 @@
 {% block title %}Search results: {{ term }}{% endblock %}
 
 {% block content %}
-  <div class="main">search results for: <strong>{{ term }}</strong></div>
+  <div class="main">search results for: 
+    <form action="{% url search %}" method="get">
+      {{ form.q }}
+      <input type="submit" value="search again">
+    </form>
+  </div>
+
   <ul>
     {% for result in results %}
       <li>lynching of <strong>{{ result.victim }}</strong></li>

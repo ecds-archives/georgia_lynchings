@@ -243,6 +243,7 @@ class MacroEventTest(TestCase):
         self.assertContains(response, 'search results for')
         self.assertEqual(response.context['term'], 'coweta')
         self.assertEqual(response.context['results'], results)
+        self.assertTrue('form' in response.context)
 
     def test_index_data(self):
         hose = MacroEvent(self.SAM_HOSE_MACRO_ID)

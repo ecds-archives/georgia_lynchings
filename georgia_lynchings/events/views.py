@@ -63,4 +63,4 @@ def search(request):
         results = solr.query(term).execute()
 
     return render(request, 'events/search_results.html',
-                  {'results': results, 'term': term})
+                  {'results': results, 'term': term, 'form': form})
