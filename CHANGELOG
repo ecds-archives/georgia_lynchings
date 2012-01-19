@@ -18,4 +18,5 @@ of the Georgia Lynchings data.
 * A user can visit a webpage to view all articles related to an event. 
 * A user can visit a webpage to view all events related by a particular person. Find all actions that Sam Hoses did.
 * A user can open a newspaper article link supplied in a query result set in order to verify original source. 
-* User can access a Staging instance of web app. 
+* User can access a Staging instance of web app.
+* Added documentation section for Timemap in README

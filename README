@@ -1,2 +1,15 @@
 Georgia Lynchings is an Emory University Libraries DiSC project 
 initially created by the Emory University Libraries staff.
+
+Timemap
+=======
+Timemap is a Javascript library to help use online maps, including Google,
+OpenLayers, and Bing, with a SIMILE timeline. The library allows you to
+load one or more datasets in JSON, KML, or GeoRSS onto both a map and a timeline
+simultaneously. By default, only items in the visible range of the timeline are
+displayed on the map.
+
+ Project Home: http://code.google.com/p/timemap/
+
+ Documentation can be found `here <http://timemap.googlecode.com/svn/tags/2.0.1/docs/index.html>`_
+
