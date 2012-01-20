@@ -64,3 +64,10 @@ def search(request):
 
     return render(request, 'events/search_results.html',
                   {'results': results, 'term': term, 'form': form})
+
+
+def timemap(request):
+    """
+    bare minimum for prototype of timemap
+    """
+    return render(request, 'events/timemap.html', {})

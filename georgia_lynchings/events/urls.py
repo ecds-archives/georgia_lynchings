@@ -14,6 +14,7 @@ urlpatterns = patterns('georgia_lynchings.events.views',
     url(r'times/$', 'times', name='times'),                            # events by times      
     url(r'search/$', 'search', name='search'),                         # event search results
     url(r'^(?P<row_id>[0-9]+)/articles/$', 'articles', name='articles'),  # articles for macro event id
-    url(r'^$', 'macro_events', name='macro_events'),                   # all macro event  
+    url(r'^$', 'macro_events', name='macro_events'),                   # all macro event
+    url(r'timemap/$', 'timemap', name='timemap'),                            # timemap prototype
 )
 
