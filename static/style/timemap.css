@@ -56,3 +56,6 @@ div.custominfostyle {
     width: 20em;
 }
 
+div#timelinecontainer{ height: 150px; }
+div#mapcontainer{ height: 300px; }
+
