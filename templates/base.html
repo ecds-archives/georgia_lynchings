@@ -10,6 +10,9 @@
     {% endblock %}
     <link rel="shortcut icon" href="{{ STATIC_URL }}images/favicon.ico" type="image/x-icon" />
     <title>{% block title %}{% endblock %}</title>
+    {% block page-head %}
+    {% comment %}Put Extra Header information here.{% endcomment %}
+    {% endblock %}
 </head>
 <body id="{% block body_id %}{% endblock %}">
   {% block banner %}<div class="emorybanner"/>{% endblock %}
