@@ -101,6 +101,8 @@ def get_timemap_info():
                               "lon" : -82.28558
                            },
                           "options" : {
+                            #Consider using infoUrl or infoTemplate instead when real data
+                            # is being generated
                             "infoHtml": "<div><b>Columbia</b></div>" +
                                          "<div>Date: 1875-01-01</div>" +
                                          "<div>Location: Columbia, GA</div>" +
