@@ -1,3 +1,5 @@
+import json
+import logging
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
@@ -5,7 +7,10 @@ from mock import patch, MagicMock
 from rdflib import Literal
 
 from georgia_lynchings.events.models import MacroEvent
+from georgia_lynchings.events.views import get_timemap_info
 from georgia_lynchings.rdf.ns import dcx
+
+logger = logging.getLogger(__name__)
 
 class MacroEventTest(TestCase):
     def setUp(self):
@@ -274,3 +279,23 @@ class MacroEventTest(TestCase):
         self.assertEqual(crisp_data['participant_qualitative_age'][0], 'young')
         self.assertEqual(len(crisp_data['participant_actor_name']), 3)
         self.assertEqual(crisp_data['participant_actor_name'][0], 'accomplice')
+
+class TimemapTest(TestCase):
+
+    def test_get_timemap_info(self):
+        result = json.loads(get_timemap_info())
+
+        #check top level dataset elements
+        self.assertEqual(result[0]['id'], 'event')
+        self.assertEqual(result[0]['title'], 'Events')
+        self.assertEqual(result[0]['theme'], 'red')
+        self.assertEqual(result[0]['type'], 'basic')
+
+        #check first level of data - will have to be added to once real function is in place
+        self.assertEqual(result[0]['options']['items'][0]['title'], 'Columbia')
+        self.assertEqual(result[0]['options']['items'][0]['start'], '1875-01-01')
+        self.assertEqual(result[0]['options']['items'][0]['point']['lat'], 31.753389)
+        self.assertEqual(result[0]['options']['items'][0]['point']['lon'], -82.28558)
+        self.assertTrue(len(result[0]['options']['items'][0]['options']['infoHtml']) > 0 )
+
+
