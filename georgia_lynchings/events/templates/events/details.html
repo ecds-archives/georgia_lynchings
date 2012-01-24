@@ -10,11 +10,10 @@
       <tr><th width=25% align='right'>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
       <tr><th align='right'>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
       <tr><th align='right'>Victim:</th><td>{{ results.victim }}</td></tr>
-      <tr>
       {% for event in results.events %}  
-        <th align='right'>Event:<br>Min Date:<br>Max Date:<br>City:</th>
-        <td>{{ event.evlabel }}<br/>{{ event.mindate }}<br/>{{ event.maxdate }}<br/>{{ event.city }}</td>
+        <tr><th align='right'>Event:<br>Min Date:<br>Max Date:<br>City:</th>
+        <td>{{ event.evlabel }}<br/>{{ event.mindate }}<br/>{{ event.maxdate }}<br/>{{ event.city }}</td></tr>
       {% endfor %}
-      </tr>
+      
   </table>
 {% endblock %}
