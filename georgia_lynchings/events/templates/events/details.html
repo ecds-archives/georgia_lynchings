@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Details: {{ title }}{% endblock %}
+
+{% block content %}
+  <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+  <table summary="Details for a Macro Event {{ results.melabel }}" border=1 cellpadding=10px>
+      <tr><th width=25% align='right'>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
+      <tr><th align='right'>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
+      <tr><th align='right'>Victim:</th><td>{{ results.victim }}</td></tr>
+      <tr>
+      {% for event in results.events %}  
+        <th align='right'>Event:<br>Min Date:<br>Max Date:<br>City:</th>
+        <td>{{ event.evlabel }}<br/>{{ event.mindate }}<br/>{{ event.maxdate }}<br/>{{ event.city }}</td>
+      {% endfor %}
+      </tr>
+  </table>
+{% endblock %}

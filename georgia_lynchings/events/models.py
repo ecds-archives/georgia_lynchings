@@ -4,6 +4,7 @@ from georgia_lynchings.rdf.ns import scx, ssx, sxcxcx
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from urllib import quote
 import logging
+from pprint import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +169,68 @@ class MacroEvent(ComplexObject):
             return datedict
         else: return None
         
+    def get_details(self):
+        '''Get all details associated with this macro event.
+
+        :rtype: a mapping list of the type 
+                It has the following bindings:
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `article_link`: link to associated articles with this event
+                  * `location`: location of the macro event 
+                  * `date_range`: date_range of the macro event 
+                  * `type`: type of the macro event  
+                  * `reason`: reason for the macro event
+                  * `outcome`: outcome for the macro event                   
+                  * `victim`: the name of the victim
+        '''
+        results = {}
+        
+        # collect date information
+        ss=SparqlStore()
+        query=query_bank.events['all']         
+        allResultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})
+        results['articleTotal'] = allResultSet[0]['articleTotal']
+     
+        
+        # collect date information
+        ss=SparqlStore()
+        query=query_bank.events['date_range']         
+        dateResultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})
+        if dateResultSet:
+            results['melabel'] = dateResultSet[0]['melabel']        
+            results['events'] = dateResultSet
+     
+        # collect location information
+        ss=SparqlStore()
+        query=query_bank.events['locations']         
+        locationResultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()}) 
+        if locationResultSet:
+            lindex = 0
+            for locResult in locationResultSet:
+                index = 0  
+                for event in results['events']: 
+                    if event['event'] == locResult['event']:
+                        if u'city' in locResult:
+                            if u'city' in results['events'][index]: 
+                                results['events'][index][u'city'] = ', '.join([results['events'][index][u'city'],locResult[u'city']])
+                            else: event[u'city']= locResult[u'city']
+                        if u'county' in locResult:
+                            if u'county' in results['events'][index]: 
+                                results['events'][index][u'county'] = ', '.join([results['events'][index][u'county'],locResult[u'county']])
+                            else: event[u'county']= locResult[u'county']
+                        if u'state' in locResult:
+                            if u'state' in results['events'][index]: 
+                                results['events'][index][u'state'] = ', '.join([results['events'][index][u'state'],locResult[u'state']])
+                            else: event[u'state']= locResult[u'state']                               
+                    index =+ 1 
+                lindex =+ 1
+
+        # return the dictionary results of the details information          
+        return results        
+        
     def get_triplets(self):
         '''Get the semantic triplets related to this macro event.
 
@@ -324,6 +387,7 @@ def get_all_macro_events():
     # create a link for the macro event articles
     for result in resultSet:
         row_id = result['macro'].split('#r')[1]
-        result['macro_link'] = '%s/articles' % row_id
+        result['details_link'] = '%s/details' % row_id        
+        result['articles_link'] = '%s/articles' % row_id
     # return the dictionary resultset of the query          
     return resultSet  

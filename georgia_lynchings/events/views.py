@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
+from pprint import pprint
 import sunburnt
 
 from georgia_lynchings.forms import SearchForm
@@ -24,6 +25,24 @@ def articles(request, row_id):
     else:   title = "No records found"    
     return render(request, 'events/articles.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title}) 
+                  
+def details(request, row_id):
+    '''
+    List details for a
+    :class:`~georgia_lynchings.events.models.MacroEvent`.
+    
+    :param row_id: the numeric identifier for the 
+                   :class:`~georgia_lynchings.events.models.MacroEvent`.
+    '''
+    results = {}
+    event = MacroEvent(row_id)
+    results = event.get_details()
+    results['articles_link'] = '../../../events/%s/articles' % row_id
+    results['victim'] = event.victim    
+    if results:   title = row_id
+    else:   title = "No records found"    
+    return render(request, 'events/details.html',
+                  {'results': results, 'row_id':row_id, 'title':title})                   
 
 
 def locations(request):
@@ -101,8 +120,6 @@ def get_timemap_info():
                               "lon" : -82.28558
                            },
                           "options" : {
-                            #Consider using infoUrl or infoTemplate instead when real data
-                            # is being generated
                             "infoHtml": "<div><b>Columbia</b></div>" +
                                          "<div>Date: 1875-01-01</div>" +
                                          "<div>Location: Columbia, GA</div>" +
