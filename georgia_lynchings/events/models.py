@@ -182,6 +182,8 @@ class MacroEvent(ComplexObject):
                   * `reason`: reason for the macro event
                   * `outcome`: outcome for the macro event                   
                   * `victim`: the name of the victim
+                  
+           Example macro events: dcx2; dcx:r4, dcx:r50
         '''
         results = {}
         
@@ -206,7 +208,7 @@ class MacroEvent(ComplexObject):
         ss=SparqlStore()
         query=query_bank.events['locations']         
         locationResultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()}) 
+                             initial_bindings={'macro': self.uri.n3()})                           
         if locationResultSet:
             lindex = 0
             for locResult in locationResultSet:
@@ -215,18 +217,41 @@ class MacroEvent(ComplexObject):
                     if event['event'] == locResult['event']:
                         if u'city' in locResult:
                             if u'city' in results['events'][index]: 
-                                results['events'][index][u'city'] = ', '.join([results['events'][index][u'city'],locResult[u'city']])
+                                results['events'][index][u'city'] = ', '.join(set([results['events'][index][u'city'],locResult[u'city']]))
                             else: event[u'city']= locResult[u'city']
                         if u'county' in locResult:
                             if u'county' in results['events'][index]: 
-                                results['events'][index][u'county'] = ', '.join([results['events'][index][u'county'],locResult[u'county']])
+                                results['events'][index][u'county'] = ', '.join(set([results['events'][index][u'county'],locResult[u'county']]))
                             else: event[u'county']= locResult[u'county']
                         if u'state' in locResult:
                             if u'state' in results['events'][index]: 
-                                results['events'][index][u'state'] = ', '.join([results['events'][index][u'state'],locResult[u'state']])
+                                results['events'][index][u'state'] = ', '.join(set([results['events'][index][u'state'],locResult[u'state']]))
                             else: event[u'state']= locResult[u'state']                               
                     index =+ 1 
-                lindex =+ 1
+                lindex =+ 1              
+                
+        # collect detail information
+        print "\n Collect detail information\n"
+        ss=SparqlStore()
+        query=query_bank.events['details']         
+        detailResultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})
+        pprint(detailResultSet)
+        results['reason'] = "n/a"
+        results['outcome'] = "n/a"               
+        event_type_list = []
+        if detailResultSet:
+            # Get the name_of_reason, if defined.
+            if detailResultSet[0]['reason']: results['reason'] = detailResultSet[0]['reason']
+            # Get the name_of_outcome, if defined.            
+            if detailResultSet[0]['outcome']: results['outcome'] = detailResultSet[0]['outcome'] 
+            # Create a list of type_of_events, if defined.
+            for detail in detailResultSet: 
+                if detail['type_of_event']:  event_type_list.append(detail['type_of_event'])
+                
+        # Set the event_type to a string, eliminate duplicates
+        if event_type_list:  results['event_type'] = ', '.join(set(event_type_list))
+        else: results['event_type'] = "n/a"
 
         # return the dictionary results of the details information          
         return results        
