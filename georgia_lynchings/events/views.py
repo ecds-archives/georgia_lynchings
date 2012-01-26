@@ -38,11 +38,12 @@ def details(request, row_id):
     pagelink = {}
     event = MacroEvent(row_id)
     results = event.get_details()
-    results['articles_link'] = '../../../events/%s/articles' % row_id
-    results['victim'] = event.victim  
     pagelink['prev']='../../%s/details' % (int(row_id) - 1)
     pagelink['next']='../../%s/details' % (int(row_id) + 1)    
-    if results:   title = row_id
+    if results:   
+        title = row_id
+        results['articles_link'] = '../../../events/%s/articles' % row_id
+        results['victim'] = event.victim          
     else:   title = "No records found"    
     return render(request, 'events/details.html',
                   {'results': results, 'row_id':row_id, 'title':title, 'pagelink':pagelink})                   

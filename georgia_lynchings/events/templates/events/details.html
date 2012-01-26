@@ -5,6 +5,7 @@
 {% block content %}
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
+{% if results %}
   <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
   <table summary="Details for a Macro Event {{ results.melabel }}" border=1 cellpadding=10px>
       <tr><th width=25% align='right'>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
@@ -13,11 +14,14 @@
       <tr><th align='right'>Type of Event:</th><td>{{ results.event_type }}</td></tr>
       <tr><th align='right'>Reason:</th><td>{{ results.reason }}</td></tr>    
       <tr><th align='right'>Outcome:</th><td>{{ results.outcome }}</td></tr>
+      
       {% for event in results.events %}  
         <tr><th align='right'>Event:<br>Min Date:<br>Max Date:<br>City:</th>
         <td>{{ event.evlabel }}<br/>{{ event.mindate }}<br/>{{ event.maxdate }}<br/>{{ event.city }}</td></tr>
       {% endfor %}
-      
   </table>
-  <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>
+{% else %}
+<h1 class="main">Not Found</h1>
+{% endif %}  
+<a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>
 {% endblock %}

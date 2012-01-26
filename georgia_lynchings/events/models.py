@@ -187,22 +187,69 @@ class MacroEvent(ComplexObject):
         '''
         results = {}
         
+        # set the macro event label, and load all the associated events
+        ss=SparqlStore()
+        query=query_bank.events['macro']         
+        allResultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})
+        if allResultSet:
+            results['melabel'] = allResultSet[0]['melabel'] 
+            results['events'] = []
+            for event in allResultSet:
+                eventdict = {}
+                if event['evlabel']:
+                    eventdict['event']=event['event']
+                    eventdict['evlabel']=event['evlabel']
+                    results['events'].append(eventdict)
+        
+        # Do not continue if an event does not exist.
+        if not results: return None
+        
         # collect date information
         ss=SparqlStore()
         query=query_bank.events['all']         
-        allResultSet = ss.query(sparql_query=query, 
+        docResultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
-        results['articleTotal'] = allResultSet[0]['articleTotal']
-     
+        results['articleTotal'] = docResultSet[0]['articleTotal']                
+         
         
+        # collect detail information
+        ss=SparqlStore()
+        query=query_bank.events['details']         
+        detailResultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                          
+        reason_list = []
+        outcome_list = []                             
+        event_type_list = []
+        if detailResultSet:
+            for detail in detailResultSet: 
+                # Get the name_of_reason, if defined.
+                if 'reason' in detail.keys(): reason_list.append(detail['reason'])
+                # Get the name_of_outcome, if defined.            
+                if 'outcome' in detail.keys(): outcome_list.append(detail['outcome']) 
+                # Create a list of type_of_events, if defined.            
+                if 'event_type' in detail.keys():  event_type_list.append(detail['event_type'])
+
+        # Set the lists to a string, eliminate duplicates
+        if event_type_list:  results['event_type'] = ', '.join(set(event_type_list))
+        else: results['event_type'] = "n/a" 
+        if reason_list:  results['reason'] = ', '.join(set(reason_list))
+        else: results['reason'] = "n/a"  
+        if outcome_list:  results['outcome'] = ', '.join(set(outcome_list))
+        else: results['outcome'] = "n/a"                                 
+
         # collect date information
         ss=SparqlStore()
         query=query_bank.events['date_range']         
         dateResultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
         if dateResultSet:
-            results['events'] = dateResultSet
-     
+            for dateResult in dateResultSet:
+                for event in results['events']:
+                    event['mindate'] = dateResult['mindate']
+                    event['maxdate'] = dateResult['maxdate']
+
+
         # collect location information
         ss=SparqlStore()
         query=query_bank.events['locations']         
@@ -227,31 +274,7 @@ class MacroEvent(ComplexObject):
                                 results['events'][index][u'state'] = ', '.join(set([results['events'][index][u'state'],locResult[u'state']]))
                             else: event[u'state']= locResult[u'state']                               
                     index =+ 1 
-                lindex =+ 1              
-                
-        # collect detail information
-        ss=SparqlStore()
-        query=query_bank.events['details']         
-        detailResultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})
-        results['melabel'] = "n/a"                             
-        results['reason'] = "n/a"
-        results['outcome'] = "n/a"               
-        event_type_list = []
-        if detailResultSet:
-            # Get the macro event label, if defined.
-            if detailResultSet[0]['melabel']: results['melabel'] = detailResultSet[0]['melabel']            
-            # Get the name_of_reason, if defined.
-            if detailResultSet[0]['reason']: results['reason'] = detailResultSet[0]['reason']
-            # Get the name_of_outcome, if defined.            
-            if detailResultSet[0]['outcome']: results['outcome'] = detailResultSet[0]['outcome'] 
-            # Create a list of type_of_events, if defined.
-            for detail in detailResultSet: 
-                if detail['type_of_event']:  event_type_list.append(detail['type_of_event'])
-                
-        # Set the event_type to a string, eliminate duplicates
-        if event_type_list:  results['event_type'] = ', '.join(set(event_type_list))
-        else: results['event_type'] = "n/a"
+                lindex =+ 1
 
         # return the dictionary results of the details information          
         return results        

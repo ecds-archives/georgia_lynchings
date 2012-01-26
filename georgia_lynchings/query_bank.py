@@ -197,28 +197,29 @@ events['date_range']="""
 
 'Find details related to a Macro Event'
 events['details']="""
-    PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-    SELECT DISTINCT  ?outcome ?reason ?type_of_event ?event ?evlabel ?melabel ?macro
-    WHERE {
-        # First find all the Macro events, and all the Events for those macros,
-        # and the type_of_event, name of reason, and name of outcome.
-        ?macro a scx:r1; # Macro event
-            dcx:Identifier ?melabel;
-            sxcxcx:r61 ?event. # Event
+PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+SELECT DISTINCT ?macro ?melabel ?event ?evlabel ?event_type ?outcome ?reason   
+WHERE {
+    # First find all the Macro events, and all the Events for those macros,
+    # and the type_of_event, type of event, name of reason, and name of outcome.
+    ?macro a scx:r1; # Macro event
+        dcx:Identifier ?melabel;
+        sxcxcx:r61 ?event. # Event
+    ?event dcx:Identifier ?evlabel;
+    
+    OPTIONAL {
+        ?event ssx:r52 ?event_type.           # Type of Event
+        FILTER (?event_type != "?")
+    }
+    
             
-        # Provide type_of_event, if it exists
-        OPTIONAL {
-            ?individual ssx:r52 ?type_of_event. # Type of Event
-            FILTER (?type_of_event != "?")
-        }            
-            
-      ?event dcx:Identifier ?evlabel;
-             sxcxcx:r62 ?_1.              # Semantic Triplet
-
-      # Every Triplet has a Process
+    OPTIONAL {
+        ?event dcx:Identifier ?evlabel;
+             sxcxcx:r62 ?_1.              # Semantic Triplet            
+        # Every Triplet has a Process
         ?_1 sxcxcx:r64 ?_2.               # Process
         ?_2 sxcxcx:r78 ?_3.               # Simple process
         ?_3 sxcxcx:r103 ?_4.              # Circumstances
@@ -233,8 +234,10 @@ events['details']="""
       OPTIONAL {
         ?_6 ssx:r9 ?reason.               # Name of Reason
         FILTER (?reason != "?")
-      }       
+      }
     }
+}
+ORDER BY ?macro
 """
 
 
@@ -318,6 +321,25 @@ events['locations']="""
 """
 
 'Find all Macro Events'
+events['macro']="""
+PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
+PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+
+SELECT DISTINCT ?macro ?melabel ?event ?evlabel
+WHERE {
+  ?macro a scx:r1;                   # Macro event
+  OPTIONAL { ?macro dcx:Identifier ?melabel. }
+  ?macro sxcxcx:r61 ?event.          # Event
+  ?event dcx:Identifier ?evlabel.  
+
+}
+ORDER BY ?macro
+"""
+
+'Find all Macro Events Documents'
 events['all']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
     PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
