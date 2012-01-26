@@ -201,7 +201,6 @@ class MacroEvent(ComplexObject):
         dateResultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
         if dateResultSet:
-            results['melabel'] = dateResultSet[0]['melabel']        
             results['events'] = dateResultSet
      
         # collect location information
@@ -231,16 +230,17 @@ class MacroEvent(ComplexObject):
                 lindex =+ 1              
                 
         # collect detail information
-        print "\n Collect detail information\n"
         ss=SparqlStore()
         query=query_bank.events['details']         
         detailResultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
-        pprint(detailResultSet)
+        results['melabel'] = "n/a"                             
         results['reason'] = "n/a"
         results['outcome'] = "n/a"               
         event_type_list = []
         if detailResultSet:
+            # Get the macro event label, if defined.
+            if detailResultSet[0]['melabel']: results['melabel'] = detailResultSet[0]['melabel']            
             # Get the name_of_reason, if defined.
             if detailResultSet[0]['reason']: results['reason'] = detailResultSet[0]['reason']
             # Get the name_of_outcome, if defined.            

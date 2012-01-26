@@ -3,9 +3,9 @@
 {% block title %}Details: {{ title }}{% endblock %}
 
 {% block content %}
-  <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
+  <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
   <table summary="Details for a Macro Event {{ results.melabel }}" border=1 cellpadding=10px>
       <tr><th width=25% align='right'>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
       <tr><th align='right'>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
@@ -19,4 +19,5 @@
       {% endfor %}
       
   </table>
+  <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>
 {% endblock %}
