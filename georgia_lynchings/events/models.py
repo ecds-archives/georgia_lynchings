@@ -210,8 +210,7 @@ class MacroEvent(ComplexObject):
         query=query_bank.events['all']         
         docResultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
-        results['articleTotal'] = docResultSet[0]['articleTotal']                
-         
+        results['articleTotal'] = docResultSet[0]['articleTotal']                         
         
         # collect detail information
         ss=SparqlStore()
@@ -246,9 +245,8 @@ class MacroEvent(ComplexObject):
         if dateResultSet:
             for dateResult in dateResultSet:
                 for event in results['events']:
-                    event['mindate'] = dateResult['mindate']
-                    event['maxdate'] = dateResult['maxdate']
-
+                    if 'mindate' in dateResult.keys(): event['mindate'] = dateResult['mindate']
+                    if 'maxdate' in dateResult.keys(): event['maxdate'] = dateResult['maxdate']
 
         # collect location information
         ss=SparqlStore()
@@ -275,13 +273,15 @@ class MacroEvent(ComplexObject):
                             else: event[u'state']= locResult[u'state']                               
                     index =+ 1 
                 lindex =+ 1
+        pprint(results)
                 
         # Collect semantic triplets for each event.        
         tripletResultSet = self.get_triplets()                           
         if tripletResultSet:       
             for event in results['events']:
                 if tripletResultSet[event['evlabel']]:  
-                    event['triplets'] = tripletResultSet[event['evlabel']] 
+                    event['triplet_first'] = tripletResultSet[event['evlabel']][0]
+                    event['triplet_rest'] = tripletResultSet[event['evlabel']][1:]
 
         # return the dictionary results of the details information          
         return results        

@@ -15,25 +15,35 @@
       <tr><th align='right'>Type of Event:</th><td>{{ results.event_type }}</td></tr>
       <tr><th align='right'>Reason:</th><td>{{ results.reason }}</td></tr>    
       <tr><th align='right'>Outcome:</th><td>{{ results.outcome }}</td></tr>
-  </table>
-    {% for event in results.events %}
-    <br/>&nbsp;<br/>
-        <table summary="Event {{ results.melabel }}" border=1 cellpadding=10px>
+      {% for event in results.events %} 
+      <tr>
+        <th valign="top" align='right' width=25%>
+           
+            Event:<br/>
+            {% if event.mindate %}Min Date:<br/>{% endif %}  
+            {% if event.maxdate %}Max Date:<br/>{% endif %}                          
+            {% if event.city %}City:<br/>{% endif %}  
+            Semantic Triplets:<br/>       
+        </th>
+        <td valign="top">
+            {{ event.evlabel }}<br/>
+            {% if event.mindate %}{{ event.mindate }}<br/>{% endif %} 
+            {% if event.maxdate %}{{ event.maxdate }}<br/>{% endif %}                         
+            {% if event.city %}{{ event.city }}<br/>{% endif %}  
 
-              <tr><th align='right' width=25%>Event:</th><td>{{ event.evlabel }}</th></tr>
-              <tr><th align='right'>Min Date:</th><td>{{ event.mindate }}</td></tr>
-              <tr><th align='right'>Max Date:</th><td>{{ event.maxdate }}</td></tr> 
-              {% if event.city %}   
-                <tr><th align='right'>City:</th><td>{{ event.city }}</td></tr>  
-              {% endif %}      
-              <tr><th valign='top' align='right'>Semantic Triplets:</th></th><td>
-                  {% for triple in event.triplets %}  
-                    &#8227;&nbsp;{{ triple }}<br/>&nbsp;<br/>
-                  {% endfor %}  
-              </td></tr>    
-          
-        </table>
-    {% endfor %}  
+            &bull;&nbsp;{{ event.triplet_first }}
+            <div class="layer1">
+            <div class="more">. . .</div>
+            <div class="triplet_rest">
+              {% for triple in event.triplet_rest %}  
+                &bull;&nbsp;{{ triple }}<br/>&nbsp;<br/>
+              {% endfor %} </div>
+            </div>
+
+        </td></tr>    
+
+    {% endfor %}      
+  </table>
 {% else %}
 <h1 class="main">Not Found</h1>
 {% endif %}  
