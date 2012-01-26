@@ -275,6 +275,13 @@ class MacroEvent(ComplexObject):
                             else: event[u'state']= locResult[u'state']                               
                     index =+ 1 
                 lindex =+ 1
+                
+        # Collect semantic triplets for each event.        
+        tripletResultSet = self.get_triplets()                           
+        if tripletResultSet:       
+            for event in results['events']:
+                if tripletResultSet[event['evlabel']]:  
+                    event['triplets'] = tripletResultSet[event['evlabel']] 
 
         # return the dictionary results of the details information          
         return results        

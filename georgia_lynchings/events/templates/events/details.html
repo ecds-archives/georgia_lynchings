@@ -7,6 +7,7 @@
 {% get_static_prefix as STATIC_PREFIX %}
 {% if results %}
   <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
+  <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
   <table summary="Details for a Macro Event {{ results.melabel }}" border=1 cellpadding=10px>
       <tr><th width=25% align='right'>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
       <tr><th align='right'>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
@@ -14,12 +15,25 @@
       <tr><th align='right'>Type of Event:</th><td>{{ results.event_type }}</td></tr>
       <tr><th align='right'>Reason:</th><td>{{ results.reason }}</td></tr>    
       <tr><th align='right'>Outcome:</th><td>{{ results.outcome }}</td></tr>
-      
-      {% for event in results.events %}  
-        <tr><th align='right'>Event:<br>Min Date:<br>Max Date:<br>City:</th>
-        <td>{{ event.evlabel }}<br/>{{ event.mindate }}<br/>{{ event.maxdate }}<br/>{{ event.city }}</td></tr>
-      {% endfor %}
   </table>
+    {% for event in results.events %}
+    <br/>&nbsp;<br/>
+        <table summary="Event {{ results.melabel }}" border=1 cellpadding=10px>
+
+              <tr><th align='right' width=25%>Event:</th><td>{{ event.evlabel }}</th></tr>
+              <tr><th align='right'>Min Date:</th><td>{{ event.mindate }}</td></tr>
+              <tr><th align='right'>Max Date:</th><td>{{ event.maxdate }}</td></tr> 
+              {% if event.city %}   
+                <tr><th align='right'>City:</th><td>{{ event.city }}</td></tr>  
+              {% endif %}      
+              <tr><th valign='top' align='right'>Semantic Triplets:</th></th><td>
+                  {% for triple in event.triplets %}  
+                    &#8227;&nbsp;{{ triple }}<br/>&nbsp;<br/>
+                  {% endfor %}  
+              </td></tr>    
+          
+        </table>
+    {% endfor %}  
 {% else %}
 <h1 class="main">Not Found</h1>
 {% endif %}  
