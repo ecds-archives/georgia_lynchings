@@ -7,7 +7,9 @@ from pprint import pprint
 import sunburnt
 
 from georgia_lynchings.forms import SearchForm
-from georgia_lynchings.events.models import MacroEvent, get_events_by_locations, get_events_by_times, get_all_macro_events
+from georgia_lynchings.events.models import MacroEvent, \
+        get_events_by_locations, get_events_by_times, get_all_macro_events, \
+        SemanticTriplet
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +87,27 @@ def search(request):
     if form.is_valid():
         solr = sunburnt.SolrInterface(settings.SOLR_INDEX_URL)
         term = form.cleaned_data['q']
-        results = solr.query(term).execute()
+        results = solr.query(term) \
+                      .filter(complex_type=MacroEvent.rdf_type) \
+                      .execute()
+
+        for result in results:
+            # For triplets on the event, we want a handful of triplets, with
+            # preference given to ones that match the term. So: filter for
+            # triplets (filter here instead of query to allow solr to cache
+            # the triplets), query within those results for the macro event
+            # (which returns all of the triplets for that event), and then
+            # boost the ones that match the term to bring them to the top of
+            # the list. Note that query() needs to come before filter()
+            # because of the way sunburnt constructs its query.
+            result['triplets'] = solr.query(macro_event_uri=result['uri']) \
+                                     .filter(complex_type=SemanticTriplet.rdf_type) \
+                                     .boost_relevancy(2, text=term) \
+                                     .execute()
+
+            # also grab the articles for display
+            event = MacroEvent(result['row_id'])
+            result['articles'] = event.get_articles()
 
     return render(request, 'events/search_results.html',
                   {'results': results, 'term': term, 'form': form})

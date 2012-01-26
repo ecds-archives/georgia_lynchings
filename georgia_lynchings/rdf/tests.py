@@ -5,12 +5,13 @@ from django.conf import settings
 from django.core.management.base import CommandError
 from django.test import TestCase
 from mock import patch
-from rdflib import URIRef, Literal, Namespace, Variable, RDF, RDFS
+from rdflib import URIRef, Literal, Namespace, BNode, Variable, RDF, RDFS
 
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
 from georgia_lynchings.rdf.management.commands import run_sparql_query
-from georgia_lynchings.rdf.models import ComplexObject
+from georgia_lynchings.rdf.models import ComplexObject, RdfPropertyField, \
+        ReversedRdfPropertyField, ChainedRdfPropertyField
 
 class SparqlStoreTest(TestCase):
     def setUp(self):
@@ -192,6 +193,8 @@ class ComplexObjectTest(TestCase):
         class SampleThingie(ComplexObject):
             # a ComplexObject without an rdf_type
             data = self.sample.data
+            typed_data = RdfPropertyField(self.sample.typed_data,
+                                          result_type=int)
         self.SampleThingie = SampleThingie
         self.thingie = SampleThingie(42)
 
@@ -199,6 +202,8 @@ class ComplexObjectTest(TestCase):
             # a ComplexObject with an rdf_type
             rdf_type = self.sample.Widget
             value = self.sample.value
+            rev_value = ReversedRdfPropertyField(value)
+            chained_value = ChainedRdfPropertyField(value, value)
         self.SampleWidget = SampleWidget
         self.widget = SampleWidget(13)
 
@@ -262,4 +267,40 @@ class ComplexObjectTest(TestCase):
             {'obj': self.widget.uri.n3()})
         self.assertEqual(value, 'stuff')
 
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    def test_reverse_sparql_generation(self, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = []
+        data = self.widget.rev_value
 
+        self.assertEqual(mock_query.call_count, 1)
+        args, kwargs = mock_query.call_args
+        self.assertEqual(kwargs['sparql_query'],
+            u'SELECT ?result WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Widget> . ' + 
+            u'?result <http://example.com/#value> ?obj . }')
+
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.models.BNode')
+    def test_chained_sparql_generation(self, MockBNode, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = []
+        MockBNode.return_value = BNode('FAKEID')
+
+        data = self.widget.chained_value
+
+        self.maxDiff = None
+        self.assertEqual(mock_query.call_count, 1)
+        args, kwargs = mock_query.call_args
+        self.assertEqual(kwargs['sparql_query'],
+            u'SELECT ?result WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Widget> . ' + 
+            u'?obj <http://example.com/#value> _:FAKEID . ' +
+            u'_:FAKEID <http://example.com/#value> ?result . ' +
+            u'}')
+
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    def test_typed_property(self, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = [{'result': '14'}]
+        
+        typed_data = self.thingie.typed_data
+        self.assertEqual(typed_data, 14)

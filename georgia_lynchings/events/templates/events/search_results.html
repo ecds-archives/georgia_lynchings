@@ -1,8 +1,10 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Search results: {{ term }}{% endblock %}
 
 {% block content %}
+  {% get_static_prefix as STATIC_PREFIX %}
   <div class="main">search results for: 
     <form action="{% url search %}" method="get">
       {{ form.q }}
@@ -10,9 +12,51 @@
     </form>
   </div>
 
-  <ul>
-    {% for result in results %}
-      <li>lynching of <strong>{{ result.victim }}</strong></li>
-    {% endfor %}
-  </ul>
+  {% for result in results %}
+    <div class='match'>
+      <h2>
+        {% if result.row_id %}
+          <a href="{% url details result.row_id %}">{{ result.victim }}</a>
+        {% else %}
+          {{ result.victim }}
+        {% endif %}
+        lynching
+
+        {% if result.city %}
+          in {{ result.city.0 }}
+        {% endif %}
+
+        {# merge min_date and max_date into a single year or range of years #}
+        {% if result.min_date|slice:":4" and result.max_date|slice:":4" %}
+          {% ifequal result.min_date|slice:":4" result.max_date|slice:":4" %}
+            , {{ result.min_date|slice:":4" }}
+          {% else %}
+            , {{ result.min_date|slice:":4" }}-{{ result.max_date|slice:":4" }}
+          {% endifequal %}
+        {% else %}{% if result.min_date %}
+          , {{ result.min_date|slice:":4" }}
+        {% else %}{% if result.max_date %}
+          , {{ result.max_date|slice:":4" }}
+        {% endif %}{% endif %}{% endif %}
+      </h2>
+      
+      <ul class='triplets'>
+        {% for triplet in result.triplets|slice:":3" %}
+          <li>{{ triplet.label }}</li>
+        {% endfor %}
+      </ul>
+
+      <ul class='articles'>
+        {% for article in result.articles|slice:":3" %}
+          {% comment %}
+             FIXME: copied STATIC_PREFIX/../ from events/articles.html, but
+             it's clearly not the right way to link an article. what's the
+             right way?
+          {% endcomment %}
+          <li><a href="{{ STATIC_PREFIX }}../{{ article.docpath_link }}"><img src="{{ STATIC_PREFIX }}/images/pdf-icon.jpg"></a></li>
+        {% endfor %}
+      </ul>
+    </div>
+
+  {% endfor %}
 {% endblock %}

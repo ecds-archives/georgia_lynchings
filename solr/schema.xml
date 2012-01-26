@@ -43,13 +43,16 @@ types and options, see:
   <fields>
     <!-- fields on every ComplexObject -->
     <field name="uri" type="string" indexed="true" stored="true" required="true"/>
+    <field name="row_id" type="string" indexed="true" stored="true"/>
     <field name="label" type="text" indexed="true" stored="true"/>
+    <field name="complex_type" type="string" indexed="true" stored="true"/>
 
     <!-- fields for MacroEvent -->
     <field name="victim" type="text" indexed="true" stored="true"/>
     <field name="min_date" type="string" indexed="true" stored="true"/>
     <field name="max_date" type="string" indexed="true" stored="true"/>
     <field name="city" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="triplet_label" type="text" indexed="true" stored="false" multiValued="true"/>
     <!-- MacroEvent participant data -->
     <field name="participant_uri" type="string" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_last_name" type="text" indexed="true" stored="true" multiValued="true"/>
@@ -57,6 +60,10 @@ types and options, see:
     <field name="participant_race" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_gender" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_actor_name" type="text" indexed="true" stored="true" multiValued="true"/>
+
+    <!-- everything under a MacroEvent should keep a reference to it for
+         navigation and faceting -->
+    <field name="macro_event_uri" type="string" indexed="true" stored="true"/>
 
     <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
@@ -85,6 +92,7 @@ types and options, see:
   <copyField source="label" dest="text"/>
   <copyField source="victim" dest="text"/>
   <copyField source="city" dest="text"/>
+  <copyField source="triplet_label" dest="text"/>
   <copyField source="participant_last_name" dest="text"/>
   <copyField source="participant_qualitative_age" dest="text"/>
   <copyField source="participant_race" dest="text"/>

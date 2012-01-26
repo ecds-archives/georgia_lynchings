@@ -6,13 +6,13 @@ from django.test import TestCase, Client
 from mock import patch, MagicMock
 from rdflib import Literal
 
-from georgia_lynchings.events.models import MacroEvent
+from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet
 from georgia_lynchings.events.views import get_timemap_info
 from georgia_lynchings.rdf.ns import dcx
 
 logger = logging.getLogger(__name__)
 
-class MacroEventTest(TestCase):
+class EventsAppTest(TestCase):
     def setUp(self):
         self.client = Client()  
         # override settings
@@ -28,34 +28,27 @@ class MacroEventTest(TestCase):
         self.RANDOLPH_MACRO_ID = '208'        
         self.CAMPBELL_MACRO_ID = '360'
 
+        self.EVENT_ID = '552'
+        self.TRIPLET_ID = '555'
+
     def tearDown(self):
         # restore settings
         settings.SPARQL_STORE_API = self.sparql_store_api_orig
         settings.SPARQL_STORE_REPOSITORY = self.sparql_store_repo_orig 
             
+
+class MacroEventTest(EventsAppTest):
     def test_basic_rdf_properties(self):
         # For now, just test that the MacroEvent class has a few basic
         # properties. These properties don't mean much quite yet, so as this
         # property-interpretation code is fleshed out these tests will
         # likely grow to test something more meaningful.
-        self.assertTrue('setup_Complex.csv#r' in unicode(MacroEvent.rdf_type))
-        self.assertTrue('data_Complex.csv#Identifier' in unicode(MacroEvent.label.prop))
+        self.assertTrue('setup_Complex.csv#r1' in unicode(MacroEvent.rdf_type))
 
-        self.assertTrue('setup_xref_Complex-Complex.csv#r' in unicode(MacroEvent.events.prop))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.county.prop))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.victim.prop))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.case_number.prop))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_semantic.prop))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.verified_details.prop))
-        self.assertTrue('setup_Simplex.csv#r' in unicode(MacroEvent.last_coded.prop))
-
-    def test_get_victim(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
-        self.assertEqual(macro.victim, 'Sam Hose')
+        self.assertEqual('Coweta', macro.label)
+        self.assertEqual('Sam Hose', macro.victim)
 
-        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
-        self.assertEqual(macro.victim, None) 
-        
     def test_get_cities(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
         expected, got = [u'palmetto'], macro.get_cities() 
@@ -79,7 +72,17 @@ class MacroEventTest(TestCase):
         
     def test_get_triplets(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
-        eventdict = macro.get_triplets()       
+        triplets = macro.get_triplets()
+        self.assertEqual(10, len(triplets))
+        match = triplets[0]
+        self.assertTrue(str(match['event']).endswith('#r4538'))
+        self.assertEqual(match['evlabel'], 'lynching law creation (columbia)')
+        self.assertTrue(str(match['triplet']).endswith('#r4541'))
+        self.assertTrue(match['trlabel'].startswith('state supreme court make law'))
+
+    def test_get_triplets_by_event(self):
+        macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        eventdict = macro.get_triplets_by_event()       
         expected, got = 2, len(eventdict[u'lynching law creation (columbia)'] )
         self.assertEqual(expected, got, 'Expected %s triplet length, got %s' % (expected, got))
         expected, got = 8, len(eventdict[ u'seeking of a negro (palmetto)'] )
@@ -88,7 +91,7 @@ class MacroEventTest(TestCase):
         self.assertEqual(expected, got, 'Expected %s triplet length, got %s' % (expected, got))                    
                 
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
-        expected, got = None, macro.get_triplets() 
+        expected, got = {}, macro.get_triplets_by_event() 
         self.assertEqual(expected, got, 'Expected %s for nonexistant triplet macro id, got %s' % (expected, got)) 
                                
     def test_parto(self):
@@ -140,7 +143,85 @@ class MacroEventTest(TestCase):
         # Test name_of_indivd_actor
         expected, got = 'coroner', resultSet[6]['name_of_indivd_actor']
         self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))                                             
+
+    def test_index_data(self):
+        hose = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        hose_data = hose.index_data()
+
+        self.assertEqual(hose_data['victim'], 'Sam Hose')
+        self.assertEqual(hose_data['min_date'], '1899-12-04')
+        self.assertEqual(hose_data['max_date'], '1899-12-04')
+
+        self.assertEqual(len(hose_data['city']), 1)
+        self.assertEqual(hose_data['city'][0], 'palmetto')
+
+        self.assertEqual(len(hose_data['triplet_label']), 10)
+
+        self.assertEqual(len(hose_data['participant_uri']), 5)
+        self.assertEqual(hose_data['participant_uri'][0], dcx.r4586)
+        self.assertEqual(len(hose_data['participant_last_name']), 5)
+        self.assertEqual(hose_data['participant_last_name'][0], 'cranford')
+        self.assertEqual(len(hose_data['participant_qualitative_age']), 0)
+        self.assertEqual(len(hose_data['participant_race']), 1)
+        self.assertEqual(hose_data['participant_race'][0], 'white')
+        self.assertEqual(len(hose_data['participant_gender']), 7)
+        self.assertEqual(hose_data['participant_gender'][0], 'male')
+        self.assertEqual(len(hose_data['participant_actor_name']), 0)
+
+        # test cases for fields that are empty in hose
+        crisp = MacroEvent(self.CRISP_MACRO_ID)
+        crisp_data = crisp.index_data()
+
+        self.assertEqual(len(crisp_data['participant_qualitative_age']), 1)
+        self.assertEqual(crisp_data['participant_qualitative_age'][0], 'young')
+        self.assertEqual(len(crisp_data['participant_actor_name']), 3)
+        self.assertEqual(crisp_data['participant_actor_name'][0], 'accomplice')
+
+
+class EventTest(EventsAppTest):
+    # some fields on Event are unused but listed for later reference. for
+    # now test only the ones we actually use
+    def test_basic_rdf_properties(self):
+        event = Event(self.EVENT_ID)
+        self.assertEqual(event.event_type, 'murder')
+
+    def test_related_object_properties(self):
+        event = Event(self.EVENT_ID)
         
+        # macro_event
+        self.assertTrue(isinstance(event.macro_event, MacroEvent))
+        self.assertEqual(event.macro_event.id, '1')
+        self.assertEqual(event.macro_event.label, 'Houston')
+
+
+class SemanticTripletTest(EventsAppTest):
+    # some fields on SemanticTriplet are unused but listed for later
+    # reference. for now test only the ones we actually use
+    def test_related_object_properties(self):
+        triplet = SemanticTriplet(self.TRIPLET_ID)
+
+        # event
+        self.assertTrue(isinstance(triplet.event, Event))
+        self.assertEqual(triplet.event.id, '552')
+        self.assertEqual(triplet.event.label, 'murder (near fort valley)')
+
+        # macro_event
+        self.assertTrue(isinstance(triplet.macro_event, MacroEvent))
+        self.assertEqual(triplet.macro_event.id, '1')
+        self.assertEqual(triplet.macro_event.label, 'Houston')
+    
+    def test_index_data(self):
+        triplet = SemanticTriplet(self.TRIPLET_ID)
+        idata = triplet.index_data()
+
+        self.assertEqual(idata['row_id'], '555')
+        self.assertTrue(idata['uri'].endswith('#r555'))
+        self.assertTrue(idata['complex_type'].endswith('#r52'))
+        self.assertTrue(idata['label'].startswith('party (male unknown armed)'))
+        self.assertTrue(idata['macro_event_uri'].endswith('#r1'))
+
+
+class ViewsTest(EventsAppTest):
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID
         title = 'No records found'
@@ -233,54 +314,17 @@ class MacroEventTest(TestCase):
         mocksolr = MagicMock()
         mock_solr_interface.return_value = mocksolr
         mocksolr.query.return_value = mocksolr
-
-        results = [
-            # currently we use only victim in our template. we can fill
-            # these matches out later as we need.
-            {'victim': 'Sam Hose'},
-            {'victim': 'Sam Holt'},
-        ]
-        mocksolr.execute.return_value = results
+        mocksolr.filter.return_value = mocksolr
+        mocksolr.boost_relevancy.return_value = mocksolr
+        solr_result = mocksolr.execute.return_value
 
         search_url = reverse('search')
         response = self.client.get(search_url, {'q': 'coweta'})
 
         self.assertContains(response, 'search results for')
         self.assertEqual(response.context['term'], 'coweta')
-        self.assertEqual(response.context['results'], results)
+        self.assertEqual(response.context['results'], solr_result)
         self.assertTrue('form' in response.context)
-
-    def test_index_data(self):
-        hose = MacroEvent(self.SAM_HOSE_MACRO_ID)
-        hose_data = hose.index_data()
-
-        self.assertEqual(hose_data['victim'], 'Sam Hose')
-        self.assertEqual(hose_data['min_date'], '1899-12-04')
-        self.assertEqual(hose_data['max_date'], '1899-12-04')
-
-        self.assertEqual(len(hose_data['participant_uri']), 5)
-        self.assertEqual(hose_data['participant_uri'][0], dcx.r4586)
-        self.assertEqual(len(hose_data['participant_last_name']), 5)
-        self.assertEqual(hose_data['participant_last_name'][0], 'cranford')
-        self.assertEqual(len(hose_data['participant_qualitative_age']), 0)
-        self.assertEqual(len(hose_data['participant_race']), 1)
-        self.assertEqual(hose_data['participant_race'][0], 'white')
-        self.assertEqual(len(hose_data['participant_gender']), 7)
-        self.assertEqual(hose_data['participant_gender'][0], 'male')
-        self.assertEqual(len(hose_data['participant_actor_name']), 0)
-        self.assertEqual(len(hose_data['city']), 1)
-        self.assertEqual(hose_data['city'][0], 'palmetto')
-
-        # test cases for fields that are empty in hose
-        crisp = MacroEvent(self.CRISP_MACRO_ID)
-        crisp_data = crisp.index_data()
-
-        self.assertEqual(len(crisp_data['participant_qualitative_age']), 1)
-        self.assertEqual(crisp_data['participant_qualitative_age'][0], 'young')
-        self.assertEqual(len(crisp_data['participant_actor_name']), 3)
-        self.assertEqual(crisp_data['participant_actor_name'][0], 'accomplice')
-
-class TimemapTest(TestCase):
 
     def test_get_timemap_info(self):
         result = json.loads(get_timemap_info())

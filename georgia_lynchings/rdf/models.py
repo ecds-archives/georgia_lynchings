@@ -16,8 +16,8 @@ u'Coweta'
 u'Sam Hose'
 '''
 
-from rdflib import URIRef, Variable, RDF
-from georgia_lynchings.rdf.ns import dcx
+from rdflib import URIRef, Variable, BNode, RDF
+from georgia_lynchings.rdf.ns import dcx, ssx
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
@@ -28,10 +28,20 @@ class RdfPropertyField(object):
     for simple SPARQL querying based on a single RDF property.
 
     :param prop: the RDF property as a :class:`~rdflib.URIRef`
+    :param result_type: the Python type of the object at the other end of
+                        this property. If specified, an object of this type
+                        will be constructed when the property is accessed.
+                        This property will pass the result RDF node
+                        (:class:`~rdflib.URIRef` instance,
+                        :class:`~rdflib.Literal` instance, etc) to the
+                        constructor. If unspecified, no such wrapping will
+                        occur, and the property will return the RDF node
+                        itself.
     '''
 
-    def __init__(self, prop):
+    def __init__(self, prop, result_type=None):
         self.prop = prop
+        self.result_type = result_type
 
     def __get__(self, obj, owner):
         # per convention, return self when evaluated on the class
@@ -42,7 +52,7 @@ class RdfPropertyField(object):
         q = SelectQuery(results=['result'])
         if hasattr(obj, 'rdf_type'):
             q.append((Variable('obj'), RDF.type, obj.rdf_type))
-        q.append((Variable('obj'), self.prop, Variable('result')))
+        self.add_to_query(q, Variable('obj'), Variable('result'))
         
         # ask the default SparqlStore for that data
         store = SparqlStore()
@@ -53,8 +63,92 @@ class RdfPropertyField(object):
         if bindings:
             # FIXME: for now assume one row and a literal value. can't
             # assume these for long.
-            return bindings[0]['result']
+            result = bindings[0]['result']
+            return self.wrap_result(result)
         # else None
+
+    def add_to_query(self, q, source, target):
+        '''Add triples to a query graph pattern to represent this property.
+        In the base class implementation this just means adding the single
+        triple ``source property target.``. This method is provided first as
+        a hook so that subclasses can define more complex ways to add
+        themselves to a query graph pattern, and second so that other
+        code can bypass the descriptor protocol to generically add
+        this property to a query they're generating.
+
+        :param q: a :class:`~georgia_lynchings.rdf.sparql.SelectQuery`
+        :param source: an rdf node (often a :class:`~rdflib.Variable`)
+        :param target: an rdf node (often a :class:`~rdflib.Variable`)
+        '''
+        q.append((source, self.prop, target))
+
+    def wrap_result(self, result_val):
+        '''Wrap the result of property evaluation in this property's
+        `result_type`. This method is called internally by the descriptor
+        logic and provided for subclass overriding.
+        '''
+        if self.result_type is not None:
+            return self.result_type(result_val)
+        else:
+            return result_val
+
+
+class ReversedRdfPropertyField(RdfPropertyField):
+    '''An :class:`RdfPropertyField` that operates in reverse. When evaluated
+    on a :class:`ComplexObject`, it will look for statements whose object is
+    that complex object, and it will return the subject of that statement.
+    '''
+
+    def add_to_query(self, q, source, target):
+        if hasattr(self.prop, 'add_to_query'):
+            # if the property is itself an RdfPropertyField then just tell
+            # it to add itself in reverse. 
+            self.prop.add_to_query(q, target, source)
+        else:
+            # otherwise assume it's just a plain RDF node and add it
+            # directly to the graph.
+            q.append((target, self.prop, source))
+
+
+class ChainedRdfPropertyField(RdfPropertyField):
+    '''An :class:`RdfPropertyField` that chains multiple properties
+    together. When evaluated on a :class:`ComplexObject`, it will execute a
+    single query that chains through a list of properties to reach its
+    result.
+    '''
+
+    def __init__(self, *props):
+        self.props = props
+
+    def add_to_query(self, q, source, target):
+        # Given a property chain of p1, p2, p3, we want to add:
+        #   ?source p1 _:tmp1 .
+        #   _:tmp1 p2 _:tmp2 .
+        #   _:tmp2 p3 ?target .
+        # To do this, for each statement but the last generate a bnode to
+        # act as the object, and use the previous object in the chain as the
+        # subject of the following one.
+        link_source = source
+        for prop in self.props[:-1]:
+            link_target = BNode()
+            if hasattr(prop, 'add_to_query'):
+                prop.add_to_query(q, link_source, link_target)
+            else:
+                q.append((link_source, prop, link_target))
+            # prepare for the next link
+            link_source = link_target
+        
+        # And the final link just results in the original target
+        prop = self.props[-1]
+        if hasattr(prop, 'add_to_query'):
+            prop.add_to_query(q, link_source, target)
+        else:
+            q.append((link_source, prop, target))
+
+    def wrap_result(self, result_val):
+        # The result of evaluating this property is the result of evaluating
+        # the last property in the chain.
+        return self.props[-1].wrap_result(result_val)
 
 
 class ComplexObjectType(type):
@@ -103,7 +197,10 @@ class ComplexObject(object):
     def __init__(self, id):
         if isinstance(id, URIRef):
             self.uri = id
-            self.id = None
+            if unicode(id).startswith(unicode(dcx) + 'r'):
+                self.id = unicode(id)[len(unicode(dcx))+1:]
+            else:
+                self.id = None
         else:
             self.id = id
             self.uri = dcx['r' + str(id)]
@@ -113,6 +210,15 @@ class ComplexObject(object):
 
     label = dcx.Identifier
     'a human-readable label for this object'
+    complex_type = dcx.ComplexType
+    'the uri of the complex object type for this object'
+
+    verified_semantic = ssx.r89
+    '''has the coded data for this object been manually reviewed for
+    semantic consistency?'''
+    verified_details = ssx.r90
+    '''has the coded data for this object been manually reviewed for
+    detail accuracy?'''
 
     @classmethod
     def all_instances(cls):
@@ -126,6 +232,13 @@ class ComplexObject(object):
 
     def index_data(self):
         data = { 'uri': self.uri }
+
+        if self.id:
+            data['row_id'] = self.id
+
+        complex_type = self.complex_type
+        if complex_type:
+            data['complex_type'] = complex_type
 
         label = self.label
         if label:
