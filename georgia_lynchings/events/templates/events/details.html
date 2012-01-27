@@ -16,6 +16,7 @@
       <tr><th align='right'>Reason:</th><td>{{ results.reason }}</td></tr>    
       <tr><th align='right'>Outcome:</th><td>{{ results.outcome }}</td></tr>
       {% for event in results.events %} 
+
       <tr>
         <th valign="top" align='right' width=25%>
            
@@ -39,9 +40,40 @@
                 &bull;&nbsp;{{ triple }}<br/>&nbsp;<br/>
               {% endfor %} </div>
             </div>
-
-        </td></tr>    
-
+        </td></tr> 
+        
+        {% if event.uparto %}
+        <tr>
+        <th valign="top" align='right' width=25%>
+            {% for event in event.uparto %}Participant-Object:<br/>{% endfor %}</th>
+        <td valign="top">
+        {% for event in event.uparto %}
+            {% if event.name %}Name: ({{ event.name }})&nbsp;&nbsp;{% endif %}  
+            {% if event.role %}Role: ({{ event.role }})&nbsp;&nbsp;{% endif %} 
+            {% if event.gender %}Gender: ({{ event.gender }})&nbsp;&nbsp;{% endif %} 
+            {% if event.race %}Race: ({{ event.race }})&nbsp;&nbsp;{% endif %} 
+            {% if event.age %}Age: ({{ event.age }})&nbsp;&nbsp;{% endif %}                                     
+            <br/>
+        {% endfor %}
+        </td></tr> 
+        {% endif %}
+        
+        {% if event.uparts %}
+        <tr>
+        <th valign="top" align='right' width=25%>
+            {% for event in event.uparts %}Participant-Subject:<br/>{% endfor %}</th>
+        <td valign="top">
+        {% for event in event.uparts %}
+            {% if event.name %}Name: ({{ event.name }})&nbsp;&nbsp;{% endif %}  
+            {% if event.role %}Role: ({{ event.role }})&nbsp;&nbsp;{% endif %} 
+            {% if event.gender %}Gender: ({{ event.gender }})&nbsp;&nbsp;{% endif %} 
+            {% if event.race %}Race: ({{ event.race }})&nbsp;&nbsp;{% endif %} 
+            {% if event.age %}Age: ({{ event.age }})&nbsp;&nbsp;{% endif %}                                     
+            <br/>
+        {% endfor %}
+        </td></tr> 
+        {% endif %}        
+        
     {% endfor %}      
   </table>
 {% else %}

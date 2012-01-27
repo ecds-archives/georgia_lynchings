@@ -226,12 +226,12 @@ class MacroEvent(ComplexObject):
                 if 'event_type' in detail.keys():  event_type_list.append(detail['event_type'])
 
         # Set the lists to a string, eliminate duplicates
-        if event_type_list:  results['event_type'] = ', '.join(set(event_type_list))
+        if event_type_list:  results['event_type'] = '; '.join(set(event_type_list))
         else: results['event_type'] = "n/a" 
-        if reason_list:  results['reason'] = ', '.join(set(reason_list))
+        if reason_list:  results['reason'] = '; '.join(set(reason_list))
         else: results['reason'] = "n/a"  
-        if outcome_list:  results['outcome'] = ', '.join(set(outcome_list))
-        else: results['outcome'] = "n/a"                                 
+        if outcome_list:  results['outcome'] = '; '.join(set(outcome_list))
+        else: results['outcome'] = "n/a"
 
         # collect date information
         ss=SparqlStore()
@@ -278,7 +278,33 @@ class MacroEvent(ComplexObject):
                 if tripletResultSet[event['evlabel']]:  
                     event['triplet_first'] = tripletResultSet[event['evlabel']][0]
                     event['triplet_rest'] = tripletResultSet[event['evlabel']][1:]
+                    
+        # collect participant information
+        for p in ['uparto', 'uparts']:
+            ss=SparqlStore()
+            query=query_bank.events[p]
+            partoResultSet = ss.query(sparql_query=query,
+                                 initial_bindings={'macro': self.uri.n3()})
+            if partoResultSet:
+                for part in partoResultSet:
+                    for event in results['events']:
+                        if event['event'] == part['event']:
+                            partdict = {}
+                            # Set the first and last name, if defined
+                            if 'fname' in part.keys() and 'lname' in part.keys(): 
+                                partdict['name'] = "%s %s" % (part['fname'], part['lname'])
+                            elif 'fname' in part.keys(): partdict['name'] = part['fname']
+                            elif 'lname' in part.keys(): partdict['name'] = part['lname']
+                            # Set the qualitative age, if defined
+                            if 'qualitative_age' in part.keys(): partdict['age'] = part['qualitative_age']
+                            if 'race' in part.keys(): partdict['race'] = part['race']
+                            if 'gender' in part.keys(): partdict['gender'] = part['gender']
+                            if 'name_of_indivd_actor' in part.keys(): partdict['role'] = part['name_of_indivd_actor']
+                        if partdict:
+                            if p in event.keys(): event[p].append(partdict)
+                            else: event[p]= [partdict]
 
+                                            
         # return the dictionary results of the details information          
         return results        
         
