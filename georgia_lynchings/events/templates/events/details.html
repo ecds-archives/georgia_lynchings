@@ -44,7 +44,7 @@
         
         {% if event.uparto %}
         <tr>
-        <th>Participant-Objects:</th>
+        <th>Event: {{ event.evlabel }}<br/>Participant-Objects:</th>
         <td >
             <table id="part">
             <tr><th>Name</th>
@@ -66,7 +66,7 @@
 
         {% if event.uparts %}
         <tr>
-        <th>Participant-Subjects:</th>
+        <th>Event:{{ event.evlabel }}<br/>Participant-Subjects:</th>
         <td>
             <table id="part">
             <tr><th>Name</th>

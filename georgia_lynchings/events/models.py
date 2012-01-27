@@ -288,8 +288,8 @@ class MacroEvent(ComplexObject):
             if partoResultSet:
                 for part in partoResultSet:
                     for event in results['events']:
+                        partdict = {}                        
                         if event['event'] == part['event']:
-                            partdict = {}
                             # Set the first and last name, if defined
                             if 'fname' in part.keys() and 'lname' in part.keys(): 
                                 partdict['name'] = "%s %s" % (part['fname'], part['lname'])
