@@ -84,6 +84,10 @@ table#part td {
     padding:2px;    
 }
 
+ul.articles, ul.articles li {
+    display: inline;
+}
+
 #footer {
     width: 720px;
     font-size: 10px;

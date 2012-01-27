@@ -47,7 +47,7 @@
       </ul>
 
       <ul class='articles'>
-        {% for article in result.articles|slice:":3" %}
+        {% for article in result.articles %}
           {% comment %}
              FIXME: copied STATIC_PREFIX/../ from events/articles.html, but
              it's clearly not the right way to link an article. what's the
