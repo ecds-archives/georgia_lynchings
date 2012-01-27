@@ -57,14 +57,31 @@ table,td,th
     border-collapse: collapse
 }
 
+table#detail {
+    width: 70%; 
+}
+table#detail td {
+    padding:5px;
+    vertical-align="top"       
+}
+table#detail th {
+    width:20%;
+    padding:5px;
+    text-align: right;
+    vertical-align:top   
+}
+
 table#part {
     width: 100%;
 }
-table#part td {
-    width:20%
+table#part th {
+    text-align: center;
+    width:20%;
+    padding:2px;    
 }
 table#part td {
     text-align: center;
+    padding:2px;    
 }
 
 #footer {

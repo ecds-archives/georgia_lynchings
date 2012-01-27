@@ -8,17 +8,17 @@
 {% if results %}
   <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
   <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
-  <table summary="Details for a Macro Event {{ results.melabel }}" border=1 cellpadding=10px>
-      <tr><th width=25% align='right'>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
-      <tr><th align='right'>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
-      <tr><th align='right'>Victim:</th><td>{{ results.victim }}</td></tr>
-      <tr><th align='right'>Type of Event:</th><td>{{ results.event_type }}</td></tr>
-      <tr><th align='right'>Reason:</th><td>{{ results.reason }}</td></tr>    
-      <tr><th align='right'>Outcome:</th><td>{{ results.outcome }}</td></tr>
+  <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
+      <tr><th>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
+      <tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
+      <tr><th>Victim:</th><td>{{ results.victim }}</td></tr>
+      <tr><th>Type of Event:</th><td>{{ results.event_type }}</td></tr>
+      <tr><th>Reason:</th><td>{{ results.reason }}</td></tr>    
+      <tr><th>Outcome:</th><td>{{ results.outcome }}</td></tr>
       {% for event in results.events %} 
 
       <tr>
-        <th valign="top" align='right' width=25%>
+        <th>
            
             Event:<br/>
             {% if event.mindate %}Min Date:<br/>{% endif %}  
@@ -26,7 +26,7 @@
             {% if event.location %}Location:<br/>{% endif %}  
             Semantic Triplets:<br/>       
         </th>
-        <td valign="top">
+        <td>
             {{ event.evlabel }}<br/>
             {% if event.mindate %}{{ event.mindate }}<br/>{% endif %} 
             {% if event.maxdate %}{{ event.maxdate }}<br/>{% endif %}                         
@@ -44,8 +44,8 @@
         
         {% if event.uparto %}
         <tr>
-        <th valign="top" align='right'>Participant-Objects:</th>
-        <td valign="top">
+        <th>Participant-Objects:</th>
+        <td >
             <table id="part">
             <tr><th>Name</th>
             <th>Role</th>
@@ -66,8 +66,8 @@
 
         {% if event.uparts %}
         <tr>
-        <th valign="top" align='right'>Participant-Subjects:</th>
-        <td valign="top">
+        <th>Participant-Subjects:</th>
+        <td>
             <table id="part">
             <tr><th>Name</th>
             <th>Role</th>
