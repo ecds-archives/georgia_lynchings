@@ -57,6 +57,16 @@ table,td,th
     border-collapse: collapse
 }
 
+table#part {
+    width: 100%;
+}
+table#part td {
+    width:20%
+}
+table#part td {
+    text-align: center;
+}
+
 #footer {
     width: 720px;
     font-size: 10px;
