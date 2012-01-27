@@ -44,35 +44,47 @@
         
         {% if event.uparto %}
         <tr>
-        <th valign="top" align='right' width=25%>
-            {% for event in event.uparto %}Participant-Object:<br/>{% endfor %}</th>
+        <th valign="top" align='right'>Participant-Objects:</th>
         <td valign="top">
+            <table class="part" width=100%;>
+            <tr><th width=20%>Name</th>
+            <th width=20%>Role</th>
+            <th width=20%>Gender</th>
+            <th width=20%>Race</th>
+            <th width=20%>Age</th></tr>
         {% for event in event.uparto %}
-            {% if event.name %}Name: ({{ event.name }})&nbsp;&nbsp;{% endif %}  
-            {% if event.role %}Role: ({{ event.role }})&nbsp;&nbsp;{% endif %} 
-            {% if event.gender %}Gender: ({{ event.gender }})&nbsp;&nbsp;{% endif %} 
-            {% if event.race %}Race: ({{ event.race }})&nbsp;&nbsp;{% endif %} 
-            {% if event.age %}Age: ({{ event.age }})&nbsp;&nbsp;{% endif %}                                     
-            <br/>
+            <tr>        
+            <td align="center">{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>                                    
+            </tr>
         {% endfor %}
-        </td></tr> 
+        </table></td></tr>
         {% endif %}
-        
+
         {% if event.uparts %}
         <tr>
-        <th valign="top" align='right' width=25%>
-            {% for event in event.uparts %}Participant-Subject:<br/>{% endfor %}</th>
+        <th valign="top" align='right'>Participant-Subjects:</th>
         <td valign="top">
+            <table class="part" width=100%;>
+            <tr><th width=20%>Name</th>
+            <th width=20%>Role</th>
+            <th width=20%>Gender</th>
+            <th width=20%>Race</th>
+            <th width=20%>Age</th></tr>
         {% for event in event.uparts %}
-            {% if event.name %}Name: ({{ event.name }})&nbsp;&nbsp;{% endif %}  
-            {% if event.role %}Role: ({{ event.role }})&nbsp;&nbsp;{% endif %} 
-            {% if event.gender %}Gender: ({{ event.gender }})&nbsp;&nbsp;{% endif %} 
-            {% if event.race %}Race: ({{ event.race }})&nbsp;&nbsp;{% endif %} 
-            {% if event.age %}Age: ({{ event.age }})&nbsp;&nbsp;{% endif %}                                     
-            <br/>
+            <tr>        
+            <td align="center">{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
+            <td align="center">{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>                                    
+            </tr>
         {% endfor %}
-        </td></tr> 
-        {% endif %}        
+        </table></td></tr>
+        {% endif %}       
         
     {% endfor %}      
   </table>

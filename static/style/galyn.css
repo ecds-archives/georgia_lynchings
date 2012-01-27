@@ -51,10 +51,10 @@ li {
     padding: 6px;
 }
 
-table
+table,td,th
 {
     border: 1px solid black;
-    width: 70%
+    border-collapse: collapse
 }
 
 #footer {
