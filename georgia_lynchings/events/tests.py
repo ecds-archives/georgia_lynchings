@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from mock import patch, MagicMock
 from rdflib import Literal
+from pprint import pprint
 
 from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet
 from georgia_lynchings.events.views import get_timemap_info
@@ -25,6 +26,8 @@ class EventsAppTest(TestCase):
         self.NONEXISTENT_MACRO_ID = '0'
         self.CRISP_MACRO_ID = '3'           
         self.SAM_HOSE_MACRO_ID = '12'
+        self.MERIWETHER_MACRO_ID = '25'        
+        self.BROOKS_MACRO_ID = '57'        
         self.RANDOLPH_MACRO_ID = '208'        
         self.CAMPBELL_MACRO_ID = '360'
 
@@ -68,7 +71,83 @@ class MacroEventTest(EventsAppTest):
         
         macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
         expected, got = None, macro.get_date_range() 
-        self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got))         
+        self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got)) 
+        
+    def test_get_details(self):
+        macro = MacroEvent(self.BROOKS_MACRO_ID)
+        result = macro.get_details()
+        # Test article total for BROOKS dcx:r57 macro event 
+        expected, got = '3', result['articleTotal'] 
+        self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))
+        # Test event_type for BROOKS dcx:r57 macro event         
+        expected, got = 'lynching', result['event_type'] 
+        self.assertEqual(expected, got, 'Expected %s event_type, got %s' % (expected, got))
+        # Test melabel for BROOKS dcx:r57 macro event 
+        expected, got = 'Brooks', result['melabel'] 
+        self.assertEqual(expected, got, 'Expected %s macro event label, got %s' % (expected, got))
+        # Test evlabel for BROOKS dcx:r57 macro event 
+        expected, got = 'lynching (senatobia)', result['events'][0]['evlabel'] 
+        self.assertEqual(expected, got, 'Expected %s event label, got %s' % (expected, got))
+        # Test location for BROOKS dcx:r57 macro event 
+        expected, got = 'senatobia (city)', result['events'][0]['location'] 
+        self.assertEqual(expected, got, 'Expected %s event label, got %s' % (expected, got))
+        # Test mindate for BROOKS dcx:r57 macro event 
+        expected, got = '1909-07-02', result['events'][0]['mindate'] 
+        self.assertEqual(expected, got, 'Expected %s mindate, got %s' % (expected, got)) 
+        # Test maxdate for BROOKS dcx:r57 macro event 
+        expected, got = '1909-07-02', result['events'][0]['maxdate'] 
+        self.assertEqual(expected, got, 'Expected %s maxdate, got %s' % (expected, got)) 
+        # Test triplet_first for BROOKS dcx:r57 macro event 
+        expected = 'mob hung (violence against people 7/2/1909 senatobia) negro (steven veasey male)'
+        got = result['events'][0]['triplet_first'] 
+        self.assertEqual(expected, got, 'Expected %s triplet_first, got %s' % (expected, got))
+
+        # Test participant-o for BROOKS dcx:r57 macro event 
+        # parto age
+        expected, got = 'young', result['events'][0]['uparto'][0]['age']
+        self.assertEqual(expected, got, 'Expected %s qualitative age, got %s' % (expected, got))
+        # parto gender
+        expected, got = 'male', result['events'][0]['uparto'][0]['gender']
+        self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got))
+        # parto name
+        expected, got = 'veasey', result['events'][0]['uparto'][0]['name']
+        self.assertEqual(expected, got, 'Expected %s name, got %s' % (expected, got))
+        # parto race
+        expected, got = 'white', result['events'][0]['uparto'][0]['race']
+        self.assertEqual(expected, got, 'Expected %s race, got %s' % (expected, got)) 
+        # parts gender
+        expected, got = 'female', result['events'][0]['uparts'][1]['gender']
+        self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got))
+        # parts role
+        expected, got = 'sister', result['events'][0]['uparts'][1]['role']
+        self.assertEqual(expected, got, 'Expected %s role, got %s' % (expected, got))                                
+            
+        macro = MacroEvent(self.MERIWETHER_MACRO_ID)
+        result = macro.get_details()
+        expected, got = 'murder', result['event_type'] 
+        self.assertEqual(expected, got, 'Expected %s event_type, got %s' % (expected, got))         
+        expected, got = 'reward of 250$; unknown lynchers', result['outcome'] 
+        self.assertEqual(expected, got, 'Expected %s outcome, got %s' % (expected, got))
+        expected, got = 'lynching; capture of the negro', result['reason'] 
+        self.assertEqual(expected, got, 'Expected %s reason, got %s' % (expected, got))  
+        expected, got = 'Meriwether', result['melabel'] 
+        self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))                                            
+                
+        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
+        expected, got = None, macro.get_details() 
+        self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got)) 
+        
+    def test_get_date_range(self):
+        macro = MacroEvent(self.CAMPBELL_MACRO_ID)
+        datedict = macro.get_date_range()
+        expected, got = u'1882-05-28', datedict['mindate'] 
+        self.assertEqual(expected, got, 'Expected %s minimum date, got %s' % (expected, got))
+        expected, got = u'1882-08-10', datedict['maxdate'] 
+        self.assertEqual(expected, got, 'Expected %s maximum date, got %s' % (expected, got))
+        
+        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
+        expected, got = None, macro.get_date_range() 
+        self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got))                  
         
     def test_get_triplets(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
