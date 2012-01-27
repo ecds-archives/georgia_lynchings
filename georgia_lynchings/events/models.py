@@ -254,22 +254,22 @@ class MacroEvent(ComplexObject):
             for locResult in locationResultSet:
                 index = 0  
                 for event in results['events']: 
-                    if event['event'] == locResult['event']:
-                        if u'city' in locResult:
-                            if u'city' in results['events'][index]: 
-                                results['events'][index][u'city'] = ', '.join(set([results['events'][index][u'city'],locResult[u'city']]))
-                            else: event[u'city']= locResult[u'city']
-                        if u'county' in locResult:
-                            if u'county' in results['events'][index]: 
-                                results['events'][index][u'county'] = ', '.join(set([results['events'][index][u'county'],locResult[u'county']]))
-                            else: event[u'county']= locResult[u'county']
-                        if u'state' in locResult:
-                            if u'state' in results['events'][index]: 
-                                results['events'][index][u'state'] = ', '.join(set([results['events'][index][u'state'],locResult[u'state']]))
-                            else: event[u'state']= locResult[u'state']                               
+                    if event['event'] == locResult['event']:     
+                        location = None                 
+                        if 'city' in locResult.keys():
+                            location = "%s (city)" % locResult[u'city']
+                        if 'state' in locResult.keys():
+                            if location: location += ", %s (state)" %  locResult['state']
+                            else: location = locResult['state']                     
+                        if 'county' in locResult.keys():                            
+                            if location: location += ", %s (county)" %  locResult['county']
+                            else: location = "%s County" %  locResult['county'] 
+                        # Add/Append location to results
+                        if location and 'location' in event.keys() : 
+                            event['location'] += "; %s" %  location
+                        elif location:  event['location'] = location
                     index =+ 1 
                 lindex =+ 1
-        pprint(results)
                 
         # Collect semantic triplets for each event.        
         tripletResultSet = self.get_triplets_by_event()                           

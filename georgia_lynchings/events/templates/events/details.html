@@ -22,14 +22,14 @@
             Event:<br/>
             {% if event.mindate %}Min Date:<br/>{% endif %}  
             {% if event.maxdate %}Max Date:<br/>{% endif %}                          
-            {% if event.city %}City:<br/>{% endif %}  
+            {% if event.location %}Location:<br/>{% endif %}  
             Semantic Triplets:<br/>       
         </th>
         <td valign="top">
             {{ event.evlabel }}<br/>
             {% if event.mindate %}{{ event.mindate }}<br/>{% endif %} 
             {% if event.maxdate %}{{ event.maxdate }}<br/>{% endif %}                         
-            {% if event.city %}{{ event.city }}<br/>{% endif %}  
+            {% if event.location %}{{ event.location }}<br/>{% endif %}  
 
             &bull;&nbsp;{{ event.triplet_first }}
             <div class="layer1">
