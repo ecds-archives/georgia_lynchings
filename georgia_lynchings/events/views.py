@@ -10,6 +10,7 @@ from georgia_lynchings.forms import SearchForm
 from georgia_lynchings.events.models import MacroEvent, \
         get_events_by_locations, get_events_by_times, get_all_macro_events, \
         SemanticTriplet
+from georgia_lynchings.forms import SearchForm        
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,9 @@ def details(request, row_id):
     return render(request, 'events/details.html',
                   {'results': results, 'row_id':row_id, 'title':title, 'pagelink':pagelink})                   
 
+def home(request):
+    template = 'index.html'
+    return render(request, template, {'search_form': SearchForm()})
 
 def locations(request):
     '''List all events, ordered by their location.'''

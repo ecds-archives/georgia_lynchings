@@ -104,6 +104,18 @@ table#gen td {
     padding:5px;    
 }
 
+table#left {
+    width: 65%;
+}
+table#left th {
+    text-align: center;
+    padding:5px;    
+}
+table#left td {
+    text-align: left;
+    padding:5px;    
+}
+
 ul.articles, ul.articles li {
     display: inline;
 }
