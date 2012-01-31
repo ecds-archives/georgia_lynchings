@@ -51,11 +51,19 @@ li {
     padding: 6px;
 }
 
-table,td,th
+table
+{
+    width: 65%;
+    border: 1px solid black;
+    border-collapse: collapse    
+}
+td,th
 {
     border: 1px solid black;
-    border-collapse: collapse
+    border-collapse: collapse;
+    padding:5px
 }
+
 
 table#detail {
     width: 70%; 
@@ -77,7 +85,7 @@ table#part {
 table#part th {
     text-align: center;
     width:20%;
-    padding:2px;    
+    padding:2px;  
 }
 table#part td {
     text-align: center;
