@@ -6,7 +6,6 @@ from georgia_lynchings.rdf.models import ComplexObject, \
 from georgia_lynchings.rdf.ns import scx, ssx, sxcxcx
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
-from urllib import quote
 import logging
 from pprint import pprint
 
@@ -107,16 +106,6 @@ class MacroEvent(ComplexObject):
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
-        # create a link for the macro event articles
-        for result in resultSet:
-            # Clean up data, add "n/a" if value does not exist
-            if 'docpath' not in result: result['docpath'] = 'n/a'
-            else: 
-                result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
-                result['docpath'] = result['docpath'][10:] 
-            if 'papername' not in result: result['papername'] = 'n/a'
-            if 'paperdate' not in result: result['paperdate'] = 'n/a'
-            if 'articlepage' not in result: result['articlepage'] = 'n/a'
         # return the dictionary resultset of the query          
         return resultSet
         

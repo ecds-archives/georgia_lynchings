@@ -84,6 +84,18 @@ table#part td {
     padding:2px;    
 }
 
+table#gen {
+    width: 65%;
+}
+table#gen th {
+    text-align: center;
+    padding:5px;    
+}
+table#gen td {
+    text-align: center;
+    padding:5px;    
+}
+
 ul.articles, ul.articles li {
     display: inline;
 }

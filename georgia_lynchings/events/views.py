@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from pprint import pprint
 import sunburnt
-
+from urllib import quote
 from georgia_lynchings.forms import SearchForm
 from georgia_lynchings.events.models import MacroEvent, \
         get_events_by_locations, get_events_by_times, get_all_macro_events, \
@@ -23,10 +23,21 @@ def articles(request, row_id):
     '''
     event = MacroEvent(row_id)
     resultSet = event.get_articles()
-    if resultSet:   title = resultSet[0]['melabel']
-    else:   title = "No records found"    
+    if resultSet:   
+        title = resultSet[0]['melabel']
+        # create a link for the macro event articles
+        for result in resultSet:
+            # Clean up data, add "n/a" if value does not exist
+            if 'docpath' in result.keys(): 
+                result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
+                result['docpath'] = result['docpath'][10:] 
+    else:   title = "No records found" 
+    # set prev/next links
+    pagelink = {}    
+    pagelink['prev']='../../%s/articles' % (int(row_id) - 1)
+    pagelink['next']='../../%s/articles' % (int(row_id) + 1)    
     return render(request, 'events/articles.html',
-                  {'resultSet': resultSet, 'row_id':row_id, 'title':title}) 
+                  {'resultSet': resultSet, 'row_id':row_id, 'title':title, 'pagelink':pagelink})
                   
 def details(request, row_id):
     '''
