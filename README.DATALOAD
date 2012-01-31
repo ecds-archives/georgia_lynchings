@@ -52,3 +52,32 @@ Use the one step fabric load_triples task
   JAVA_OPTS="-Xmx512M -Xms512M"
   
   The fabric load triples task takes 20+ minutes to complete.
+  
+Manual Data Load Instructions to overcome format issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+  
+  # In MS Access, remove password and decode the mdb file.
+  # In MS Access, export csv data_xref_Simplex_Simplex_Document table
+  # Move mdb and data_xref_Simplex_Simplex_Document.csv to ubuntu/linux
+  # Extract the csv from the decoded mdb file:
+  $ ~/data/galyn/scripts/mdb2csv.sh /home/sconna2/db/galyn/db-data/galyn_2012_01_27/data_2012_01_27_decoded.mdb /home/sconna2/db/galyn/db-data/2012_01_27-b/csv
+
+  # Replace access exported csv data_xref_Simplex_Simplex_Document.csv 
+   with mdb2csv csv file (add heading line), check filename syntax.
+
+  # Remove unwanted csv files:
+    - all Comment tables not needed, 
+    - all u*.csv not needed
+    
+  # Note location of csv files:
+    /home/sconna2/db/galyn/db-data/2012-01-27-b/csv/*.csv
+
+  # Convert csv files to ttl
+  $ python csv2rdf.py /home/sconna2/db/galyn/db-data/2012-01-27-b/csv/*.csv
+
+  # Add rdf namespaces, upload ttl, and add inferred stmts to sesame repository:
+  $ ./add-rdf-namespaces.sh -r http://wilson.library.emory.edu:8180/openrdf-sesame/repositories/galyn-2012-01-27-b
+  $ ./upload-ttl.sh -r http://wilson.library.emory.edu:8180/openrdf-sesame/repositories/galyn-2012-01-27-b/statements /home/sconna2/db/galyn/db-data/2012-01-27-b/ttl/d*.ttl
+  $ ./upload-ttl.sh -r http://wilson.library.emory.edu:8180/openrdf-sesame/repositories/galyn-2012-01-27-b/statements /home/sconna2/db/galyn/db-data/2012-01-27-b/ttl/s*.ttl
+  $ ./add-inferred-statements.sh http://wilson.library.emory.edu:8180/openrdf-sesame/repositories/galyn-2012-01-27-b/statements
+
