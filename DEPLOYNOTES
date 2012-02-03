@@ -97,10 +97,11 @@ tables and initial data using::
 
   $ python manage.py syncdb
 
-Add the georgia lynching documents directory as an apache alias::
+Add the georgia lynching 'documents' and 'media' directories as an apache alias::
   
   Example:
   Alias /georgia_lynchings/documents/ /home/galyn/documents/
+  Alias /georgia_lynchings/media/ /home/httpd/georgia_lynchings/media/ 
   
 Collect the static media::
   
