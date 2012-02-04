@@ -24,8 +24,8 @@
         },
         datasets: {{ data }},
         bandIntervals: [
-            Timeline.DateTime.DECADE,
-            Timeline.DateTime.CENTURY
+            Timeline.DateTime.MONTH,
+            Timeline.DateTime.DECADE
         ]
     });
 });
@@ -38,15 +38,15 @@
         <link href="{{ STATIC_URL }}style/timemap.css" type="text/css" rel="stylesheet"/>
    {% endblock %}
 
-{% block content %}
-    <h1 class="main">Timeline Map</h1>
-
-    {# divs for timemap display #}
-    <div id="timemap" />
-    <div id="timelinecontainer" />
-    <div id="timeline"></div>
-    <div id="mapcontainer">
-        <div id="map"></div>
-    </div>
-
+    {% block content %}
+        <h1 class="main">Lynchings in Georgia (1875-1930) Timeline Map</h1>    
+        {% if data %}
+            {# divs for timemap display #}
+            <div id="timemap" />
+            <div id="timelinecontainer" />
+            <div id="timeline"></div>
+            <div id="mapcontainer">
+            <div id="map"></div>
+            </div>
+        {% endif %}
 {% endblock %}

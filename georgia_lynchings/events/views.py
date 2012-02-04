@@ -1,11 +1,14 @@
 import json
 import logging
 from django.conf import settings
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from pprint import pprint
+import simplejson
 import sunburnt
 from urllib import quote
+import urllib2
 from georgia_lynchings.forms import SearchForm
 from georgia_lynchings.events.models import MacroEvent, \
         get_events_by_locations, get_events_by_times, get_all_macro_events, \
@@ -130,102 +133,66 @@ def search(request):
 
 def timemap(request):
     """
-    bare minimum for prototype of timemap
+    Send external json file data to the timemap template.
     """
-    timemap_data = get_timemap_info()
-    print timemap_data
-    return render(request, 'events/timemap.html', {'data' : mark_safe(timemap_data)})
+    
+    # Check to make sure the TIMEMAP_JSON_URL is defined in the settings file.
+    if not hasattr(settings, 'TIMEMAP_JSON_URL') or not settings.TIMEMAP_JSON_URL:
+        logger.error('TIMEMAP_JSON_URL setting is not defined.')
+        # TODO: review error handling
+        raise Http404        
+    else:    
+        timemap_data = get_timemap_info()
+        #print timemap_data
+        return render(request, 'events/timemap.html', {'data' : mark_safe(timemap_data)})  
 
 
 def get_timemap_info():
     '''
     Function to query all macro evnts and retun map data
     in json format
+    
+    :rtype: a serialized obj as a JSON formatted stream  
+
+    This is an example of the json properties:
+    timemap_data = [
+        {
+            "id": "event",
+            "title": "Events",
+            "theme": "red",
+            "type": "basic",
+            "options": {
+                "items": [
+                    {
+                      "title" : "Columbia",
+                      "start" : "1875-01-01",
+                      "end" : "1875-01-14",                      
+                      "point" : {
+                          "lat" : 31.753389,
+                          "lon" : -82.28558
+                       },
+                      "options" : {
+                        "infoHtml": "<div><b>Columbia</b></div>" +
+                                    "<div>Start date: 1875-01-01</div>" +
+                                    "<div>End date: 1875-01-14</div>" +
+                                    "<div>Location: Bibb County</div>" +
+                                    "<div>Victims: John and Jane Doe</div>" +
+                                    "<div><a target='_blank' href='../../../events/100/details'>more info</a></div>"
+                      }
+                    }
+                ]
+            }
+        }
+    ]
     '''
     
-    #TEST DATA FOR TIMEMAP PROTOTYPE
-    # IN REALITY SHOULD BE GENERATED FROM SPARQL QUERY
-    timemap_data = [
-            {
-                'id': "event",
-                'title': "Events",
-                'theme': "red",
-                'type': "basic",
-                'options': {
-                    'items': [
-                        {
-                          "title" : "Columbia",
-                          "start" : "1875-01-01",
-                          "point" : {
-                              "lat" : 31.753389,
-                              "lon" : -82.28558
-                           },
-                          "options" : {
-                            "infoHtml": "<div><b>Columbia</b></div>" +
-                                         "<div>Date: 1875-01-01</div>" +
-                                         "<div>Location: Columbia, GA</div>" +
-                                        "<div>link to detail page goes here</div>"
-                          }
-                        },
-                        {
-                          "title" : "Worth, Dougherty",
-                          "start" : "1881-02-02",
-                          "point" : {
-                              "lat" : 31.556775,
-                              "lon" : -82.451152
-                           },
-                          "options" : {
-                            "infoHtml": "<div><b>Worth, Dougherty</b></div>" +
-                                         "<div>Date: 1881-02-02</div>" +
-                                         "<div>Location: Bartow, GA</div>" +
-                                        "<div>link to detail page goes here</div>"
-                          }
-                        },
-                        {
-                          "start" : "1887-03-03",
-                          "title" : "Bartow",
-                          "point" : {
-                              "lat" : 31.527925,
-                              "lon" : -84.61891
-                           },
-                          "options" : {
-                            "infoHtml": "<div><b>Bartow</b></div>" +
-                                         "<div>Date: 1887-03-03</div>" +
-                                         "<div>Location: Bartow, GA</div>" +
-                                        "<div>link to detail page goes here</div>"
-                          }
-                        },
-                        {
-                          "title" : "Rape",
-                          "start" : "1900-04-04",
-                          "point" : {
-                              "lat" : 31.223831,
-                              "lon" : -84.19464
-                           },
-                          "options" : {
-                            "infoHtml": "<div><b>Rape</b></div>" +
-                                         "<div>Date: 1900-04-04</div>" +
-                                         "<div>Location:  GA</div>" +
-                                        "<div>link to detail page goes here</div>"
-                          }
-                        },
-                        {
-                          "start" : "1920-05-05",
-                          "title" : "Turner",
-                          "point" : {
-                              "lat" : 31.716228,
-                              "lon" : -83.627404
-                           },
-                          "options" : {
-                            "infoHtml": "<div><b>Turner</b></div>" +
-                                         "<div>Date: 1920-05-05</div>" +
-                                         "<div>Location: Turner, GA</div>" +
-                                        "<div>link to detail page goes here</div>"
-                          }
-                        },
-                    ]
-                }
-            }
-        ]
-
-    return json.dumps(timemap_data)
+    # Request the TIMEMAP_JSON_URL property in settings
+    try:
+        req = urllib2.Request(settings.TIMEMAP_JSON_URL)
+        opener = urllib2.build_opener()
+        jsondata = opener.open(req)
+        # return the serialized obj as a JSON formatted stream        
+        return json.dumps(simplejson.load(jsondata))
+    except:
+        # TODO: review error handling
+        raise Http404

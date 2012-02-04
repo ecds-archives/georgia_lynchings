@@ -407,6 +407,8 @@ class ViewsTest(EventsAppTest):
 
     def test_get_timemap_info(self):
         result = json.loads(get_timemap_info())
+        
+        print "\n HELLO result length = [%d]\n" % len(result)
 
         #check top level dataset elements
         self.assertEqual(result[0]['id'], 'event')
@@ -415,10 +417,10 @@ class ViewsTest(EventsAppTest):
         self.assertEqual(result[0]['type'], 'basic')
 
         #check first level of data - will have to be added to once real function is in place
-        self.assertEqual(result[0]['options']['items'][0]['title'], 'Columbia')
-        self.assertEqual(result[0]['options']['items'][0]['start'], '1875-01-01')
-        self.assertEqual(result[0]['options']['items'][0]['point']['lat'], 31.753389)
-        self.assertEqual(result[0]['options']['items'][0]['point']['lon'], -82.28558)
+        self.assertEqual(result[0]['options']['items'][0]['title'], 'Houston')
+        self.assertEqual(result[0]['options']['items'][0]['start'], '1879-11-25')
+        self.assertEqual(result[0]['options']['items'][0]['point']['lat'], 32.458332)
+        self.assertEqual(result[0]['options']['items'][0]['point']['lon'], -83.668346)
         self.assertTrue(len(result[0]['options']['items'][0]['options']['infoHtml']) > 0 )
 
 
