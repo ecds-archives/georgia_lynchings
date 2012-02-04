@@ -5,7 +5,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from pprint import pprint
-import simplejson
+from django.utils import simplejson
 import sunburnt
 from urllib import quote
 import urllib2
