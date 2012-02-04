@@ -4,8 +4,8 @@ from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
-from pprint import pprint
 from django.utils import simplejson
+from pprint import pprint
 import sunburnt
 from urllib import quote
 import urllib2
@@ -150,40 +150,41 @@ def timemap(request):
 def get_timemap_info():
     '''
     Function to query all macro evnts and retun map data
-    in json format
-    
-    :rtype: a serialized obj as a JSON formatted stream  
+    in json format.
 
+    :rtype: a serialized obj as a JSON formatted stream  
+    '''
+    '''
     This is an example of the json properties:
-    timemap_data = [
-        {
-            "id": "event",
-            "title": "Events",
-            "theme": "red",
-            "type": "basic",
-            "options": {
-                "items": [
-                    {
-                      "title" : "Columbia",
-                      "start" : "1875-01-01",
-                      "end" : "1875-01-14",                      
-                      "point" : {
-                          "lat" : 31.753389,
-                          "lon" : -82.28558
-                       },
-                      "options" : {
-                        "infoHtml": "<div><b>Columbia</b></div>" +
-                                    "<div>Start date: 1875-01-01</div>" +
-                                    "<div>End date: 1875-01-14</div>" +
-                                    "<div>Location: Bibb County</div>" +
-                                    "<div>Victims: John and Jane Doe</div>" +
-                                    "<div><a target='_blank' href='../../../events/100/details'>more info</a></div>"
-                      }
-                    }
-                ]
+        timemap_data = [
+            {
+                "id": "event",
+                "title": "Events",
+                "theme": "red",
+                "type": "basic",
+                "options": {
+                    "items": [
+                        {
+                          "title" : "Columbia",
+                          "start" : "1875-01-01",
+                          "end" : "1875-01-14",                      
+                          "point" : {
+                              "lat" : 31.753389,
+                              "lon" : -82.28558
+                           },
+                          "options" : {
+                            "infoHtml": "<div><b>Columbia</b></div>" +
+                                        "<div>Start date: 1875-01-01</div>" +
+                                        "<div>End date: 1875-01-14</div>" +
+                                        "<div>Location: Bibb County</div>" +
+                                        "<div>Victims: John and Jane Doe</div>" +
+                                        "<div><a target='_blank' href='../../../events/100/details'>more info</a></div>"
+                          }
+                        }
+                    ]
+                }
             }
-        }
-    ]
+        ]
     '''
     
     # Request the TIMEMAP_JSON_URL property in settings
