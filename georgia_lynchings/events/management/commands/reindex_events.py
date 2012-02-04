@@ -20,7 +20,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 import sunburnt
 
-from georgia_lynchings.events.models import MacroEvent, SemanticTriplet
+from georgia_lynchings.events.models import MacroEvent, SemanticTriplet, Victim
 
 try:
     from progressbar import ProgressBar, Bar, Percentage, ETA, SimpleProgress, Timer
@@ -38,8 +38,9 @@ class Command(BaseCommand):
         progress = NullProgressBar()
         macs = MacroEvent.all_instances()
         triplets = SemanticTriplet.all_instances()
-        items = macs + triplets
-
+        victims = Victim.all_instances()        
+        items = macs + triplets + victims
+        
         if ProgressBar and os.isatty(sys.stdout.fileno()):
             widgets = [Percentage(), ' (', SimpleProgress(), ')', Bar(),
                        ETA()]

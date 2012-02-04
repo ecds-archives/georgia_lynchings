@@ -676,3 +676,53 @@ events['triplets']="""
     ORDER BY ?event UCASE(?trlabel)
 """
 
+# TODO: Possibly add Beck data when available - currently Brundage only.
+'Find victim information related to a MacroEvent'
+events['victims']="""
+PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
+PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+SELECT DISTINCT ?macro ?victim ?vlabel ?vname_brdg ?vcounty_brdg ?vallegedcrime_brdg ?vlydate_brdg ?vrace_brdg ?melabel
+WHERE {
+    # First find all the Macro events, and then all the Victim
+    # information for that macro event.
+    ?macro a scx:r1;            # Macro event
+        dcx:Identifier ?melabel;
+        sxcxcx:r121 ?victim.    # Victim
+    ?victim dcx:Identifier ?vlabel;
+
+    # Provide (Brundage) Name of Victim, if it exists
+    OPTIONAL {
+        ?victim ssx:r104 ?vname_brdg.
+        FILTER (?vname_brdg != "?")
+    }
+   
+    # Provide (Brundage) County of Victim, if it exists
+    OPTIONAL {
+        ?victim ssx:r105 ?vcounty_brdg.
+        FILTER (?vcounty_brdg != "?")
+    }
+   
+    # Provide (Brundage) Alleged Crime, if it exists
+    OPTIONAL {
+        ?victim ssx:r106 ?vallegedcrime_brdg.
+        FILTER (?vallegedcrime_brdg != "?")
+    }
+
+    # Provide (Brundage) Date of Lynching, if it exists
+    OPTIONAL {
+        ?victim ssx:r107 ?vlydate_brdg.
+        FILTER (?vlydate_brdg != "?")
+    }
+
+    # Provide (Brundage) Race of Victim, if it exists
+    OPTIONAL {
+        ?victim ssx:r108 ?vrace_brdg. 
+        FILTER (?vrace_brdg != "?")
+    } 
+}
+ORDER BY ?macro
+"""
+
+

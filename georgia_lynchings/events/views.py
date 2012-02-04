@@ -60,6 +60,7 @@ def details(request, row_id):
     if results:   
         title = row_id
         results['articles_link'] = '../../../events/%s/articles' % row_id
+        # TODO : change old format of simplex victim to new format complex victims (multiple)
         results['victim'] = event.victim          
     else:   title = "No records found"    
     return render(request, 'events/details.html',
@@ -187,7 +188,7 @@ def get_timemap_info():
         ]
     '''
     
-    # Request the TIMEMAP_JSON_URL property in settings
+    # Request content from TIMEMAP_JSON_URL
     try:
         req = urllib2.Request(settings.TIMEMAP_JSON_URL)
         opener = urllib2.build_opener()

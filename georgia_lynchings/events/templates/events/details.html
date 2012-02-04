@@ -19,7 +19,6 @@
 
       <tr>
         <th>
-           
             Event:<br/>
             {% if event.mindate %}Min Date:<br/>{% endif %}  
             {% if event.maxdate %}Max Date:<br/>{% endif %}                          
@@ -45,7 +44,7 @@
         
         {% if event.uparto %}
         <tr>
-        <th>Event: {{ event.evlabel }}<br/>Participant-Objects:</th>
+        <th>Event<br/>{{ event.evlabel }}<br/>Participant-Objects:</th>
         <td >
             <table id="part">
             <tr><th>Name</th>

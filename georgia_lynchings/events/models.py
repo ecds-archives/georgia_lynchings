@@ -24,23 +24,55 @@ class MacroEvent(ComplexObject):
 
     rdf_type = scx.r1
     'the URI of the RDF Class describing macro event objects'
-
-    # complex fields potentially attached to a MacroEvent
-    events = sxcxcx.r61
-    'the events associated with this macro event'
-
+    
     # simplex fields potentially attached to a MacroEvent
+    
     victim = ssx.r82 # FIXME: data as of 2011-12-26 deprecates, favoring sxcxcx.r121
-    'the name of the victim of the lynching'
+    'the (old format) victim associated with this macro event'    
+    
     case_number = ssx.r84 # FIXME: not clear if data as of 2011-12-26 has this at all
     'a case number identifying this lynching case'
+    
+    # complex fields potentially attached to a MacroEvent
+    
+    events = sxcxcx.r61
+    'the events associated with this macro event'
+    
+    victims = sxcxcx.r121
+    'the (new format) victims associated with this macro event'
 
     def index_data(self):
         data = super(MacroEvent, self).index_data().copy()
         
+        # TODO: remove old victim format (single victim, name only)
         victim = self.victim
         if victim:
-            data['victim'] = victim
+            data['victim'] = victim        
+        
+        # victims new format (mutliple victims and assoc. properties)
+        data['victim_uri'] = []        
+        data['victim_name_brundage'] = []
+        data['victim_county_brundage'] = []
+        data['victim_lynchingdate_brundage'] = []
+        data['victim_race_brundage'] = []
+        data['victim_allegedcrime_brundage'] = []
+        # NOTE: victim age as qualitative_age and exact_age are available
+        victim_rows = self.get_victim_data()
+        if len(victim_rows) > 1: 
+            logger.debug("Multiple [%d] Victims for event[%s]" % (len(victim_rows), victim_rows[0]['macro']))
+        for victim_row in victim_rows:
+            if 'victim' in victim_row:
+                data['victim_uri'].append(victim_row['victim'])            
+            if 'vname_brdg' in victim_row:
+                data['victim_name_brundage'].append(victim_row['vname_brdg'])
+            if 'vcounty_brdg' in victim_row:
+                data['victim_county_brundage'].append(victim_row['vcounty_brdg'])
+            if 'vlydate_brdg' in victim_row:
+                data['victim_lynchingdate_brundage'].append(victim_row['vlydate_brdg'])
+            if 'vrace_brdg' in victim_row:
+                data['victim_race_brundage'].append(victim_row['vrace_brdg'])
+            if 'vallegedcrime_brdg' in victim_row:
+                data['victim_allegedcrime_brundage'].append(victim_row['vallegedcrime_brdg'])
 
         datedict = self.get_date_range()
         if datedict:
@@ -326,6 +358,7 @@ class MacroEvent(ComplexObject):
             events[triplet['evlabel']].append(triplet['trlabel'])
         return events
         
+    # TODO Add first name for participant object
     def get_statement_object_data(self):
         '''Get data about the particpant-O (sentence object) of statements
         related to this macro event.
@@ -353,7 +386,8 @@ class MacroEvent(ComplexObject):
                              initial_bindings={'macro': self.uri.n3()})                                       
         # return a dictionary of the resultSet
         return resultSet
-                                 
+
+    # TODO Add first name for participant subject
     def get_statement_subject_data(self):
         '''Get data about the particpant-S (sentence subject) of statements
         related to this macro event.
@@ -381,6 +415,28 @@ class MacroEvent(ComplexObject):
                              initial_bindings={'macro': self.uri.n3()})                                       
         # return a dictionary of the resultSet
         return resultSet
+        
+    def get_victim_data(self):
+        '''Get the victim data related to this macro event.
+
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                It returns one row per victim associated with this Macro
+                Event, with the following bindings:              
+                  * `vname_brdg`: the (Brundage) name of the Victim
+                  * `vcounty_brdg`: the (Brundage) county of the Victim
+                  * `vallegedcrime_brdg`: the (Brundage) alleged crime of the Victim
+                  * `vlydate_brdg`: the (Brundage) lynching date of the Victim
+                  * `vrace_brdg`: the (Brundage) race of the Victim                                                                       
+                  * `victim`: the URI of the Victim
+                  * `vlabel`: the label of that Victim
+                  * `melabel`: the label of this Macro Event
+        '''
+        query=query_bank.events['victims']
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                                       
+        return resultSet        
 
 
 def get_events_by_locations():
@@ -456,8 +512,7 @@ def get_all_macro_events():
         result['details_link'] = '%s/details' % row_id        
         result['articles_link'] = '%s/articles' % row_id
     # return the dictionary resultset of the query          
-    return resultSet  
-
+    return resultSet
 
 class Event(ComplexObject):
     '''An Event is an object type defined by the project's private PC-ACE
@@ -531,3 +586,47 @@ class SemanticTriplet(ComplexObject):
 # means a little corner of the Event definition is way down here. need to
 # find a better way to do this.
 Event.triplets.result_type = SemanticTriplet
+
+class Victim(ComplexObject):
+    '''A Victim is an object type defined by the project's private
+    PC-ACE database. It represents a Victim Grouping of a Macro Event and 
+    several properties associated with it.
+    '''
+
+    rdf_type = scx.r68
+    'the URI of the RDF Class describing victim objects'
+
+    # simplex fields potentially attached to a Victim
+    # Victim has a name (Brundage)
+    victim_name = ssx.r104       
+
+    # Victim has a county of lynching (Brundage)
+    victim_county_of_lynching = ssx.r105   
+        
+    # Victim has an alleged crime (Brundage)        
+    victim_alleged_crime = ssx.r106
+    
+    # Victim has a date of lynchings (Brundage)    
+    victim_date_of_lynching = ssx.r107
+    
+    # Victim has a race (Brundage)    
+    victim_race = ssx.r108    
+                    
+    # reverse and aggregate properties
+    macro_event = ReversedRdfPropertyField(MacroEvent.victims,
+                                           result_type=MacroEvent)
+
+    def index_data(self):
+        data = super(Victim, self).index_data().copy()
+
+        macro_event = self.macro_event
+        if macro_event:
+            data['macro_event_uri'] = macro_event.uri
+
+        return data
+
+# FIXME: patching Victim from down here isn't great: it essentially
+# means a little corner of the Victim definition is way down here. need to
+# find a better way to do this.
+Victim.result_type = Victim
+

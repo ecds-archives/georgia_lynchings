@@ -60,6 +60,14 @@ types and options, see:
     <field name="participant_race" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_gender" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_actor_name" type="text" indexed="true" stored="true" multiValued="true"/>
+    
+    <!-- MacroEvent victims data -->
+    <field name="victim_uri" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="victim_name_brundage" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="victim_county_brundage" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="victim_lynchingdate_brundage" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="victim_race_brundage" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="victim_allegedcrime_brundage" type="text" indexed="true" stored="true" multiValued="true"/>    
 
     <!-- everything under a MacroEvent should keep a reference to it for
          navigation and faceting -->
@@ -98,6 +106,11 @@ types and options, see:
   <copyField source="participant_race" dest="text"/>
   <copyField source="participant_gender" dest="text"/>
   <copyField source="participant_actor_name" dest="text"/>
+  <copyField source="victim_name_brundage" dest="text"/>
+  <copyField source="victim_county_brundage" dest="text"/>
+  <copyField source="victim_lynchingdate_brundage" dest="text"/>
+  <copyField source="victim_race_brundage" dest="text"/>
+  <copyField source="victim_allegedcrime_brundage" dest="text"/>    
 
   <!-- MacroEvent fields that are probably also interesting as facets -->
   <copyField source="city" dest="city_facet"/>
@@ -106,5 +119,10 @@ types and options, see:
   <copyField source="participant_race" dest="participant_race_facet"/>
   <copyField source="participant_gender" dest="participant_gender_facet"/>
   <copyField source="participant_actor_name" dest="participant_actor_name_facet"/>
+  <copyField source="victim_name_brundage" dest="victim_name_brundage_facet"/>
+  <copyField source="victim_county_brundage" dest="victim_county_brundage_facet"/>
+  <copyField source="victim_lynchingdate_brundage" dest="victim_lynchingdate_brundage_facet"/>
+  <copyField source="victim_race_brundage" dest="victim_race_brundage_facet"/>
+  <copyField source="victim_allegedcrime_brundage" dest="victim_allegedcrime_brundage_facet"/>    
 
 </schema>

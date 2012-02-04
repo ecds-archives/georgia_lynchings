@@ -75,6 +75,23 @@ documentation, you probably will also want to::
 After this step, your virtual environment should contain all of the
 needed dependencies.
 
+Solr
+~~~~
+Georgia Lynchings uses `Solr <http://lucene.apache.org/solr/>` for 
+searching  Georgia Lynchings content. The Solr schema
+included with the source code at ``solr/schema.xml`` should be used as the
+Solr schema configuration. For convenience, this directory also contains a
+sample ``solrconfig.xml`` and minimal versions of all other solr
+configuration files used by the index.
+
+The url for accessing the configured Solr instance should be set in
+``localsettings.py`` as **SOLR_INDEX_URL**.
+
+To populate the index initially, run the ``reindex_events`` script ::
+
+  $ python manage.py reindex_events 
+
+
 Install the application
 -----------------------
 
@@ -106,7 +123,7 @@ Add the georgia lynching 'documents' and 'media' directories as an apache alias:
 Collect the static media::
   
   $ python manage.py collectstatic
-
+  
 
 Notes for developers
 ====================
