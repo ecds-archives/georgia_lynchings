@@ -407,8 +407,6 @@ class ViewsTest(EventsAppTest):
 
     def test_get_timemap_info(self):
         result = json.loads(get_timemap_info())
-        
-        print "\n HELLO result length = [%d]\n" % len(result)
 
         #check top level dataset elements
         self.assertEqual(result[0]['id'], 'event')
