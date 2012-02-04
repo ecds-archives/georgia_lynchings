@@ -6,7 +6,7 @@ types and options, see:
   http://wiki.apache.org/solr/SchemaXml
   http://svn.apache.org/viewvc/lucene/dev/trunk/solr/example/solr/conf/schema.xml?view=markup
 -->
-<schema name="openemory" version="1.1">
+<schema name="galyn" version="1.1">
   <types>
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
     <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" omitNorms="true"/>
