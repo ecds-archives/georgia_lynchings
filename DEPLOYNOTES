@@ -28,17 +28,19 @@ After that you should add some settings to your .bashrc ::
     export WORKON_HOME=/home/httpd/sites/virtual_envs
     export PROJECT_HOME=/home/httpd/sites
     source /usr/local/bin/virtualenvwrapper.sh
-    export PIP_VIRTUALENV_BASE=$WORKON_HOME # Tell pip to create its virtualenvs in $WORKON_HOME.
-    export PIP_RESPECT_VIRTUALENV=true # Tell pip to automatically use the currently active virtualenv.
+    # Tell pip to create its virtualenvs in $WORKON_HOME.    
+    export PIP_VIRTUALENV_BASE=$WORKON_HOME 
+    # Tell pip to automatically use the currently active virtualenv.    
+    export PIP_RESPECT_VIRTUALENV=true 
     export VIRTUALENV_USE_DISTRIBUTE=true
 
-Now, you can create the virtual environment for this project, and launch the virtual
-environment in one command::
+Now, you can create the virtual environment for this project, and launch 
+the virtual environment in one command::
     
   $ mkvirtualenv --no-site-packages --distribute georgia_lynchings
   
-If the environemnt is already created, you can activate the virtual environment for 
-this project with this command::
+If the environemnt is already created, you can activate the virtual 
+environment for  this project with this command::
     
   $ . /home/httpd/sites/virtual_envs/georgia_lynchings/bin/activate  
 
@@ -54,9 +56,9 @@ correspondingly be installed into this environment.
 Install python dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Georgia Lynchings depends on several python libraries. The installation is mostly
-automated, and will print status messages as packages are installed. If there
-are any errors, pip should announce them very loudly.
+Georgia Lynchings depends on several python libraries. The installation 
+is mostly automated, and will print status messages as packages are 
+installed. If there are any errors, pip should announce them very loudly.
 
 You will need python-dev package installed first::
 
@@ -79,10 +81,10 @@ Solr
 ~~~~
 Georgia Lynchings uses `Solr <http://lucene.apache.org/solr/>` for 
 searching  Georgia Lynchings content. The Solr schema
-included with the source code at ``solr/schema.xml`` should be used as the
-Solr schema configuration. For convenience, this directory also contains a
-sample ``solrconfig.xml`` and minimal versions of all other solr
-configuration files used by the index.
+included with the source code at ``solr/schema.xml`` should be used as 
+the Solr schema configuration. For convenience, this directory also 
+contains a sample ``solrconfig.xml`` and minimal versions of all other 
+solr configuration files used by the index.
 
 The url for accessing the configured Solr instance should be set in
 ``localsettings.py`` as **SOLR_INDEX_URL**.
@@ -90,6 +92,18 @@ The url for accessing the configured Solr instance should be set in
 To populate the index initially, run the ``reindex_events`` script ::
 
   $ python manage.py reindex_events 
+  
+New Data Load
+~~~~~~~~~~~~~
+On initial setup and each time there is a new data load available the 
+create_timemap_json manage command should be run.
+
+The url for accessing the configured timemap json url should be set in
+``localsettings.py`` as **TIMEMAP_JSON_URL**.
+
+To populate the timemap json, run the ``create_timemap_json`` script ::
+
+  $ python manage.py create_timemap_json   
 
 
 Install the application
@@ -99,8 +113,8 @@ Apache
 ~~~~~~
 
 After installing dependencies, copy and edit the wsgi and apache
-configuration files in src/apache inside the source code checkout. Both may
-require some tweaking for paths and other system details.
+configuration files in src/apache inside the source code checkout. Both 
+may require some tweaking for paths and other system details.
 
 Configuration
 ~~~~~~~~~~~~~
@@ -114,7 +128,8 @@ tables and initial data using::
 
   $ python manage.py syncdb
 
-Add the georgia lynching 'documents' and 'media' directories as an apache alias::
+Add the georgia lynching 'documents' and 'media' directories as an 
+apache alias::
   
   Example:
   Alias /georgia_lynchings/documents/ /home/galyn/documents/
@@ -135,8 +150,8 @@ on the project or running automated tests.
 Session configuration
 ---------------------
 
-By default, this project is configured to mark session cookies as secure. To
-enable login over HTTP (e.g., when developing with Django's runserver), you
-will need to override this in your ``localsettings.py``.  See the example
-and comments in ``localsettings.py.dist``.
+By default, this project is configured to mark session cookies as secure. 
+To enable login over HTTP (e.g., when developing with Django's runserver), 
+you will need to override this in your ``localsettings.py``.  See the 
+example and comments in ``localsettings.py.dist``.
 
