@@ -1,4 +1,5 @@
 import logging
+from django.core.urlresolvers import reverse
 from django.shortcuts import render
 from georgia_lynchings.actors.models import Actor
 
@@ -16,5 +17,6 @@ def macroevents(request, row_id):
     resultSet = actor.get_macroevents()
     if resultSet:   title = resultSet[0]['actorlabel']
     else:   title = "No records found"    
+    # FIXME: use reverse here
     return render(request, 'actors/macroevents.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title})    

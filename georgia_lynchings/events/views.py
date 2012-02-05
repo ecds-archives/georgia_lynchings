@@ -1,14 +1,17 @@
 import json
 import logging
-from django.conf import settings
-from django.http import Http404, HttpResponse
-from django.shortcuts import render
-from django.utils.safestring import mark_safe
-from django.utils import simplejson
 from pprint import pprint
 import sunburnt
 from urllib import quote
 import urllib2
+
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import Http404, HttpResponse
+from django.shortcuts import render
+from django.utils.safestring import mark_safe
+from django.utils import simplejson
+
 from georgia_lynchings.forms import SearchForm
 from georgia_lynchings.events.models import MacroEvent, \
         get_events_by_locations, get_events_by_times, get_all_macro_events, \
@@ -33,13 +36,15 @@ def articles(request, row_id):
         for result in resultSet:
             # Clean up data, add "n/a" if value does not exist
             if 'docpath' in result.keys(): 
+                # FIXME: find a better way to do this
                 result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
                 result['docpath'] = result['docpath'][10:] 
     else:   title = "No records found" 
     # set prev/next links
+    # FIXME: this needs to be based on a defined set of actice macro events
     pagelink = {}    
-    pagelink['prev']='../../%s/articles' % (int(row_id) - 1)
-    pagelink['next']='../../%s/articles' % (int(row_id) + 1)    
+    pagelink['prev']='../../%s/articles' % (int(row_id) - 1)    # FIXME: use reverse here
+    pagelink['next']='../../%s/articles' % (int(row_id) + 1)    # FIXME: use reverse here 
     return render(request, 'events/articles.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title, 'pagelink':pagelink})
                   
@@ -55,12 +60,13 @@ def details(request, row_id):
     pagelink = {}
     event = MacroEvent(row_id)
     results = event.get_details()
-    pagelink['prev']='../../%s/details' % (int(row_id) - 1)
-    pagelink['next']='../../%s/details' % (int(row_id) + 1)    
+    # FIXME: this needs to be based on a defined set of actice macro events    
+    pagelink['prev']='../../%s/details' % (int(row_id) - 1)   # FIXME: use reverse here
+    pagelink['next']='../../%s/details' % (int(row_id) + 1)   # FIXME: use reverse here   
     if results:   
         title = row_id
         results['articles_link'] = '../../../events/%s/articles' % row_id
-        # TODO : change old format of simplex victim to new format complex victims (multiple)
+        # TODO: change old format of simplex victim to new format complex victims (multiple)
         results['victim'] = event.victim          
     else:   title = "No records found"    
     return render(request, 'events/details.html',
