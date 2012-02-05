@@ -111,28 +111,6 @@ class MacroEvent(ComplexObject):
                 data['participant_actor_name'].append(participant_row['name_of_indivd_actor'])
 
         return data
-        
-    def json_data(self):
-        data = super(MacroEvent, self).index_data().copy()
-        
-        # victims new format (mutliple victims and assoc. properties)      
-        data['victim_name_brundage'] = []
-        data['victim_county_brundage'] = []
-        # NOTE: victim age as qualitative_age and exact_age are available
-        victim_rows = self.get_victim_data()
-        for victim_row in victim_rows:          
-            if 'vname_brdg' in victim_row:
-                data['victim_name_brundage'].append(victim_row['vname_brdg'])
-            if 'vcounty_brdg' in victim_row:
-                data['victim_county_brundage'].append(victim_row['vcounty_brdg'])
-
-        datedict = self.get_date_range()
-        if datedict:
-            data['min_date'] = datedict['mindate']
-            data['max_date'] = datedict['maxdate']
-
-        return data
-        
 
     # methods for wrapping a MacroEvent around a URI and querying utility
     # data about it. For now these methods have hard-coded SPARQL, but we

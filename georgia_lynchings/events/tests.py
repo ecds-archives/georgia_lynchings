@@ -8,7 +8,6 @@ from rdflib import Literal
 from pprint import pprint
 
 from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet
-from georgia_lynchings.events.views import get_timemap_info
 from georgia_lynchings.rdf.ns import dcx
 
 logger = logging.getLogger(__name__)
@@ -403,22 +402,6 @@ class ViewsTest(EventsAppTest):
         self.assertContains(response, 'search results for')
         self.assertEqual(response.context['term'], 'coweta')
         self.assertEqual(response.context['results'], solr_result)
-        self.assertTrue('form' in response.context)
+        self.assertTrue('form' in response.context)      
 
-    def test_get_timemap_info(self):
-        result = json.loads(get_timemap_info())
-
-        #check top level dataset elements
-        self.assertEqual(result[0]['id'], 'event')
-        self.assertEqual(result[0]['title'], 'Events')
-        self.assertEqual(result[0]['theme'], 'red')
-        self.assertEqual(result[0]['type'], 'basic')
-
-        #check first level of data - will have to be added to once real function is in place
-        self.assertEqual(result[0]['options']['items'][0]['title'], 'Houston')
-        self.assertEqual(result[0]['options']['items'][0]['start'], '1879-11-25')
-        self.assertEqual(result[0]['options']['items'][0]['point']['lat'], 32.458332)
-        self.assertEqual(result[0]['options']['items'][0]['point']['lon'], -83.668346)
-        self.assertTrue(len(result[0]['options']['items'][0]['options']['infoHtml']) > 0 )
-
-
+    #TODO: Add tests for Timemap and create_timemap_json

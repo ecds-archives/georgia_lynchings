@@ -10,16 +10,16 @@ from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
-from django.utils import simplejson
 
-from georgia_lynchings.forms import SearchForm
 from georgia_lynchings.events.models import MacroEvent, \
         get_events_by_locations, get_events_by_times, get_all_macro_events, \
         SemanticTriplet
 from georgia_lynchings.forms import SearchForm        
+from georgia_lynchings.events.timemap import Timemap   
 
 logger = logging.getLogger(__name__)
 
+                        
 def articles(request, row_id):
     '''
     List all articles for a
@@ -139,68 +139,12 @@ def search(request):
 
 
 def timemap(request):
-    """
-    Send external json file data to the timemap template.
-    """
+    '''Send timemap json data created from solr to the timemap template.
+    '''
+
+    # Get the json object require for displaying timemap data
+    timemap = Timemap()    
+    jsonResult = timemap.get_json()
+
+    return render(request, 'events/timemap.html', {'data' : mark_safe(jsonResult)})  
     
-    # Check to make sure the TIMEMAP_JSON_URL is defined in the settings file.
-    if not hasattr(settings, 'TIMEMAP_JSON_URL') or not settings.TIMEMAP_JSON_URL:
-        logger.error('TIMEMAP_JSON_URL setting is not defined.')
-        # TODO: review error handling
-        raise Http404        
-    else:    
-        timemap_data = get_timemap_info()
-        #print timemap_data
-        return render(request, 'events/timemap.html', {'data' : mark_safe(timemap_data)})  
-
-
-def get_timemap_info():
-    '''
-    Function to query all macro evnts and retun map data
-    in json format.
-
-    :rtype: a serialized obj as a JSON formatted stream  
-    '''
-    '''
-    This is an example of the json properties:
-        timemap_data = [
-            {
-                "id": "event",
-                "title": "Events",
-                "theme": "red",
-                "type": "basic",
-                "options": {
-                    "items": [
-                        {
-                          "title" : "Columbia",
-                          "start" : "1875-01-01",
-                          "end" : "1875-01-14",                      
-                          "point" : {
-                              "lat" : 31.753389,
-                              "lon" : -82.28558
-                           },
-                          "options" : {
-                            "infoHtml": "<div><b>Columbia</b></div>" +
-                                        "<div>Start date: 1875-01-01</div>" +
-                                        "<div>End date: 1875-01-14</div>" +
-                                        "<div>Location: Bibb County</div>" +
-                                        "<div>Victims: John and Jane Doe</div>" +
-                                        "<div><a target='_blank' href='../../../events/100/details'>more info</a></div>"
-                          }
-                        }
-                    ]
-                }
-            }
-        ]
-    '''
-    
-    # Request content from TIMEMAP_JSON_URL
-    try:
-        req = urllib2.Request(settings.TIMEMAP_JSON_URL)
-        opener = urllib2.build_opener()
-        jsondata = opener.open(req)
-        # return the serialized obj as a JSON formatted stream        
-        return json.dumps(simplejson.load(jsondata))
-    except:
-        # TODO: review error handling
-        raise Http404
