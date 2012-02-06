@@ -12,7 +12,6 @@ Create timemap json with macro events::
 '''
 
 import os
-import simplejson as json
 import sys
 from optparse import make_option
 from pprint import pprint
@@ -20,6 +19,7 @@ from pprint import pprint
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.urlresolvers import reverse
+from django.utils import simplejson
 
 from georgia_lynchings import geo_coordinates
 from georgia_lynchings.events.timemap import Timemap
