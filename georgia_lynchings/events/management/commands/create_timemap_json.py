@@ -10,7 +10,7 @@ Create timemap json with macro events::
   $ python manage.py create_timemap_json
 
 '''
-
+import json
 import os
 import sys
 from optparse import make_option
