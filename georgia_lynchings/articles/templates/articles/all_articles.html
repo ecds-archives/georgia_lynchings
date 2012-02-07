@@ -14,9 +14,7 @@
       <td>
         {% if result.docpath == 'n/a' %}
             n/a             
-        {% else %}
-            <h4>STATIC_URL = {{ STATIC_URL }}</h4>
-            <h4>STATIC_PREFIX = {{ STATIC_PREFIX }}</h4>            
+        {% else %}        
             <a href="{{ STATIC_URL }}../{{ result.docpath_link }}">{{ result.docpath }}</a>            
         {% endif %}          
       </td>     
