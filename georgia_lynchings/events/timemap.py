@@ -60,15 +60,14 @@ class Timemap:
             :param solr_items: solr query result set      
         '''
         
-        
         # Timemap JSON Result initialization
         jsonResult = [{"id":"event", "title":"Events","theme":"red","type":"basic","options":{'items':[]}}]     
         for solr_item in solr_items:
             
-            # skip over if county or min_date is not defined            
+            # skip over if county or min_date is not defined  
             try:
                 # use first county in list.
-                county = solr_item['victim_county_brundage'][0]
+                county = solr_item.get('victim_county_brundage', [])[0]
                 # Only add the timemap item, if the start date and county are defined
                 # NOTE: at this time, victim_lynchingdate_brundage is not 
                 # populated with data. If that changes, we should use this 
