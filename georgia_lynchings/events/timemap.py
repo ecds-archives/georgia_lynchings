@@ -26,7 +26,7 @@ class Timemap:
         # Get a list of all the potential Macro Events to map
         self.me_list = []
         macs = MacroEvent.all_instances()
-        for mac in macs: self.me_list.append(str(mac.id)) 
+        for mac in macs: self.me_list.append(mac.id) 
 
     def get_json(self):
         '''Get json object for timemap display.
@@ -60,16 +60,15 @@ class Timemap:
             :param solr_items: solr query result set      
         '''
         
+        
         # Timemap JSON Result initialization
         jsonResult = [{"id":"event", "title":"Events","theme":"red","type":"basic","options":{'items':[]}}]     
         for solr_item in solr_items:
             
-            # skip over if county or min_date is not defined
-            county = None               
-            if 'victim_county_brundage' in solr_item and \
-                len(solr_item['victim_county_brundage']) > 0:
+            # skip over if county or min_date is not defined            
+            try:
                 # use first county in list.
-                county = str(solr_item['victim_county_brundage'][0])
+                county = solr_item['victim_county_brundage'][0]
                 # Only add the timemap item, if the start date and county are defined
                 # NOTE: at this time, victim_lynchingdate_brundage is not 
                 # populated with data. If that changes, we should use this 
@@ -79,7 +78,10 @@ class Timemap:
                 # Display missing data items
                 elif county not in geo_coordinates.countymap: 
                     logger.info(" Did not add macro event %s because county [%s] not defined in geo_coordinates" % (solr_item['row_id'], county))                    
-                #else: logger.info(" Did not add macro event %s because min_date not defined." % (solr_item['row_id']))
+                else: 
+                    logger.info(" Did not add macro event %s because min_date not defined." % (solr_item['row_id']))
+            except:
+                logger.info(" Timemap timemap_format error on macro event [%s]." % solr_item['row_id'])
         return jsonResult
         
     def create_timemap_item(self, solr_item, county):
@@ -94,16 +96,15 @@ class Timemap:
         moreinfo = []   # text for pinpoint popup
         
         # Add 'title', if defined; also add to pinpoint popup text
-        if solr_item['label']:       
-            item["title"]=str(solr_item['label'])
-            moreinfo.append("<div><b>%s</b></div>" % (str(solr_item['label']))) 
+        item["title"]=solr_item['label'].encode('ascii')
+        moreinfo.append("<div><b>%s</b></div>" % (solr_item['label'])) 
             
         # Add 'start' date; also add to pinpoint popup text
-        item["start"]=str(solr_item['min_date'])
-        moreinfo.append("<div>Start Date: %s</div>" % (str(solr_item['min_date'])))
+        item["start"]=solr_item['min_date'].encode('ascii')
+        moreinfo.append("<div>Start Date: %s</div>" % (solr_item['min_date']))
         
         # Add 'end' date if defined
-        if solr_item['max_date']:    item["end"]=str(solr_item['max_date'])
+        if solr_item['max_date']:    item["end"]=solr_item['max_date'].encode('ascii')
         
         # NOTE: geo_coordinates is a temporary solution until values are in PC-ACE.    
         # Add longitude and latitude values
@@ -116,9 +117,9 @@ class Timemap:
         
         # FIXME: use reverse
         # reverse('events:details', kwargs={'id': solr_item['row_id']})
-        moreinfo.append("<div><a target='_blank' href='../%s/details'>more info</a></div>" % str(solr_item['row_id']))
+        moreinfo.append("<div><a target='_blank' href='../%s/details'>more info</a></div>" % solr_item['row_id'])
         moreinfo_link = ''.join(moreinfo)
         
-        item["options"]={'infoHtml': str(moreinfo_link)}
+        item["options"]={'infoHtml': moreinfo_link.encode('ascii')}
 
         return item

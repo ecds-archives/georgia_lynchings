@@ -4,8 +4,6 @@
 
 {% block content %}
   <h1 class="main">{{ title }} for Georgia Lynchings</h1>
-{% load static %}
-{% get_static_prefix as STATIC_PREFIX %}
   <table summary="Articles for a Macro Event ({{ row_id }}): {{ title }}" border=1 cellpadding=10px>
   <tr><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></th>
   {% for result in resultSet %}
@@ -17,7 +15,9 @@
         {% if result.docpath == 'n/a' %}
             n/a             
         {% else %}
-            <a href="{{ STATIC_PREFIX }}../{{ result.docpath_link }}">{{ result.docpath }}</a>            
+            <h4>STATIC_URL = {{ STATIC_URL }}</h4>
+            <h4>STATIC_PREFIX = {{ STATIC_PREFIX }}</h4>            
+            <a href="{{ STATIC_URL }}../{{ result.docpath_link }}">{{ result.docpath }}</a>            
         {% endif %}          
       </td>     
       </tr>
