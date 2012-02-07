@@ -8,8 +8,7 @@ csv2rdf.py
 (csv2mysql.py) 
 upload-ttl.sh
 add-rdf-statements.sh
-add-inferred=statements.sh
-add-inferred-statements.rq
+add-inferred-statements.sh
 
 Convert Access MDB file to CSV files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

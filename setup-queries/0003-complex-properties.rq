@@ -1,0 +1,20 @@
+BASE <http://galyn.example.com/>
+PREFIX dxcxcx: <source_data_files/data_xref_Complex-Complex.csv#>
+
+# data_xref_Complex-Complex tuples map one complex object to another through
+# a relationship type defined in the grammar. This relationship type is a
+# tuple in setup_xref_Complex-Complex. Semantically, the
+# data_xref_Complex-Complex tuple is used as an ordered statement with a
+# predicate of the relationship type.
+
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/complex/relations> {
+    ?higher ?sxcxcx ?lower .
+  }
+}
+WHERE {
+  ?dxcxcx a dxcxcx:Row ;
+          dxcxcx:HigherComplex ?higher ;
+          dxcxcx:LowerComplex ?lower ;
+          dxcxcx:xrefID ?sxcxcx .
+}
