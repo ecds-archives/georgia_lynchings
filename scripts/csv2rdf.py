@@ -484,6 +484,18 @@ class Converter_setup_xref_Complex_Complex(Converter):
         super(Converter_setup_xref_Complex_Complex, self).output_prefixes(outf)
         print >>outf, '@prefix scx: <setup_Complex.csv#> .'
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
+        print >>outf, '@prefix sxcxcxn: <#name-> .'
+
+    def output_Name(self, outf, prop, val):
+        # do default property processing
+        self.output_property(outf, prop, val)
+        # and then also add an alternate spelling
+        print >>outf, ';\n   <#Name-URI> sxcxcxn:%s' % \
+                (self.normalize_name_for_uri(val),),
+
+    def normalize_name_for_uri(self, name):
+        super_norm = super(Converter_setup_xref_Complex_Complex, self).normalize_name_for_uri
+        return super_norm(name).lower()
 
     def encode_HigherComplex(self, val):
         if val != '-1':
