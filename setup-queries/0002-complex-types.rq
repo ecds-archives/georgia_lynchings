@@ -1,5 +1,6 @@
 BASE <http://galyn.example.com/>
 PREFIX dcx: <source_data_files/data_Complex.csv#>
+PREFIX scx: <source_data_files/setup_Complex.csv#>
 
 # data_Complex defines complex objects by mapping them to a complex type in
 # setup_Complex via property dcx:ComplexType. Semantically, dcx:ComplexType
@@ -7,10 +8,11 @@ PREFIX dcx: <source_data_files/data_Complex.csv#>
 
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/complex/type-decl> {
-    ?dcx a ?scx.
+    ?dcx a ?scx, ?scxn.
   }
 }
 WHERE {
   ?dcx a dcx:Row;
        dcx:ComplexType ?scx.
+  ?scx scx:Name-URI ?scxn.
 }

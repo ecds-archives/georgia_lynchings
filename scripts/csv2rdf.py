@@ -104,6 +104,17 @@ class Converter(object):
         encoded = encode(val)
         if encoded is not None:
             print >>outf, ';\n   <#%s> %s' % (prop, encoded),
+
+    NORMALIZE_NAME = re.compile('[^_A-Za-z0-9]+')
+    def normalize_name_for_uri(self, name):
+        # remove apostrophes so that "foo's" becomes "foos" instead of "foo_s"
+        name = name.replace("'", "")
+        # replace any nonalphanumeric characters with _, collapsing any
+        # repeating __ into a single _
+        name = self.NORMALIZE_NAME.sub('_', name)
+        # strip off any leading or trailing _
+        name = name.strip('_')
+        return name
     
     def encode(self, val):
         '''Default TTL encoder for field values. By default, output field
@@ -415,7 +426,17 @@ class Converter_setup_Complex(Converter):
     ''':class:`Converter` subclass for ``setup_Complex.csv``'''
     # TODO: copySetting: Is this a boolean? number?
     # TODO: DocumentType: Does this reference setup_Document? maybe?
-    pass
+
+    def output_prefixes(self, outf):
+        super(Converter_setup_Complex, self).output_prefixes(outf)
+        print >>outf, '@prefix scxn: <#name-> .'
+
+    def output_Name(self, outf, prop, val):
+        # do default property processing
+        self.output_property(outf, prop, val)
+        # and then also add an alternate spelling
+        print >>outf, ';\n   <#Name-URI> scxn:%s' % \
+                (self.normalize_name_for_uri(val),),
 
 
 class Converter_setup_Document(Converter):
@@ -438,17 +459,9 @@ class Converter_setup_Simplex(Converter):
         print >>outf, ';\n   <#Name-URI> ssxn:%s' % \
                 (self.normalize_name_for_uri(val),),
 
-    NORMALIZE_NAME = re.compile('[^_A-Za-z0-9]+')
     def normalize_name_for_uri(self, name):
-        name = name.lower()
-        # remove apostrophes so that "foo's" becomes "foos" instead of "foo_s"
-        name = name.replace("'", "")
-        # replace any nonalphanumeric characters with _, collapsing any
-        # repeating __ into a single _
-        name = self.NORMALIZE_NAME.sub('_', name)
-        # strip off any leading or trailing _
-        name = name.strip('_')
-        return name
+        super_norm = super(Converter_setup_Simplex, self).normalize_name_for_uri
+        return super_norm(name).lower()
 
     def encode_ValueType(self, val):
         # TODO: Find a more meaningful way to encode the actual meaning of
