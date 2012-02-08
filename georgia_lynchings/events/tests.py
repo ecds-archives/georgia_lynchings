@@ -7,7 +7,8 @@ from mock import patch, MagicMock
 from rdflib import Literal
 from pprint import pprint
 
-from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet
+from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet, Victim
+from georgia_lynchings.events.timemap import Timemap
 from georgia_lynchings.rdf.ns import dcx
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class EventsAppTest(TestCase):
 
         self.EVENT_ID = '552'
         self.TRIPLET_ID = '555'
+        self.VICTIM_ID = '135158'        
 
     def tearDown(self):
         # restore settings
@@ -296,9 +298,8 @@ class SemanticTripletTest(EventsAppTest):
         self.assertTrue(idata['uri'].endswith('#r555'))
         self.assertTrue(idata['complex_type'].endswith('#r52'))
         self.assertTrue(idata['label'].startswith('party (male unknown armed)'))
-        self.assertTrue(idata['macro_event_uri'].endswith('#r1'))
-
-
+        self.assertTrue(idata['macro_event_uri'].endswith('#r1')) 
+                
 class ViewsTest(EventsAppTest):
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID
@@ -404,4 +405,51 @@ class ViewsTest(EventsAppTest):
         self.assertEqual(response.context['results'], solr_result)
         self.assertTrue('form' in response.context)      
 
-    #TODO: Add tests for Timemap and create_timemap_json
+class TimemapTest(TestCase):
+    def setUp(self):
+        self.tmap = Timemap()   
+        self.solr_items = [
+            {'label': u'Debt Dispute', 
+                'max_date': u'1896-06-02',
+                'min_date': u'1896-06-01', 
+                'row_id': u'89', 
+                'victim_county_brundage': (u'Muscogee', u'Muscogee')},    
+            {'label': u'Wild Talking',
+                'max_date': u'1913-03-07',
+                'min_date': u'1913-02-28',
+                'row_id': u'240',
+                'victim_county_brundage': (u'Habersham',)}
+        ]
+        
+    def test_init(self):
+        self.assertGreater(len(self.tmap.me_list), 300)
+        
+    def test_timemap_format(self):
+        expected_result = [{'id': 'event',
+                  'options': {'items': [{'end': '1896-06-02',
+                                         'options': {'infoHtml': "<div><b>Debt Dispute</b></div><div>Start Date: 1896-06-01</div><div>Location: Muscogee County</div><div><a target='_blank' href='../89/details'>more info</a></div>"},
+                                         'point': {'lat': 32.51071, 'lon': -84.874972},
+                                         'start': '1896-06-01',
+                                         'title': 'Debt Dispute'},
+                                        {'end': '1913-03-07',
+                                         'options': {'infoHtml': "<div><b>Wild Talking</b></div><div>Start Date: 1913-02-28</div><div>Location: Habersham County</div><div><a target='_blank' href='../240/details'>more info</a></div>"},
+                                         'point': {'lat': 34.630446, 'lon': -83.529331},
+                                         'start': '1913-02-28',
+                                         'title': 'Wild Talking'}]},
+                  'theme': 'red',
+                  'title': 'Events',
+                  'type': 'basic'}]
+
+        result = self.tmap.timemap_format(self.solr_items)
+        self.assertEqual(result, expected_result)  
+        
+    def test_create_timemap_item(self):
+        expected_result = {'end': '1896-06-02',
+                        'options': {'infoHtml': "<div><b>Debt Dispute</b></div><div>Start Date: 1896-06-01</div><div>Location: Muscogee County</div><div><a target='_blank' href='../89/details'>more info</a></div>"},
+                        'point': {'lat': 32.51071, 'lon': -84.874972},
+                        'start': '1896-06-01',
+                        'title': 'Debt Dispute'}
+        result = self.tmap.create_timemap_item(self.solr_items[0], 'Muscogee')
+        self.assertEqual(result, expected_result)
+
+    
