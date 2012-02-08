@@ -459,10 +459,6 @@ class Converter_setup_Simplex(Converter):
         print >>outf, ';\n   <#Name-URI> ssxn:%s' % \
                 (self.normalize_name_for_uri(val),),
 
-    def normalize_name_for_uri(self, name):
-        super_norm = super(Converter_setup_Simplex, self).normalize_name_for_uri
-        return super_norm(name).lower()
-
     def encode_ValueType(self, val):
         # TODO: Find a more meaningful way to encode the actual meaning of
         # this number, and update add-inferred-statments to reflect this
@@ -492,10 +488,6 @@ class Converter_setup_xref_Complex_Complex(Converter):
         # and then also add an alternate spelling
         print >>outf, ';\n   <#Name-URI> sxcxcxn:%s' % \
                 (self.normalize_name_for_uri(val),),
-
-    def normalize_name_for_uri(self, name):
-        super_norm = super(Converter_setup_xref_Complex_Complex, self).normalize_name_for_uri
-        return super_norm(name).lower()
 
     def encode_HigherComplex(self, val):
         if val != '-1':
