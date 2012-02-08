@@ -1,0 +1,16 @@
+BASE <http://galyn.example.com/>
+PREFIX dcx: <source_data_files/data_Complex.csv#>
+
+# data_Complex defines complex objects by mapping them to a complex type in
+# setup_Complex via property dcx:ComplexType. Semantically, dcx:ComplexType
+# is an rdfs:subPropertyOf rdf:type.
+
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/complex/type-decl> {
+    ?dcx a ?scx.
+  }
+}
+WHERE {
+  ?dcx a dcx:Row;
+       dcx:ComplexType ?scx.
+}

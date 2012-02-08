@@ -1,35 +1,18 @@
-# This is a SPARQL 1.1 update query. http://www.w3.org/TR/sparql11-update/
-# It assumes that you've already converted relational Georgia Lynchings
-# Project data to RDF using csv2rdf.py and imported them into an RDF
-# triplestore (such as Sesame 2 http://www.openrdf.org/) that understands
-# SPARQL 1.1 update queries.
-#
-# This query creates new explicit statements in the triplestore. The
-# statements are inferred from patterns in the existing data. It does not
-# use implicit RDF inference: Such an implementation could have significant
-# advantages for changing datasets, but server support for such implied
-# statements appears to have very limited portability as of 2011-10-15, so
-# we're skipping it for now.
-
 BASE <http://galyn.example.com/>
-PREFIX dcx: <source_data_files/data_Complex.csv#>
 PREFIX dsx: <source_data_files/data_Simplex.csv#>
 PREFIX dsxd: <source_data_files/data_SimplexDate.csv#>
 PREFIX dsxn: <source_data_files/data_SimplexNumber.csv#>
 PREFIX dsxt: <source_data_files/data_SimplexText.csv#>
-PREFIX dxcxcx: <source_data_files/data_xref_Complex-Complex.csv#>
 PREFIX dxsxcx: <source_data_files/data_xref_Simplex-Complex.csv#>
 PREFIX dxsxsxd: <source_data_files/data_xref_Simplex-Simplex-Document.csv#>
 PREFIX ssx: <source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx: <source_data_files/setup_xref_Complex-Complex.csv#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-#####
-# First: data_Simplex tuples map complex objects to simplex data through
-# simplex types. Semantically, though, they're used as statements. Interpret
-# these as subject, object, and predicate of a new statement. The simplex
-# data is found in data_SimplexDate, data_SimplexText, data_SimplexNumber,
-# or directly in data_Simplex according to the simplex type.
+# data_Simplex tuples map complex objects to simplex data through simplex
+# types. Semantically, though, they're used as statements. Interpret these
+# as subject, object, and predicate of a new statement. The simplex data is
+# found in data_SimplexDate, data_SimplexText, data_SimplexNumber, or
+# directly in data_Simplex according to the simplex type.
 
 # Text simplex statements
 INSERT {
@@ -135,38 +118,4 @@ WHERE {
     ?dxsxsxd dxsxsxd:Simplex ?dsx ;
              dxsxsxd:Document ?subj .
   }
-} ;
-
-#####
-# Second: data_Complex defines complex objects by mapping them to a complex
-# type in setup_Complex via property dcx:ComplexType. Semantically,
-# dcx:ComplexType is an rdfs:subPropertyOf rdf:type.
-
-INSERT {
-  GRAPH <http://galyn.example.com/constructed_statements/complex/type-decl> {
-    ?dcx a ?scx.
-  }
-}
-WHERE {
-  ?dcx a dcx:Row;
-       dcx:ComplexType ?scx.
-} ;
-
-#####
-# Third: data_xref_Complex-Complex tuples map one complex object to
-# another through a relationship type defined in the grammar. This
-# relationship type is a tuple in setup_xref_Complex-Complex. Semantically,
-# the data_xref_Complex-Complex tuple is used as an ordered statement with
-# a predicate of the relationship type.
-
-INSERT {
-  GRAPH <http://galyn.example.com/constructed_statements/complex/relations> {
-    ?higher ?sxcxcx ?lower .
-  }
-}
-WHERE {
-  ?dxcxcx a dxcxcx:Row ;
-          dxcxcx:HigherComplex ?higher ;
-          dxcxcx:LowerComplex ?lower ;
-          dxcxcx:xrefID ?sxcxcx .
 }

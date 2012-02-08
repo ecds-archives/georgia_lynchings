@@ -18,12 +18,16 @@
 # add-inferred-statements.rq and sends them to the repository at the
 # specified query URL to create those statements.
 
-scriptdir=$(dirname $0)
 queryurl=${1:-http://localhost:8080/openrdf-sesame/repositories/galyn/statements}
+rqdir=$(dirname $0)/../setup-queries
+all_rq=${2:-"$rqdir"/*.rq}
 function get_sparql () {
-  awk '/^#/{next}{print}' <"$scriptdir"/add-inferred-statements.rq
+  awk '/^#/{next}{print}' < "$1"
 }
 function execute_query () {
   curl -v --data-urlencode update@- "$queryurl"
 }
-get_sparql | execute_query
+
+for rq in $all_rq; do 
+  get_sparql $rq | execute_query
+done
