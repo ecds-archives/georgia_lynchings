@@ -24,6 +24,7 @@ file's name.
 import csv
 import datetime
 import os
+import re
 import sys
 import urllib
 
@@ -68,14 +69,7 @@ class Converter(object):
             self.output_prefixes(outf)
 
             for row in row_iter:
-                # row[0] is always ID
-                print >>outf, '<#r%s> a <#Row>' % (row[0],),
-                for prop, val in zip(columns, row):
-                    encode = getattr(self, 'encode_' + prop, self.encode)
-                    encoded = encode(val)
-                    if encoded is not None:
-                        print >>outf, ';\n   <#%s> %s' % (prop, encoded),
-                print >>outf, '.'
+                self.process_row(outf, row, columns)
 
     def make_output_filename(self, in_fname):
         '''Generate an output filename from an input filename, adding
@@ -96,6 +90,20 @@ class Converter(object):
         RDF namespaces in their output should override this function to
         define those prefixes.'''
         pass
+
+    def process_row(self, outf, row, columns):
+        # row[0] is always ID
+        print >>outf, '<#r%s> a <#Row>' % (row[0],),
+        for prop, val in zip(columns, row):
+            output = getattr(self, 'output_' + prop, self.output_property)
+            output(outf, prop, val)
+        print >>outf, '.'
+
+    def output_property(self, outf, prop, val):
+        encode = getattr(self, 'encode_' + prop, self.encode)
+        encoded = encode(val)
+        if encoded is not None:
+            print >>outf, ';\n   <#%s> %s' % (prop, encoded),
     
     def encode(self, val):
         '''Default TTL encoder for field values. By default, output field
@@ -421,6 +429,26 @@ class Converter_setup_Simplex(Converter):
     def output_prefixes(self, outf):
         super(Converter_setup_Simplex, self).output_prefixes(outf)
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
+        print >>outf, '@prefix ssxn: <#name-> .'
+
+    def output_Name(self, outf, prop, val):
+        # do default property processing
+        self.output_property(outf, prop, val)
+        # and then also add an alternate spelling
+        print >>outf, ';\n   <#Name-URI> ssxn:%s' % \
+                (self.normalize_name_for_uri(val),),
+
+    NORMALIZE_NAME = re.compile('[^_A-Za-z0-9]+')
+    def normalize_name_for_uri(self, name):
+        name = name.lower()
+        # remove apostrophes so that "foo's" becomes "foos" instead of "foo_s"
+        name = name.replace("'", "")
+        # replace any nonalphanumeric characters with _, collapsing any
+        # repeating __ into a single _
+        name = self.NORMALIZE_NAME.sub('_', name)
+        # strip off any leading or trailing _
+        name = name.strip('_')
+        return name
 
     def encode_ValueType(self, val):
         # TODO: Find a more meaningful way to encode the actual meaning of

@@ -18,10 +18,12 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/text> {
     ?subj ?ssx ?val .
+    ?subj ?ssxn ?val .
   }
 }
 WHERE {
-  ?ssx ssx:ValueType 1 .
+  ?ssx ssx:ValueType 1 ;
+       ssx:Name-URI ?ssxn .
   ?dsx dsx:SimplexType ?ssx ;
        dsx:refValue ?ref .
   ?dsxt dsxt:ID ?ref ;
@@ -39,10 +41,12 @@ WHERE {
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/number> {
     ?subj ?ssx ?val .
+    ?subj ?ssxn ?val .
   }
 }
 WHERE {
-  ?ssx ssx:ValueType 2 .
+  ?ssx ssx:ValueType 2 ;
+       ssx:Name-URI ?ssxn .
   ?dsx dsx:SimplexType ?ssx ;
        dsx:refValue ?ref .
   ?dsxn dsxn:ID ?ref ;
@@ -60,10 +64,12 @@ WHERE {
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/date> {
     ?subj ?ssx ?date .
+    ?subj ?ssxn ?date .
   }
 }
 WHERE {
-  ?ssx ssx:ValueType 3 .
+  ?ssx ssx:ValueType 3 ;
+       ssx:Name-URI ?ssxn .
   ?dsx dsx:SimplexType ?ssx ;
        dsx:refValue ?ref .
   ?dsxd dsxd:ID ?ref ;
@@ -82,10 +88,12 @@ WHERE {
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/boolean> {
     ?subj ?ssx ?canonbool .
+    ?subj ?ssxn ?canonbool .
   }
 }
 WHERE {
-  ?ssx ssx:ValueType 4 .
+  ?ssx ssx:ValueType 4 ;
+       ssx:Name-URI ?ssxn .
   ?dsx dsx:SimplexType ?ssx ;
        dsx:refValue ?val .
   {
@@ -103,10 +111,12 @@ WHERE {
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/simplex/datetime> {
     ?subj ?ssx ?val .
+    ?subj ?ssxn ?val .
   }
 }
 WHERE {
-  ?ssx ssx:ValueType 5 .
+  ?ssx ssx:ValueType 5 ;
+       ssx:Name-URI ?ssxn .
   ?dsx dsx:SimplexType ?ssx ;
        dsx:refValue ?ref .
   ?dsxd dsxd:ID ?ref ;
