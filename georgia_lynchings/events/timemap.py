@@ -31,6 +31,7 @@ class Timemap:
     def get_json(self):
         '''Get json object for timemap display.
         '''
+        #TODO: get data from triplestore instead of solr
         return self.timemap_format(self.get_timemap_solr_data())
         
     def get_timemap_solr_data(self):
