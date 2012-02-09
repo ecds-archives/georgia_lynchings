@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 class Timemap(Mapdata):
-    '''The main class for creating json data for timemap display.
+    '''Extends :class:`georgia_lynchings.events.mapdata.Mapdata`. This is the
+    main class for creating json data for timemap display.
     '''
 
     MAP_VIEW_FIELDS = [ 'row_id', 'label', 'min_date', 'max_date',
@@ -40,7 +41,6 @@ class Timemap(Mapdata):
         ''' Format the solr results into a json structure for timemap.
         
             :param solr_items: solr query result set
-            :param filters: list of filter tags            
         '''
         
         ''' Set up a dictionary of filters to contain a dictionary of 
@@ -99,7 +99,8 @@ class Timemap(Mapdata):
         '''Create a pinpoint item for timemap json file
         
         :param solr_item: a dictionary item from the solr query result set   
-        :param county: string, victim_county_brundag   
+        :param county: string, victim_county_brundag
+        :param all_tag_list: string, a combined list of tags for the filters
                         
         '''
         

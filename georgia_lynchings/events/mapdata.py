@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Mapdata(object):
     '''The abstract class for creating json data for map display.
-    :meth: `format` and :method: `create_item` methods should be overridden.
+    :meth:`format` and :meth:`create_item` methods should be overridden in the subclass.
     '''
 
     #This allows methods to be marked as abstract
@@ -69,8 +69,6 @@ class Mapdata(object):
     def format(self, solr_items):
         '''Format the solr results into a json structure for map display.
         **This method must be implemented in the subclass**
-        
-            :param solr_items: solr query result set      
         '''
         
 
@@ -78,8 +76,4 @@ class Mapdata(object):
     def create_item(self, solr_item, county):
         '''Create a pinpoint item for map json file
         **This method must be implemented in the subclass**
-        
-        :param solr_item: a dictionary item from the solr query result set   
-        :param county: string, victim_county_brundag   
-                        
         '''
