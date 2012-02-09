@@ -1,8 +1,9 @@
 from django.conf import settings
 from rdflib import Namespace
 
-def _source_file_ns(fname):
-    uri = '%ssource_data_files/%s#' % (settings.APPLICATION_RDF_NS_ROOT, fname)
+def _source_file_ns(fname, id_prefix=''):
+    uri = '%ssource_data_files/%s#%s' % (settings.APPLICATION_RDF_NS_ROOT,
+                                         fname, id_prefix)
     return Namespace(uri)
 
 # NOTE: RDF namespaces for this project are derived by project scripts from
@@ -32,8 +33,11 @@ dxsxsxd = _source_file_ns('data_xref_Simplex-Simplex-Document.csv')
 dxvctd = _source_file_ns('data_xref_VComment-Document.csv')
 dxvct = _source_file_ns('data_xref_VComment.csv')
 scx = _source_file_ns('setup_Complex.csv')
+scxn = _source_file_ns('setup_Complex.csv', id_prefix='name-')
 sd = _source_file_ns('setup_Document.csv')
 ssx = _source_file_ns('setup_Simplex.csv')
+ssxn = _source_file_ns('setup_Simplex.csv', id_prefix='name-')
 sxcxcx = _source_file_ns('setup_xref_Complex-Complex.csv')
+sxcxcxn = _source_file_ns('setup_xref_Complex-Complex.csv', id_prefix='name-')
 sxsxcx = _source_file_ns('setup_xref_Simplex-Complex.csv')
 sxsxd = _source_file_ns('setup_xref_Simplex-Document.csv')
