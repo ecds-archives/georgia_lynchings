@@ -24,12 +24,13 @@ class Timemap(Mapdata):
     '''The main class for creating json data for timemap display.
     '''
 
-    def __init__(self, filters=None):
-        super(Timemap, self).__init__()
+    def __init__(self, *args, **kwargs):
+        self.filters = kwargs.pop('filters', None)
+        super(Timemap, self).__init__(*args, **kwargs)
         
         # Add filter capabilities
         self.filterTags = {}        
-        if filters is None:
+        if self.filters is None:
             self.filters = []
         else:
             self.filters = filters
@@ -74,14 +75,14 @@ class Timemap(Mapdata):
                 # populated with data. If that changes, we should use this 
                 # date as a backup for when min_date is not defined.            
                 if 'min_date' in solr_item and county in geo_coordinates.countymap:
-                    jsonResult[0]['options']['items'].append(self.create_timemap_item(solr_item, county, all_tag_list))
+                    jsonResult[0]['options']['items'].append(self.create_item(solr_item, county, all_tag_list))
                 # Display missing data items
                 elif county not in geo_coordinates.countymap: 
                     logger.info(" Did not add macro event %s because county [%s] not defined in geo_coordinates" % (solr_item['row_id'], county))                    
                 else: 
                     logger.info(" Did not add macro event %s because min_date not defined." % (solr_item['row_id']))
             except:
-                logger.info(" Timemap timemap_format error on macro event [%s]." % solr_item['row_id'])
+                logger.info(" Timemap format error on macro event [%s]." % solr_item['row_id'])
         
         if settings.DEBUG:        
             # This will output the list of filters with their tags and frequency to the log 

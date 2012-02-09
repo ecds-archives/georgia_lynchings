@@ -1,5 +1,5 @@
 '''
-**create_timemap_json** is a ``manage.py`` script to create ao timemap 
+**create_timemap_json** is a ``manage.py`` script to create ao timemap
 json file.
 
 Example usage

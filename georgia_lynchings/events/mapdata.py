@@ -26,7 +26,7 @@ class Mapdata(object):
     __metaclass__ = ABCMeta
 
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         
         # Get a list of all the potential Macro Events to map
         self.me_list = []
@@ -37,7 +37,7 @@ class Mapdata(object):
         '''Get json object for map display.
         '''
         #TODO: get data from triplestore instead of solr
-        return self.timemap_format(self.get_solr_data())
+        return self.format(self.get_solr_data())
         
     def get_solr_data(self):
         '''Get the data from solr needed for map json content
