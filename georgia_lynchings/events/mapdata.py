@@ -14,16 +14,21 @@ from georgia_lynchings.utils import solr_interface
 
 logger = logging.getLogger(__name__)
 
-# solr fields we want for creating timemap json
-TIMEMAP_VIEW_FIELDS = [ 'row_id', 'label', 'min_date', 'max_date',
-                        'victim_county_brundage']
-
 class Mapdata(object):
     '''The abstract class for creating json data for map display.
     :meth: `format` and :method: `create_item` methods should be overridden.
     '''
 
+    #This allows methods to be marked as abstract
     __metaclass__ = ABCMeta
+
+    # solr fields we want for creating timemap json
+    MAP_VIEW_FIELDS = [ 'row_id', 'label', 'min_date', 'max_date',
+                        'victim_county_brundage']
+    '''
+    List of fields to query solr for to create the json output
+    if additional, or different fields are needed, this list should be overridden in the subclass.
+    '''
 
 
     def __init__(self, *args, **kwargs):
@@ -54,7 +59,7 @@ class Mapdata(object):
                 mefilter |= solr.Q(row_id=unicode(me))  
         # TODO: restrict to macro events with min_date defined  
         solr_items = solr.query(mefilter) \
-                        .field_limit(TIMEMAP_VIEW_FIELDS) \
+                        .field_limit(self.MAP_VIEW_FIELDS) \
                         .paginate(rows=20000) \
                         .sort_by('row_id') \
                         .execute()

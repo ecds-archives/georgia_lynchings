@@ -17,20 +17,21 @@ from georgia_lynchings.utils import solr_interface
 logger = logging.getLogger(__name__)
 
 # solr fields we want for creating timemap json
-TIMEMAP_VIEW_FIELDS = [ 'row_id', 'label', 'min_date', 'max_date',
-                        'victim_county_brundage', 'victim_allegedcrime_brundage']
+
 
 class Timemap(Mapdata):
     '''The main class for creating json data for timemap display.
     '''
 
-    def __init__(self, *args, **kwargs):
-        self.filters = kwargs.pop('filters', None)
+    MAP_VIEW_FIELDS = [ 'row_id', 'label', 'min_date', 'max_date',
+                        'victim_county_brundage', 'victim_allegedcrime_brundage']
+
+    def __init__(self, filters= None, *args, **kwargs):
         super(Timemap, self).__init__(*args, **kwargs)
         
         # Add filter capabilities
         self.filterTags = {}        
-        if self.filters is None:
+        if filters is None:
             self.filters = []
         else:
             self.filters = filters
