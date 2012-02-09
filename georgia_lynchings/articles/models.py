@@ -1,5 +1,4 @@
 from urllib import quote
-from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from georgia_lynchings import query_bank
 import logging

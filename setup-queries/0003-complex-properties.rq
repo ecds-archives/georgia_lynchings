@@ -1,5 +1,6 @@
 BASE <http://galyn.example.com/>
 PREFIX dxcxcx: <source_data_files/data_xref_Complex-Complex.csv#>
+PREFIX sxcxcx: <source_data_files/setup_xref_Complex-Complex.csv#>
 
 # data_xref_Complex-Complex tuples map one complex object to another through
 # a relationship type defined in the grammar. This relationship type is a
@@ -7,9 +8,15 @@ PREFIX dxcxcx: <source_data_files/data_xref_Complex-Complex.csv#>
 # data_xref_Complex-Complex tuple is used as an ordered statement with a
 # predicate of the relationship type.
 
+# NB: sxcxcx:Name-URI is *not* one-to-one: There are many sxcxcx rows with
+# the same Name-URI. This doesn't impact this insert, but it does mean that
+# if we ever choose to eliminate the sxcxcx relationship here, we may lose
+# some information.
+
 INSERT {
   GRAPH <http://galyn.example.com/constructed_statements/complex/relations> {
     ?higher ?sxcxcx ?lower .
+    ?higher ?sxcxcxn ?lower .
   }
 }
 WHERE {
@@ -17,4 +24,5 @@ WHERE {
           dxcxcx:HigherComplex ?higher ;
           dxcxcx:LowerComplex ?lower ;
           dxcxcx:xrefID ?sxcxcx .
+  ?sxcxcx sxcxcx:Name-URI ?sxcxcxn .
 }

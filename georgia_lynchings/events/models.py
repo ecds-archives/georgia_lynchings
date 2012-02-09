@@ -3,7 +3,7 @@ from rdflib import Variable
 from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject, \
     ReversedRdfPropertyField, ChainedRdfPropertyField
-from georgia_lynchings.rdf.ns import scx, ssx, sxcxcx
+from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 import logging
@@ -22,23 +22,20 @@ class MacroEvent(ComplexObject):
     # database for this project. The URIs were found a priori by examining
     # the RDF data imported from the database setup tables.
 
-    rdf_type = scx.r1
+    rdf_type = scxn.Macro_Event
     'the URI of the RDF Class describing macro event objects'
     
     # simplex fields potentially attached to a MacroEvent
     
-    victim = ssx.r82 # FIXME: data as of 2011-12-26 deprecates, favoring sxcxcx.r121
+    victim = ssxn.Victim_OLD # FIXME: data as of 2011-12-26 deprecates, favoring sxcxcxn.Victim
     'the (old format) victim associated with this macro event'    
-    
-    case_number = ssx.r84 # FIXME: not clear if data as of 2011-12-26 has this at all
-    'a case number identifying this lynching case'
     
     # complex fields potentially attached to a MacroEvent
     
-    events = sxcxcx.r61
+    events = sxcxcxn.Event
     'the events associated with this macro event'
     
-    victims = sxcxcx.r121
+    victims = sxcxcxn.Victim
     'the (new format) victims associated with this macro event'
 
     def index_data(self):
@@ -520,17 +517,17 @@ class Event(ComplexObject):
     and all of the individual semantic triplets associated with it.
     '''
 
-    rdf_type = scx.r53
+    rdf_type = scxn.Event
     'the URI of the RDF Class describing event objects'
 
     # complex fields potentially attached to an Event
-    triplets = sxcxcx.r62
+    triplets = sxcxcxn.Semantic_Triplet
     'the semantic triplets associated with this event'
-    space = sxcxcx.r77
+    space = sxcxcxn.Space
     'a place associated with this event'
 
     # simplex fields potentially attached to an Event
-    event_type = ssx.r52
+    event_type = ssxn.Type_of_event
     'a word or short phrase describing the type of event'
 
     # reverse and aggregate properties
@@ -549,23 +546,23 @@ class SemanticTriplet(ComplexObject):
     article.
     '''
 
-    rdf_type = scx.r52
+    rdf_type = scxn.Semantic_Triplet
     'the URI of the RDF Class describing semantic triplet objects'
 
     # complex fields potentially attached to a Semantic Triplet
-    participant_s = sxcxcx.r63
+    participant_s = sxcxcxn.Participant_S
     'the subject of the statement'
-    process = sxcxcx.r64
+    process = sxcxcxn.Process
     'the verb of the statement'
-    participant_o = sxcxcx.r65
+    participant_o = sxcxcxn.Participant_O
     'the object of the statement'
-    alternative = sxcxcx.r91
+    alternative = sxcxcxn.Alternative_triplet
     'an alternate and potentially conflicting rendition of this triplet'
 
     # simplex fields potentially attached to a Semantic Triplet
-    relation_to_next = ssx.r42
+    relation_to_next = ssxn.Relation_to_next_triplet
     'conjunction or subordinating phrase linking this triplet to the next'
-    is_passive = ssx.r91
+    is_passive = ssxn.Passive_no_agent
     'does the statement use passive voice? (typically specified only if true)'
 
     # reverse and aggregate properties
@@ -593,24 +590,24 @@ class Victim(ComplexObject):
     several properties associated with it.
     '''
 
-    rdf_type = scx.r68
+    rdf_type = scxn.Victim
     'the URI of the RDF Class describing victim objects'
 
     # simplex fields potentially attached to a Victim
     # Victim has a name (Brundage)
-    victim_name = ssx.r104       
+    victim_name = ssxn.Name_of_victim_Brundage
 
     # Victim has a county of lynching (Brundage)
-    victim_county_of_lynching = ssx.r105   
+    victim_county_of_lynching = ssxn.County_of_lynching_Brundage
         
     # Victim has an alleged crime (Brundage)        
-    victim_alleged_crime = ssx.r106
+    victim_alleged_crime = ssxn.Alleged_crime_Brundage
     
     # Victim has a date of lynchings (Brundage)    
-    victim_date_of_lynching = ssx.r107
+    victim_date_of_lynching = ssxn.Date_of_lynching_Brundage
     
     # Victim has a race (Brundage)    
-    victim_race = ssx.r108    
+    victim_race = ssxn.Race_Brundage
                     
     # reverse and aggregate properties
     macro_event = ReversedRdfPropertyField(MacroEvent.victims,
@@ -628,5 +625,5 @@ class Victim(ComplexObject):
 # FIXME: patching Victim from down here isn't great: it essentially
 # means a little corner of the Victim definition is way down here. need to
 # find a better way to do this.
-Victim.result_type = Victim
+MacroEvent.victims.result_type = Victim
 

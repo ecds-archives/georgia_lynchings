@@ -47,7 +47,7 @@ class MacroEventTest(EventsAppTest):
         # properties. These properties don't mean much quite yet, so as this
         # property-interpretation code is fleshed out these tests will
         # likely grow to test something more meaningful.
-        self.assertTrue('setup_Complex.csv#r1' in unicode(MacroEvent.rdf_type))
+        self.assertTrue('setup_Complex.csv#name-Macro_Event' in unicode(MacroEvent.rdf_type))
 
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
         self.assertEqual('Coweta', macro.label)

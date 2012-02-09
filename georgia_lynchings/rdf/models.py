@@ -2,10 +2,10 @@
 against project data.
 
 >>> from rdflib import RDFS
->>> from georgia_lynchings.rdf.ns import scx, ssx
+>>> from georgia_lynchings.rdf.ns import scxn, ssxn
 >>> class MacroEvent(ComplexObject):
-...     rdf_type = scx.r1
-...     victim = ssx.r82
+...     rdf_type = scxn.Macro_Event
+...     victim = ssxn.Victim_OLD
 ... 
 >>> mac = MacroEvent(12)
 >>> mac.label
@@ -17,7 +17,7 @@ u'Sam Hose'
 '''
 
 from rdflib import URIRef, Variable, BNode, RDF
-from georgia_lynchings.rdf.ns import dcx, ssx
+from georgia_lynchings.rdf.ns import dcx, ssxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
@@ -213,10 +213,10 @@ class ComplexObject(object):
     complex_type = dcx.ComplexType
     'the uri of the complex object type for this object'
 
-    verified_semantic = ssx.r89
+    verified_semantic = ssxn.verifiedSC
     '''has the coded data for this object been manually reviewed for
     semantic consistency?'''
-    verified_details = ssx.r90
+    verified_details = ssxn.verifiedIO
     '''has the coded data for this object been manually reviewed for
     detail accuracy?'''
 
