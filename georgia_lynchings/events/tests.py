@@ -407,51 +407,54 @@ class ViewsTest(EventsAppTest):
 
 class TimemapTest(TestCase):
     def setUp(self):
-        self.tmap = Timemap()   
+        # No filters
+        self.tmap = Timemap()
+        
+        # Filters
+        filters = ['victim_allegedcrime_brundage']       
+        self.tmapfilter = Timemap(filters) 
+                 
         self.solr_items = [
             {'label': u'Debt Dispute', 
                 'max_date': u'1896-06-02',
                 'min_date': u'1896-06-01', 
                 'row_id': u'89', 
-                'victim_county_brundage': (u'Muscogee', u'Muscogee')},    
+                'victim_county_brundage': (u'Muscogee', u'Muscogee'),
+                'victim_allegedcrime_brundage': (u'Assault',)},    
             {'label': u'Wild Talking',
                 'max_date': u'1913-03-07',
                 'min_date': u'1913-02-28',
                 'row_id': u'240',
-                'victim_county_brundage': (u'Habersham',)}
+                'victim_county_brundage': (u'Habersham',),
+                'victim_allegedcrime_brundage': (u'Assault',)}
         ]
         
     def test_init(self):
         self.assertGreater(len(self.tmap.me_list), 300)
+        self.assertEqual(self.tmap.filters, []) 
+        self.assertEqual(self.tmapfilter.filters, ['victim_allegedcrime_brundage'])             
         
     def test_timemap_format(self):
-        expected_result = [{'id': 'event',
-                  'options': {'items': [{'end': '1896-06-02',
-                                         'options': {'infoHtml': "<div><b>Debt Dispute</b></div><div>Start Date: 1896-06-01</div><div>Location: Muscogee County</div><div><a target='_blank' href='../89/details'>more info</a></div>"},
-                                         'point': {'lat': 32.51071, 'lon': -84.874972},
-                                         'start': '1896-06-01',
-                                         'title': 'Debt Dispute'},
-                                        {'end': '1913-03-07',
-                                         'options': {'infoHtml': "<div><b>Wild Talking</b></div><div>Start Date: 1913-02-28</div><div>Location: Habersham County</div><div><a target='_blank' href='../240/details'>more info</a></div>"},
-                                         'point': {'lat': 34.630446, 'lon': -83.529331},
-                                         'start': '1913-02-28',
-                                         'title': 'Wild Talking'}]},
-                  'theme': 'red',
-                  'title': 'Events',
-                  'type': 'basic'}]
-
         result = self.tmap.format(self.solr_items)
-        #TODO revise this for filters
-        #self.assertEqual(result, expected_result)  
+        self.assertEqual('1896-06-01', result[0]['options']['items'][0]['start']) 
+        self.assertEqual('[]', result[0]['options']['items'][0]['options']['tags'])  
+        self.assertEqual('Debt Dispute', result[0]['options']['items'][0]['title'])
         
-    def test_create_timemap_item(self):
-        expected_result = {'end': '1896-06-02',
-                        'options': {'infoHtml': "<div><b>Debt Dispute</b></div><div>Start Date: 1896-06-01</div><div>Location: Muscogee County</div><div><a target='_blank' href='../89/details'>more info</a></div>"},
-                        'point': {'lat': 32.51071, 'lon': -84.874972},
-                        'start': '1896-06-01',
-                        'title': 'Debt Dispute'}
-        #result = self.tmap.create_timemap_item(self.solr_items[0], 'Muscogee')
-        #TODO revise this for filters        
-        #self.assertEqual(result, expected_result)
+    def test_timemap_format_filters(self):
+        result = self.tmapfilter.format(self.solr_items)
+        self.assertEqual('1896-06-01', result[0]['options']['items'][0]['start']) 
+        self.assertEqual('[Assault]', result[0]['options']['items'][0]['options']['tags'])  
+        self.assertEqual('Debt Dispute', result[0]['options']['items'][0]['title'])                             
+        
+    def test_timemap_create_item(self):
+        result = self.tmap.create_item(self.solr_items[0], 'Muscogee', []) 
+        self.assertEqual('1896-06-02', result['end']) 
+        self.assertEqual('[]', result['options']['tags'])  
+        self.assertEqual('Debt Dispute', result['title'])            
+        
+    def test_timemap_create_item_filters(self):
+        result = self.tmapfilter.create_item(self.solr_items[0], 'Muscogee', ['Assault']) 
+        self.assertEqual('1896-06-02', result['end']) 
+        self.assertEqual('[Assault]', result['options']['tags'])  
+        self.assertEqual('Debt Dispute', result['title']) 
 
-    
