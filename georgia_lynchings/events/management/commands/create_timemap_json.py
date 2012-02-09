@@ -31,13 +31,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         
-        # Get the json object require for creating a timemap json file
+        # Get the json object require for displaying timemap data    
         timemap = Timemap()    
-        jsonResult = timemap.get_json()
+        jsonResult = timemap.get_json() 
                         
         # output the json results to the timemap json url file
         json.dumps(jsonResult)
-        filename = settings.MEDIA_ROOT + "/json/" + os.path.basename(settings.TIMEMAP_JSON_URL)         
+        filename = settings.MEDIA_ROOT + "/json/" + os.path.basename(settings.TIMEMAP_JSON_URL)       
         jsonfile = open(filename , "wb")
         jsonfile.write(json.dumps(jsonResult))
-        jsonfile.close()
+        jsonfile.close()      

@@ -6,7 +6,6 @@ from urllib import quote
 import urllib2
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
@@ -142,9 +141,12 @@ def timemap(request):
     '''Send timemap json data created from solr to the timemap template.
     '''
 
-    # Get the json object require for displaying timemap data
-    timemap = Timemap()    
+    # Create filters
+    filters = ['victim_allegedcrime_brundage']
+    # Get the json object require for displaying timemap data    
+    timemap = Timemap(filters)    
     jsonResult = timemap.get_json()
 
-    return render(request, 'events/timemap.html', {'data' : mark_safe(jsonResult)})  
-    
+    return render(request, 'events/timemap.html', \
+        {'data' : mark_safe(jsonResult), \
+         'filters' : timemap.filterTags})
