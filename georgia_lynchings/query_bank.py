@@ -8,40 +8,39 @@ events={}
 
 actors['events']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
     SELECT ?actorlabel ?triplet ?role ?trlabel ?event ?evlabel ?macro ?melabel 
     WHERE {
-      ?individual ^sxcxcx:r31 ?actor;
-            dcx:Identifier ?actorlabel.
+      ?actor sxcxcxn:Individual ?individual;
+             dcx:Identifier ?actorlabel.
+      ?participant sxcxcxn:Actor ?actor. 
       {
-        ?actor ^sxcxcx:r30 ?participant. 
-        ?triplet sxcxcx:r63 ?participant. 
+        ?triplet sxcxcxn:Participant_S ?participant. 
         BIND("subject" as ?role)
       } UNION {
-        ?actor ^sxcxcx:r35 ?participant.  
-        ?triplet sxcxcx:r65 ?participant.  
+        ?triplet sxcxcxn:Participant_O ?participant.  
         BIND("object" as ?role)
       } 
 
       ?triplet dcx:Identifier ?trlabel.
-      ?event sxcxcx:r62 ?triplet;       
+      ?event sxcxcxn:Semantic_Triplet ?triplet;       
              dcx:Identifier ?evlabel.
-      ?macro sxcxcx:r61 ?event;          
+      ?macro sxcxcxn:Event ?event;          
              dcx:Identifier ?melabel.      
     }
-"""
-
+""" 
 articles['all']="""
     prefix dd: <http://galyn.example.com/source_data_files/data_Document.csv#>
-    prefix ssx: <http://galyn.example.com/source_data_files/setup_Simplex.csv#>
+    prefix ssxn: <http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
 
     select ?id ?paperdate ?papername ?articlepage ?docpath where {
         ?dd a dd:Row;
             dd:ID ?id.
-        optional { ?dd ssx:r68 ?paperdate }
-        optional { ?dd ssx:r69 ?papername }
-        optional { ?dd ssx:r73 ?articlepage }
-        optional { ?dd ssx:r85 ?docpath }
+        optional { ?dd ssxn:Newspaper_date ?paperdate }
+        optional { ?dd ssxn:Newspaper_name ?papername }
+        optional { ?dd ssxn:Page_number ?articlepage }
+        optional { ?dd ssxn:documentPath ?docpath }
     }
 """
 
@@ -49,9 +48,9 @@ articles['all']="""
 events['articles']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
     PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
-    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+    PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
     SELECT DISTINCT ?melabel ?event ?evlabel ?dd ?docpath ?paperdate ?papername ?articlepage
     WHERE {
@@ -59,18 +58,18 @@ events['articles']="""
       # Macros. Macros aren't strictly necessary, but they're provided
       # here for
       # context.
-      ?macro a scx:r1;                   # Macro event
+      ?macro a scxn:Macro_Event;
              dcx:Identifier ?melabel;
-             sxcxcx:r61 ?event.          # Event
+             sxcxcxn:Event ?event.
       ?event dcx:Identifier ?evlabel.
 
       # Report URI and file path of each document for the event
       ?dxcxd dxcxd:Complex ?event;
              dxcxd:Document ?dd.
-      optional { ?dd ssx:r68 ?paperdate }
-      optional { ?dd ssx:r69 ?papername }
-      optional { ?dd ssx:r73 ?articlepage }
-      optional { ?dd ssx:r85 ?docpath }              
+      optional { ?dd ssxn:Newspaper_date ?paperdate }
+      optional { ?dd ssxn:Newspaper_name ?papername }
+      optional { ?dd ssxn:Page_number ?articlepage }
+      optional { ?dd ssxn:documentPath ?docpath }              
                     }
     ORDER BY ?event ?docpath
 """
@@ -78,9 +77,9 @@ events['articles']="""
 'Find cities related to a Macro Event'
 events['cities']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+    PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
     SELECT DISTINCT ?city
     WHERE {
@@ -88,50 +87,50 @@ events['cities']="""
       # Events for those macros, and all of the Triplets for those events.
       # We'll be looking in these triplets for locations.
 
-      ?macro a scx:r1;                    # Macro event
+      ?macro a scxn:Macro_Event;
              dcx:Identifier ?melabel;
-             sxcxcx:r61 ?event.           # Event
+             sxcxcxn:Event ?event.
       ?event dcx:Identifier ?evlabel;
-             sxcxcx:r62 ?_1.              # Semantic Triplet
+             sxcxcxn:Semantic_Triplet ?_1.
 
       # Every Triplet has a Process
-      ?_1 sxcxcx:r64 ?_2.                 # Process
+      ?_1 sxcxcxn:Process ?_2.
 
       # We need all of the places for that Process. There are four ways
       # they might be expressed:
       {
-        ?_2 sxcxcx:r78 ?_3.               # Simple process
-        ?_3 sxcxcx:r103 ?_4.              # Circumstances
-        ?_4 sxcxcx:r106 ?_5.              # Space
+        ?_2 sxcxcxn:Simple_process ?_3.
+        ?_3 sxcxcxn:Circumstances ?_4.
+        ?_4 sxcxcxn:Space ?_5.
       } UNION {
-        ?_2 sxcxcx:r47 ?_6.               # Complex process
-        ?_6 sxcxcx:r79 ?_3.               # Simple process
-        ?_3 sxcxcx:r103 ?_4.              # Circumstances
-        ?_4 sxcxcx:r106 ?_5.              # Space
+        ?_2 sxcxcxn:Complex_process ?_6.
+        ?_6 sxcxcxn:Simple_process ?_3.
+        ?_3 sxcxcxn:Circumstances ?_4.
+        ?_4 sxcxcxn:Space ?_5.
       } UNION {
-        ?_2 sxcxcx:r47 ?_6.               # Complex process
-        ?_6 sxcxcx:r80 ?_7.               # Other process
-        ?_7 sxcxcx:52 ?_3.                # Simple process
-        ?_3 sxcxcx:r103 ?_4.              # Circumstances
-        ?_4 sxcxcx:r106 ?_5.              # Space
+        ?_2 sxcxcxn:Complex_process ?_6.
+        ?_6 sxcxcxn:Other_process ?_7.
+        ?_7 sxcxcxn:Simple_process ?_3.
+        ?_3 sxcxcxn:Circumstances ?_4.
+        ?_4 sxcxcxn:Space ?_5.
       } UNION {
-        ?_2 sxcxcx:r47 ?_6.               # Complex process
-        ?_6 sxcxcx:r80 ?_7.               # Other process
-        ?_7 sxcxcx:r53 ?_8.               # Nominalization
-        ?_8 sxcxcx:r59 ?_5.               # Space
+        ?_2 sxcxcxn:Complex_process ?_6.
+        ?_6 sxcxcxn:Other_process ?_7.
+        ?_7 sxcxcxn:Nominalization ?_8.
+        ?_8 sxcxcxn:Space ?_5.
       }
 
       # Regardless of which way we came, ?_5 is some sort of place. If
       # we're going to get from there to location simplex data, this
       # is how we get there:
       {
-        ?_5 sxcxcx:r3 ?_10.               # City
+        ?_5 sxcxcxn:City ?_10.
       }
 
       # Grab the simplex data we're interested in, whichever are
       # available (but note that "?" is equivalent to missing data)
       OPTIONAL {
-        ?_10 ssx:r55 ?city.               # City
+        ?_10 ssxn:City_name ?city.
         FILTER (?city != "?")
       }
 
@@ -143,14 +142,15 @@ events['cities']="""
 'Find date range for a MacroEvent'
 events['date_range'] = """
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
     PREFIX ix_ebd:<http://galyn.example.com/constructed_statements/index/events_by_date/#>
+
     SELECT ?macro ?melabel ?event ?evlabel ?mindate ?maxdate
     WHERE {
-      ?macro a scx:r1;                  
+      ?macro a scxn:Macro_Event;                  
              dcx:Identifier ?melabel;
-             sxcxcx:r61 ?event.         
+             sxcxcxn:Event ?event.         
       ?event dcx:Identifier ?evlabel;
              ix_ebd:mindate ?mindate;
              ix_ebd:maxdate ?maxdate.
@@ -162,41 +162,42 @@ events['date_range'] = """
 'Find details related to a Macro Event'
 events['details']="""
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
 SELECT DISTINCT ?macro ?melabel ?event ?evlabel ?event_type ?outcome ?reason   
 WHERE {
     # First find all the Macro events, and all the Events for those macros,
     # and the type_of_event, type of event, name of reason, and name of outcome.
-    ?macro a scx:r1; # Macro event
+    ?macro a scxn:Macro_Event; # Macro event
         dcx:Identifier ?melabel;
-        sxcxcx:r61 ?event. # Event
+        sxcxcxn:Event ?event. # Event
     ?event dcx:Identifier ?evlabel;
     
     OPTIONAL {
-        ?event ssx:r52 ?event_type.           # Type of Event
+        ?event ssxn:Type_of_event ?event_type.
         FILTER (?event_type != "?")
     }
     
             
     OPTIONAL {
         ?event dcx:Identifier ?evlabel;
-             sxcxcx:r62 ?_1.              # Semantic Triplet            
+             sxcxcxn:Semantic_Triplet ?_1.
         # Every Triplet has a Process
-        ?_1 sxcxcx:r64 ?_2.               # Process
-        ?_2 sxcxcx:r78 ?_3.               # Simple process
-        ?_3 sxcxcx:r103 ?_4.              # Circumstances
-        ?_4 sxcxcx:r110 ?_5.              # Outcome
-        ?_4 sxcxcx:r107 ?_6.              # Reason        
+        ?_1 sxcxcxn:Process ?_2.
+        ?_2 sxcxcxn:Simple_process ?_3.
+        ?_3 sxcxcxn:Circumstances ?_4.
+        ?_4 sxcxcxn:Outcome ?_5.
+        ?_4 sxcxcxn:Reason ?_6.
       
       OPTIONAL {
-        ?_5 ssx:r7 ?outcome.              # Name of Outcome
+        ?_5 ssxn:Name_of_outcome ?outcome.
         FILTER (?outcome != "?")
       } 
       
       OPTIONAL {
-        ?_6 ssx:r9 ?reason.               # Name of Reason
+        ?_6 ssxn:Name_of_reason ?reason.
         FILTER (?reason != "?")
       }
     }
@@ -208,9 +209,9 @@ ORDER BY ?macro
 'Find locations related to a MacroEvent'
 events['locations']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+    PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
     SELECT DISTINCT ?state ?county ?city ?event ?evlabel ?melabel
     WHERE {
@@ -219,61 +220,61 @@ events['locations']="""
       # triplets for locations.
       # Note: Technically we don't need the Macro events. They're provided here
       # only for context.
-      ?macro a scx:r1;                    # Macro event
+      ?macro a scxn:Macro_Event;
              dcx:Identifier ?melabel;
-             sxcxcx:r61 ?event.           # Event
+             sxcxcxn:Event ?event.
       ?event dcx:Identifier ?evlabel;
-             sxcxcx:r62 ?_1.              # Semantic Triplet
+             sxcxcxn:Semantic_Triplet ?_1.
 
       # Every Triplet has a Process
-      ?_1 sxcxcx:r64 ?_2.                 # Process
+      ?_1 sxcxcxn:Process ?_2.
 
       # We need all of the places for that Process. There are four ways
       # they might be expressed:
       {
-        ?_2 sxcxcx:r78 ?_3.               # Simple process
-        ?_3 sxcxcx:r103 ?_4.              # Circumstances
-        ?_4 sxcxcx:r106 ?_5.              # Space
+        ?_2 sxcxcxn:Simple_process ?_3.
+        ?_3 sxcxcxn:Circumstances ?_4.
+        ?_4 sxcxcxn:Space ?_5.
       } UNION {
-        ?_2 sxcxcx:r47 ?_6.               # Complex process
-        ?_6 sxcxcx:r79 ?_3.               # Simple process
-        ?_3 sxcxcx:r103 ?_4.              # Circumstances
-        ?_4 sxcxcx:r106 ?_5.              # Space
+        ?_2 sxcxcxn:Complex_process ?_6.
+        ?_6 sxcxcxn:Simple_process ?_3.
+        ?_3 sxcxcxn:Circumstances ?_4.
+        ?_4 sxcxcxn:Space ?_5.
       } UNION {
-        ?_2 sxcxcx:r47 ?_6.               # Complex process
-        ?_6 sxcxcx:r80 ?_7.               # Other process
-        ?_7 sxcxcx:52 ?_3.                # Simple process
-        ?_3 sxcxcx:r103 ?_4.              # Circumstances
-        ?_4 sxcxcx:r106 ?_5.              # Space
+        ?_2 sxcxcxn:Complex_process ?_6.
+        ?_6 sxcxcxn:Other_process ?_7.
+        ?_7 sxcxcxn:Simple_process ?_3.
+        ?_3 sxcxcxn:Circumstances ?_4.
+        ?_4 sxcxcxn:Space ?_5.
       } UNION {
-        ?_2 sxcxcx:r47 ?_6.               # Complex process
-        ?_6 sxcxcx:r80 ?_7.               # Other process
-        ?_7 sxcxcx:r53 ?_8.               # Nominalization
-        ?_8 sxcxcx:r59 ?_5.               # Space
+        ?_2 sxcxcxn:Complex_process ?_6.
+        ?_6 sxcxcxn:Other_process ?_7.
+        ?_7 sxcxcxn:Nominalization ?_8.
+        ?_8 sxcxcxn:Space ?_5.
       }
 
       # Regardless of which way we came, ?_5 is some sort of place. If
       # we're going to get from there to location simplex data, there
       # are two different ways we can get there:
       {
-        ?_5 sxcxcx:r2 ?_9.                # Territory
-        ?_9 sxcxcx:r41 ?_10.              # Type of territory
+        ?_5 sxcxcxn:Territory ?_9.
+        ?_9 sxcxcxn:Type_of_territory ?_10.
       } UNION {
-        ?_5 sxcxcx:r3 ?_10.               # City
+        ?_5 sxcxcxn:City ?_10.
       }
 
       # Grab the simplex data we're interested in, whichever are
       # available (but note that "?" is equivalent to missing data)
       OPTIONAL {
-        ?_10 ssx:r18 ?county.             # County
+        ?_10 ssxn:County ?county.
         FILTER (?county != "?")
       }
       OPTIONAL {
-        ?_10 ssx:r30 ?state.              # State
+        ?_10 ssxn:State ?state.
         FILTER (?state != "?")
       }
       OPTIONAL {
-        ?_10 ssx:r55 ?city.               # City
+        ?_10 ssxn:City_name ?city.
         FILTER (?city != "?")
       }
 
@@ -287,18 +288,15 @@ events['locations']="""
 'Find all Macro Events'
 events['macro']="""
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
 SELECT DISTINCT ?macro ?melabel ?event ?evlabel
 WHERE {
-  ?macro a scx:r1;                   # Macro event
+  ?macro a scxn:Macro_Event;
   OPTIONAL { ?macro dcx:Identifier ?melabel. }
-  ?macro sxcxcx:r61 ?event.          # Event
+  ?macro sxcxcxn:Event ?event.
   ?event dcx:Identifier ?evlabel.  
-
 }
 ORDER BY ?macro
 """
@@ -307,15 +305,14 @@ ORDER BY ?macro
 events['all']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
     PREFIX dxcxd:<http://galyn.example.com/source_data_files/data_xref_Complex-Document.csv#>
-    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
     SELECT ?macro ?melabel (COUNT(?dd) AS ?articleTotal)
     WHERE {
-      ?macro a scx:r1;                   # Macro event
+      ?macro a scxn:Macro_Event;
              dcx:Identifier ?melabel;
-             sxcxcx:r61 ?event.          # Event
+             sxcxcxn:Event ?event.
       ?event dcx:Identifier ?evlabel.
 
       # Report count of documents for macro event
@@ -329,70 +326,70 @@ events['all']="""
 'Find detail information about Participant-O Actor'
 events['parto']="""
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
 SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parto ?actor ?event ?evlabel ?melabel ?macro
 WHERE {
     # First find all the Macro events, and all the Events for those macros,
     # and all of the Triplets for those events, and all the Participant-O
     # for each triplet. We'll be looking in these for detail information.
-    ?macro a scx:r1; # Macro event
+    ?macro a scxn:Macro_Event;
         dcx:Identifier ?melabel;
-        sxcxcx:r61 ?event. # Event
+        sxcxcxn:Event ?event.
     ?event dcx:Identifier ?evlabel;
-        sxcxcx:r62 ?_1. # Semantic Triplet
+        sxcxcxn:Semantic_Triplet ?_1.
     # Every Triplet has a Participant-O
-    ?_1 sxcxcx:r65 ?parto. # Participant-O
+    ?_1 sxcxcxn:Participant_O ?parto.
 
     # We need all of the individuals for that Semantic Triplet.
     {
-        ?parto sxcxcx:r35 ?actor. # Participant-O has an Actor
-        ?actor sxcxcx:r31 ?individual. # Actor has a Individual
+        ?parto sxcxcxn:Actor ?actor.
+        ?actor sxcxcxn:Individual ?individual.
     }
 
     # Provide Name_of_individual_actor, if it exists
     OPTIONAL {
-        ?individual ssx:r45 ?name_of_indivd_actor. # Name_of_individual_actor
+        ?individual ssxn:Name_of_individual_actor ?name_of_indivd_actor.
         FILTER (?name_of_indivd_actor != "?")
     }
 
     # Provide Gender, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r11 ?gender. # Gender
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Gender ?gender.
         FILTER (?gender != "?")
     }
 
     # Provide Race, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r53 ?race. # Race
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Race ?race.
         FILTER (?race != "?")
     }
 
     # Provide Qualitative Age, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
-        ?age ssx:r76 ?qualitative_age. # Qualitative Age
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:Age ?age.
+        ?age ssxn:Qualitative_age ?qualitative_age.
         FILTER (?qualitative_age != "?")
     }
     
     # Provide First Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r54 ?fname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:First_name ?fname.
         FILTER (?fname != "?")
     }        
 
     # Provide Last Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r10 ?lname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:Last_name ?lname.
         FILTER (?lname != "?")
     }
 }
@@ -401,70 +398,70 @@ WHERE {
 'Find unique detail information about Participant-O Actor'
 events['uparto']="""
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
 SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?event ?evlabel ?melabel ?macro
 WHERE {
     # First find all the Macro events, and all the Events for those macros,
     # and all of the Triplets for those events, and all the Participant-O
     # for each triplet. We'll be looking in these for detail information.
-    ?macro a scx:r1; # Macro event
+    ?macro a scxn:Macro_Event;
         dcx:Identifier ?melabel;
-        sxcxcx:r61 ?event. # Event
+        sxcxcxn:Event ?event.
     ?event dcx:Identifier ?evlabel;
-        sxcxcx:r62 ?_1. # Semantic Triplet
+        sxcxcxn:Semantic_Triplet ?_1.
     # Every Triplet has a Participant-O
-    ?_1 sxcxcx:r65 ?parto. # Participant-O
+    ?_1 sxcxcxn:Participant_O ?parto.
 
     # We need all of the individuals for that Semantic Triplet.
     {
-        ?parto sxcxcx:r35 ?actor. # Participant-O has an Actor
-        ?actor sxcxcx:r31 ?individual. # Actor has a Individual
+        ?parto sxcxcxn:Actor ?actor.
+        ?actor sxcxcxn:Individual ?individual.
     }
 
     # Provide Name_of_individual_actor, if it exists
     OPTIONAL {
-        ?individual ssx:r45 ?name_of_indivd_actor. # Name_of_individual_actor
+        ?individual ssxn:Name_of_individual_actor ?name_of_indivd_actor.
         FILTER (?name_of_indivd_actor != "?")
     }
 
     # Provide Gender, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r11 ?gender. # Gender
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Gender ?gender.
         FILTER (?gender != "?")
     }
 
     # Provide Race, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r53 ?race. # Race
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Race ?race.
         FILTER (?race != "?")
     }
 
     # Provide Qualitative Age, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
-        ?age ssx:r76 ?qualitative_age. # Qualitative Age
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:Age ?age.
+        ?age ssxn:Qualitative_age ?qualitative_age.
         FILTER (?qualitative_age != "?")
     }
     
     # Provide First Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r54 ?fname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:First_name ?fname.
         FILTER (?fname != "?")
     }        
 
     # Provide Last Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r10 ?lname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:Last_name ?lname.
         FILTER (?lname != "?")
     }
 }
@@ -474,70 +471,70 @@ WHERE {
 'Find detail information about Participant-S Actor'
 events['parts']="""
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
 SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?individual ?parts ?actor ?event ?evlabel ?melabel ?macro
 WHERE {
     # First find all the Macro events, and all the Events for those macros,
     # and all of the Triplets for those events, and all the Participant-S
     # for each triplet. We'll be looking in these for detail information.
-    ?macro a scx:r1; # Macro event
+    ?macro a scxn:Macro_Event;
         dcx:Identifier ?melabel;
-        sxcxcx:r61 ?event. # Event
+        sxcxcxn:Event ?event.
     ?event dcx:Identifier ?evlabel;
-        sxcxcx:r62 ?_1. # Semantic Triplet
+        sxcxcxn:Semantic_Triplet ?_1.
     # Every Triplet has a Participant-S
-    ?_1 sxcxcx:r63 ?parto. # Participant-S
+    ?_1 sxcxcxn:Participant_S ?parto.
 
     # We need all of the individuals for that Semantic Triplet.
     {
-        ?parto sxcxcx:r30 ?actor. # Participant-S has an Actor
-        ?actor sxcxcx:r31 ?individual. # Actor has a Individual
+        ?parto sxcxcxn:Actor ?actor.
+        ?actor sxcxcxn:Individual ?individual.
     }
 
     # Provide Name_of_individual_actor, if it exists
     OPTIONAL {
-        ?individual ssx:r45 ?name_of_indivd_actor. # Name_of_individual_actor
+        ?individual ssxn:Name_of_individual_actor ?name_of_indivd_actor.
         FILTER (?name_of_indivd_actor != "?")
     }
 
     # Provide Gender, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r11 ?gender. # Gender
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Gender ?gender.
         FILTER (?gender != "?")
     }
 
     # Provide Race, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r53 ?race. # Race
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Race ?race.
         FILTER (?race != "?")
     }
 
     # Provide Qualitative Age, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
-        ?age ssx:r76 ?qualitative_age. # Qualitative Age
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:Age ?age.
+        ?age ssxn:Qualitative_age ?qualitative_age.
         FILTER (?qualitative_age != "?")
     }
 
     # Provide First Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r54 ?fname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:First_name ?fname.
         FILTER (?fname != "?")
     }
 
     # Provide Last Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r10 ?lname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:Last_name ?lname.
         FILTER (?lname != "?")
     }
 }
@@ -547,70 +544,70 @@ WHERE {
 'Find uniquedetail information about Participant-S Actor'
 events['uparts']="""
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
-PREFIX sxsxcx:<http://galyn.example.com/source_data_files/setup_xref_Simplex-Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
 SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?event ?evlabel ?melabel ?macro
 WHERE {
     # First find all the Macro events, and all the Events for those macros,
     # and all of the Triplets for those events, and all the Participant-S
     # for each triplet. We'll be looking in these for detail information.
-    ?macro a scx:r1; # Macro event
+    ?macro a scxn:Macro_Event;
         dcx:Identifier ?melabel;
-        sxcxcx:r61 ?event. # Event
+        sxcxcxn:Event ?event.
     ?event dcx:Identifier ?evlabel;
-        sxcxcx:r62 ?_1. # Semantic Triplet
+        sxcxcxn:Semantic_Triplet ?_1.
     # Every Triplet has a Participant-S
-    ?_1 sxcxcx:r63 ?parto. # Participant-S
+    ?_1 sxcxcxn:Participant_S ?parto.
 
     # We need all of the individuals for that Semantic Triplet.
     {
-        ?parto sxcxcx:r30 ?actor. # Participant-S has an Actor
-        ?actor sxcxcx:r31 ?individual. # Actor has a Individual
+        ?parto sxcxcxn:Actor ?actor.
+        ?actor sxcxcxn:Individual ?individual.
     }
 
     # Provide Name_of_individual_actor, if it exists
     OPTIONAL {
-        ?individual ssx:r45 ?name_of_indivd_actor. # Name_of_individual_actor
+        ?individual ssxn:Name_of_individual_actor ?name_of_indivd_actor.
         FILTER (?name_of_indivd_actor != "?")
     }
 
     # Provide Gender, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r11 ?gender. # Gender
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Gender ?gender.
         FILTER (?gender != "?")
     }
 
     # Provide Race, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar ssx:r53 ?race. # Race
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Race ?race.
         FILTER (?race != "?")
     }
 
     # Provide Qualitative Age, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r89 ?age. # Personal_Characteristic has an Age
-        ?age ssx:r76 ?qualitative_age. # Qualitative Age
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:Age ?age.
+        ?age ssxn:Qualitative_age ?qualitative_age.
         FILTER (?qualitative_age != "?")
     }
 
     # Provide First Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r54 ?fname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:First_name ?fname.
         FILTER (?fname != "?")
     }
 
     # Provide Last Name, if it exists
     OPTIONAL {
-        ?individual sxcxcx:r34 ?pchar. # Individual has a Personal_Characteristic
-        ?pchar sxcxcx:r5 ?name. # Personal_Characteristic has an First and Last Name
-        ?name ssx:r10 ?lname. # Last Name
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar sxcxcxn:First_name_and_last_name ?name.
+        ?name ssxn:Last_name ?lname.
         FILTER (?lname != "?")
     }
 }
@@ -620,21 +617,19 @@ WHERE {
 'Find semantic triplets related to a MacroEvent'
 events['triplets']="""
     PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-    PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-    PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-    PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+    PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
     SELECT DISTINCT ?triplet ?trlabel ?event ?evlabel ?melabel
     WHERE {
       # First find all the Macro events, all fo the Events for those macros,
       # and all fo the Triplets for those events. 
-      ?macro a scx:r1;                    # Macro event
+      ?macro a scxn:Macro_Event;
              dcx:Identifier ?melabel;
-             sxcxcx:r61 ?event.           # Event
+             sxcxcxn:Event ?event.
       ?event dcx:Identifier ?evlabel;
-             sxcxcx:r62 ?triplet.         # Semantic Triplet
+             sxcxcxn:Semantic_Triplet ?triplet.
       ?triplet dcx:Identifier ?trlabel.             
-
     }
     # Order by UCASE to fold case.
     ORDER BY ?event UCASE(?trlabel)
@@ -644,49 +639,48 @@ events['triplets']="""
 'Find victim information related to a MacroEvent'
 events['victims']="""
 PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scx:<http://galyn.example.com/source_data_files/setup_Complex.csv#>
-PREFIX ssx:<http://galyn.example.com/source_data_files/setup_Simplex.csv#>
-PREFIX sxcxcx:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
 SELECT DISTINCT ?macro ?victim ?vlabel ?vname_brdg ?vcounty_brdg ?vallegedcrime_brdg ?vlydate_brdg ?vrace_brdg ?melabel
 WHERE {
     # First find all the Macro events, and then all the Victim
     # information for that macro event.
-    ?macro a scx:r1;            # Macro event
+    ?macro a scxn:Macro_Event;
         dcx:Identifier ?melabel;
-        sxcxcx:r121 ?victim.    # Victim
+        sxcxcxn:Victim ?victim.
     ?victim dcx:Identifier ?vlabel;
 
     # Provide (Brundage) Name of Victim, if it exists
     OPTIONAL {
-        ?victim ssx:r104 ?vname_brdg.
+        ?victim ssxn:Name_of_victim_Brundage ?vname_brdg.
         FILTER (?vname_brdg != "?")
     }
    
     # Provide (Brundage) County of Victim, if it exists
     OPTIONAL {
-        ?victim ssx:r105 ?vcounty_brdg.
+        ?victim ssxn:County_of_lynching_Brundage ?vcounty_brdg.
         FILTER (?vcounty_brdg != "?")
     }
    
     # Provide (Brundage) Alleged Crime, if it exists
     OPTIONAL {
-        ?victim ssx:r106 ?vallegedcrime_brdg.
+        ?victim ssxn:Alleged_crime_Brundage ?vallegedcrime_brdg.
         FILTER (?vallegedcrime_brdg != "?")
     }
 
     # Provide (Brundage) Date of Lynching, if it exists
     OPTIONAL {
-        ?victim ssx:r107 ?vlydate_brdg.
+        ?victim ssxn:Date_of_lynching_Brundage ?vlydate_brdg.
         FILTER (?vlydate_brdg != "?")
     }
 
     # Provide (Brundage) Race of Victim, if it exists
     OPTIONAL {
-        ?victim ssx:r108 ?vrace_brdg. 
+        ?victim ssxn:Race_Brundage ?vrace_brdg. 
         FILTER (?vrace_brdg != "?")
     } 
 }
 ORDER BY ?macro
 """
-
-
