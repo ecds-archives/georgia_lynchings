@@ -403,7 +403,31 @@ class ViewsTest(EventsAppTest):
         self.assertContains(response, 'search results for')
         self.assertEqual(response.context['term'], 'coweta')
         self.assertEqual(response.context['results'], solr_result)
-        self.assertTrue('form' in response.context)      
+        self.assertTrue('form' in response.context)
+
+    @patch('sunburnt.SolrInterface')
+    def test_json_data(self, mock_solr_interface):
+        mocksolr = MagicMock()
+        mock_solr_interface.return_value = mocksolr
+        mocksolr.query.return_value = mocksolr
+        mocksolr.filter.return_value = mocksolr
+        mocksolr.boost_relevancy.return_value = mocksolr
+        solr_result = mocksolr.execute.return_value
+
+        json_url = reverse('json-data')
+
+        # make sure url returns correctly
+        response = self.client.get(json_url)
+        expected, got = 200, response.status_code
+        self.assertEqual(expected, got,
+                         "Should have gotten %s but got %s from url %s" %  (expected, got, json_url))
+
+        #make sure it has the correct content type
+        self.assertEqual(response['Content-Type'], 'application/json',
+                         'Should have Content-Type application/json but has %s' % (response['Content-Type']))
+        #make sure it is valid json - this will fail if json is invalid
+        json.loads(response.content)
+
 
 class TimemapTest(TestCase):
     def setUp(self):

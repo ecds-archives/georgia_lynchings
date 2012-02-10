@@ -136,7 +136,7 @@ def search(request):
     return render(request, 'events/search_results.html',
                   {'results': results, 'term': term, 'form': form})
 
-
+#These views are for Map display
 def timemap(request):
     '''Send timemap json data created from solr to the timemap template.
     '''
@@ -150,3 +150,16 @@ def timemap(request):
     return render(request, 'events/timemap.html', \
         {'data' : mark_safe(jsonResult), \
          'filters' : timemap.filterTags})
+
+def json_data(request):
+    '''
+    Returns returns json data for map display
+    '''
+
+    map_data = Timemap()
+    map_json = json.dumps(map_data.get_json(), indent=4)
+    response = HttpResponse(map_json, mimetype='application/json')
+
+    return response
+
+
