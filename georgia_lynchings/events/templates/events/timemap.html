@@ -14,7 +14,8 @@
         {# Might want to find a way to move this into another file #}
         {# if if grows to much #}
         var tm;
-        $(function() {
+        // execute after the DOM is ready
+        $(document).ready(function() {
 
             tm = TimeMap.init({
                 mapId: "map",               // Id of map div element (required)
