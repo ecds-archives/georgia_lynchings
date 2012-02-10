@@ -296,7 +296,7 @@ class SemanticTripletTest(EventsAppTest):
 
         self.assertEqual(idata['row_id'], '555')
         self.assertTrue(idata['uri'].endswith('#r555'))
-        self.assertTrue(idata['complex_type'].endswith('#r52'))
+        self.assertTrue(idata['complex_type'].endswith('Semantic_Triplet'))
         self.assertTrue(idata['label'].startswith('party (male unknown armed)'))
         self.assertTrue(idata['macro_event_uri'].endswith('#r1')) 
                 
