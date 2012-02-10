@@ -153,7 +153,7 @@ def timemap(request):
 
 def json_data(request):
     '''
-    Returns returns json data for map display
+    Returns json data from :class:`~georgia_lynchings.events.timemap.Timemap` for map display
     '''
 
     map_data = Timemap()
