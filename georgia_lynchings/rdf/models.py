@@ -17,7 +17,7 @@ u'Sam Hose'
 '''
 
 from rdflib import URIRef, Variable, BNode, RDF
-from georgia_lynchings.rdf.ns import dcx, ssxn
+from georgia_lynchings.rdf.ns import dcx, scx, ssxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
@@ -147,8 +147,12 @@ class ChainedRdfPropertyField(RdfPropertyField):
 
     def wrap_result(self, result_val):
         # The result of evaluating this property is the result of evaluating
-        # the last property in the chain.
-        return self.props[-1].wrap_result(result_val)
+        # the last property in the chain, if there is such a wrapper.
+        last_wrap = getattr(self.props[-1], 'wrap_result', None)
+        if last_wrap:
+            return last_wrap(result_val)
+        else:
+            return result_val
 
 
 class ComplexObjectType(type):
@@ -210,8 +214,11 @@ class ComplexObject(object):
 
     label = dcx.Identifier
     'a human-readable label for this object'
-    complex_type = dcx.ComplexType
-    'the uri of the complex object type for this object'
+    # Classes use the Name-URI for their rdf_type. So indexing that here
+    # (instead of, for instance, just dcx.ComplexType) allows us to search
+    # for thing by MyClass.rdf_type.
+    complex_type = ChainedRdfPropertyField(dcx.ComplexType, scx['Name-URI'])
+    'the name-based uri of the complex object type for this object'
 
     verified_semantic = ssxn.verifiedSC
     '''has the coded data for this object been manually reviewed for
