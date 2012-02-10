@@ -52,7 +52,16 @@ class Timemap(Mapdata):
             self.filterTags[fitem] = {}
 
         # Timemap JSON Result initialization
-        jsonResult = [{"id":"event", "title":"Events","theme":"red","type":"basic","options":{'items':[]}}] 
+        jsonResult = [{"id":"event",
+            "title":"Events",
+            "theme":"red",
+            "type":"basic",
+            "infoTemplate": "<div><b>{{title}}</b></div><div>Start Date: {{start}}</div><div>Location: {{county}} County</div><div>Tags: {{tags}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>",
+            "options":{
+                'infoTemplate': "<div><b>{{title}}</b></div><div>Start Date: {{min_date}}</div><div>Location: {{county}} County</div><div>Tags: {{tags}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>",
+                'items':[]
+            }
+        }] 
             
         for solr_item in solr_items:
             
@@ -105,15 +114,12 @@ class Timemap(Mapdata):
         '''
         
         item={}         # create a timemap pinpoint item 
-        moreinfo = []   # text for pinpoint popup
         
-        # Add 'title', if defined; also add to pinpoint popup text
+        # Add 'title', if defined
         item["title"]=solr_item['label'].encode('ascii')
-        moreinfo.append("<div><b>%s</b></div>" % (solr_item['label'])) 
             
-        # Add 'start' date; also add to pinpoint popup text
+        # Add 'start' date
         item["start"]=solr_item['min_date'].encode('ascii')
-        moreinfo.append("<div>Start Date: %s</div>" % (solr_item['min_date']))
         
         # Add 'end' date if defined
         if solr_item['max_date']:    item["end"]=solr_item['max_date'].encode('ascii')
@@ -124,19 +130,18 @@ class Timemap(Mapdata):
         lon=geo_coordinates.countymap[county]['longitude']        
         item["point"]={"lat" : lat, "lon" : lon}
         
-        # Add location to pinpoint popup 
-        moreinfo.append("<div>Location: %s County</div>" % county)
-        
         # Add tags to pinpoint popup
-        #print "\n ALL TAG LIST = [%s]\n" % ", ".join(all_tag_list)
-        tag_list = "[" + ", ".join(all_tag_list) + "]"         
-        moreinfo.append("<div>Tags: %s</div>" % tag_list)      
+        tag_list = "[" + ", ".join(all_tag_list) + "]"          
         
         # FIXME: use reverse
         # reverse('events:details', kwargs={'id': solr_item['row_id']})
-        moreinfo.append("<div><a target='_blank' href='../%s/details'>more info</a></div>" % solr_item['row_id'])
-        moreinfo_link = ''.join(moreinfo)
+        detail_link = '../%s/details' % solr_item['row_id'].encode('ascii')
         
-        item["options"]={'infoHtml': moreinfo_link.encode('ascii'), 'tags': tag_list.encode('ascii')} 
-
+        # infotemplate popup details
+        item["options"]={'title': solr_item['label'].encode('ascii'),
+                        'min_date': solr_item['min_date'].encode('ascii'),
+                        'county': county.encode('ascii'),
+                        'detail_link': detail_link,        
+                        'tags': tag_list.encode('ascii')}
+                                                
         return item
