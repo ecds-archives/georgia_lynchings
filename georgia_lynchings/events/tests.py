@@ -82,8 +82,8 @@ class MacroEventTest(EventsAppTest):
         expected, got = '3', result['articleTotal'] 
         self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))
         # Test event_type for BROOKS dcx:r57 macro event         
-        expected, got = 'lynching', result['event_type'] 
-        self.assertEqual(expected, got, 'Expected %s event_type, got %s' % (expected, got))
+        event_list, item = result['event_type'], 'lynching'
+        self.assertIn(item, event_list, 'Expected %s event_type in event_list' % (item))
         # Test melabel for BROOKS dcx:r57 macro event 
         expected, got = 'Brooks', result['melabel'] 
         self.assertEqual(expected, got, 'Expected %s macro event label, got %s' % (expected, got))
@@ -121,13 +121,13 @@ class MacroEventTest(EventsAppTest):
         expected, got = 'sister', result['events'][0]['uparts'][1]['role']
         self.assertEqual(expected, got, 'Expected %s role, got %s' % (expected, got))                                
             
-        result = details.get(self.MERIWETHER_MACRO_ID)  
-        expected, got = 'murder', result['event_type'] 
-        self.assertEqual(expected, got, 'Expected %s event_type, got %s' % (expected, got))         
-        expected, got = 'reward of 250$; unknown lynchers', result['outcome'] 
-        self.assertEqual(expected, got, 'Expected %s outcome, got %s' % (expected, got))
-        expected, got = 'lynching; capture of the negro', result['reason'] 
-        self.assertEqual(expected, got, 'Expected %s reason, got %s' % (expected, got))  
+        result = details.get(self.MERIWETHER_MACRO_ID) 
+        event_list, item = result['event_type'], 'murder'
+        self.assertIn(item, event_list, 'Expected %s event_type in event_list' % (item))
+        outcome_list, item = result['outcome'], 'reward of 250$'
+        self.assertIn(item, outcome_list, 'Expected %s outcome in outcome_list' % (item))         
+        reason_list, item = result['reason'], 'capture of the negro'
+        self.assertIn(item, reason_list, 'Expected %s reason in reason_list' % (item))  
         expected, got = 'Meriwether', result['melabel'] 
         self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))                                            
 

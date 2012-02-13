@@ -50,23 +50,11 @@ class Details:
                 results['maxdate'] = dateResultSet.get('maxdate')            
             except:
                 logger.debug("Min/Max dates are not defined for macro event %s" % (row_id))
-                    
+            
             # Detail Information (Reason/Outcome/Event_Type)       
             detailResultSet = me.get_details()
-            if detailResultSet:          
-                for item in ['reason', 'outcome', 'event_type']:
-                    results[item] = []          
-                    # create a list of items            
-                    for detail in detailResultSet: 
-                        try:                     
-                            results[item].append(detail[item])
-                        except:
-                            logger.debug("%s is not defined for macro event %s" % (item, row_id))                 
-                    # create a string of unique items in list for display
-                    try :
-                        results[item] = "; ".join(set(results[item]))
-                    except:
-                        logger.debug("%s is not defined for macro event %s" % (item, row_id)) 
+            if detailResultSet:
+                results = dict(results.items() + detailResultSet.items())
             
             # TODO: Replace this with inline article information inline.
             ss=SparqlStore()

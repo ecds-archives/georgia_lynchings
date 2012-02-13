@@ -197,12 +197,20 @@ class MacroEvent(ComplexObject):
         '''                
         query=query_bank.events['details']
         ss=SparqlStore()
-        results = ss.query(sparql_query=query, 
+        resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
 
-        # return the dictionary results of the details information          
-        return results
-        
+        detailResult={}
+        # return a unique list of event_types, reasons and outcomes
+        for item in ['event_type', 'reason', 'outcome']:
+            try:
+                detailResult[item] = set([result[item] for result in resultSet])
+            except:
+                logger.debug("%s is not defined for macro event %s" % (item, self.uri.n3()))
+
+        # return the list of cities
+        return detailResult  
+                
     def get_events(self):
         '''Get the events associated with this macro event.
 
