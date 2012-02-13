@@ -110,7 +110,6 @@ class Timemap(Mapdata):
         :param solr_item: a dictionary item from the solr query result set   
         :param county: string, victim_county_brundag
         :param all_tag_list: string, a combined list of tags for the filters
-                        
         '''
         
         item={}         # create a timemap pinpoint item 
@@ -133,9 +132,8 @@ class Timemap(Mapdata):
         # Add tags to pinpoint popup
         tag_list = "[" + ", ".join(all_tag_list) + "]"          
         
-        # FIXME: use reverse
-        # reverse('events:details', kwargs={'id': solr_item['row_id']})
-        detail_link = '../%s/details' % solr_item['row_id'].encode('ascii')
+        # Add more info link to details page
+        detail_link = reverse('details', kwargs={'row_id': solr_item['row_id'].encode('ascii')})
         
         # infotemplate popup details
         item["options"]={'title': solr_item['label'].encode('ascii'),

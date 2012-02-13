@@ -8,6 +8,7 @@ from rdflib import Literal
 from pprint import pprint
 
 from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet, Victim
+from georgia_lynchings.events.details import Details
 from georgia_lynchings.events.timemap import Timemap
 from georgia_lynchings.rdf.ns import dcx
 
@@ -75,8 +76,8 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got)) 
         
     def test_get_details(self):
-        macro = MacroEvent(self.BROOKS_MACRO_ID)
-        result = macro.get_details()
+        details = Details()
+        result = details.get(self.BROOKS_MACRO_ID)      
         # Test article total for BROOKS dcx:r57 macro event 
         expected, got = '3', result['articleTotal'] 
         self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))
@@ -87,16 +88,13 @@ class MacroEventTest(EventsAppTest):
         expected, got = 'Brooks', result['melabel'] 
         self.assertEqual(expected, got, 'Expected %s macro event label, got %s' % (expected, got))
         # Test evlabel for BROOKS dcx:r57 macro event 
-        expected, got = 'lynching (senatobia)', result['events'][0]['evlabel'] 
-        self.assertEqual(expected, got, 'Expected %s event label, got %s' % (expected, got))
-        # Test location for BROOKS dcx:r57 macro event 
-        expected, got = 'senatobia (city)', result['events'][0]['location'] 
+        expected, got = 'senatobia; barwick', result['location']
         self.assertEqual(expected, got, 'Expected %s event label, got %s' % (expected, got))
         # Test mindate for BROOKS dcx:r57 macro event 
-        expected, got = '1909-07-02', result['events'][0]['mindate'] 
+        expected, got = '1909-07-02', result['mindate'] 
         self.assertEqual(expected, got, 'Expected %s mindate, got %s' % (expected, got)) 
         # Test maxdate for BROOKS dcx:r57 macro event 
-        expected, got = '1909-07-02', result['events'][0]['maxdate'] 
+        expected, got = '1909-07-02', result['maxdate'] 
         self.assertEqual(expected, got, 'Expected %s maxdate, got %s' % (expected, got)) 
         # Test triplet_first for BROOKS dcx:r57 macro event 
         expected = 'mob hung (violence against people 7/2/1909 senatobia) negro (steven veasey male)'
@@ -123,8 +121,7 @@ class MacroEventTest(EventsAppTest):
         expected, got = 'sister', result['events'][0]['uparts'][1]['role']
         self.assertEqual(expected, got, 'Expected %s role, got %s' % (expected, got))                                
             
-        macro = MacroEvent(self.MERIWETHER_MACRO_ID)
-        result = macro.get_details()
+        result = details.get(self.MERIWETHER_MACRO_ID)  
         expected, got = 'murder', result['event_type'] 
         self.assertEqual(expected, got, 'Expected %s event_type, got %s' % (expected, got))         
         expected, got = 'reward of 250$; unknown lynchers', result['outcome'] 
@@ -133,9 +130,8 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(expected, got, 'Expected %s reason, got %s' % (expected, got))  
         expected, got = 'Meriwether', result['melabel'] 
         self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))                                            
-                
-        macro = MacroEvent(self.NONEXISTENT_MACRO_ID)
-        expected, got = None, macro.get_details() 
+
+        expected, got = None, details.get(self.NONEXISTENT_MACRO_ID) 
         self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got)) 
         
     def test_get_date_range(self):
@@ -301,6 +297,7 @@ class SemanticTripletTest(EventsAppTest):
         self.assertTrue(idata['macro_event_uri'].endswith('#r1')) 
                 
 class ViewsTest(EventsAppTest):
+
     def test_get_articles_bogus_rowid(self):
         row_id = self.NONEXISTENT_MACRO_ID
         title = 'No records found'

@@ -187,144 +187,38 @@ class MacroEvent(ComplexObject):
         '''Get all details associated with this macro event.
 
         :rtype: a mapping list of the type 
-                It has the following bindings:
+                It has the following bindings:               
                   * `melabel`: the :class:`MacroEvent` label
-                  * `article_link`: link to associated articles with this event
-                  * `location`: location of the macro event 
-                  * `date_range`: date_range of the macro event 
-                  * `type`: type of the macro event  
-                  * `reason`: reason for the macro event
-                  * `outcome`: outcome for the macro event                   
-                  * `victim`: the name of the victim
-                  
-           Example macro events: dcx2; dcx:r4, dcx:r50
-        '''
-        results = {}
-        
-        # set the macro event label, and load all the associated events
+                  * `event`: the uri of the event associated with this article                  
+                  * `evlabel`: the event label
+                  * `event_type`: the event type
+                  * `outcome`: the name of the outcome                  
+                  * `reason`: the name of the reason
+        '''                
+        query=query_bank.events['details']
         ss=SparqlStore()
-        query=query_bank.events['macro']         
-        allResultSet = ss.query(sparql_query=query, 
+        results = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
-        if allResultSet:
-            results['melabel'] = allResultSet[0]['melabel'] 
-            results['events'] = []
-            for event in allResultSet:
-                eventdict = {}
-                if event['evlabel']:
-                    eventdict['event']=event['event']
-                    eventdict['evlabel']=event['evlabel']
-                    results['events'].append(eventdict)
-        
-        # Do not continue if an event does not exist.
-        if not results: return None
-        
-        # collect date information
-        ss=SparqlStore()
-        query=query_bank.events['all']         
-        docResultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})
-        results['articleTotal'] = docResultSet[0]['articleTotal']                         
-        
-        # collect detail information
-        ss=SparqlStore()
-        query=query_bank.events['details']         
-        detailResultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                          
-        reason_list = []
-        outcome_list = []                             
-        event_type_list = []
-        if detailResultSet:
-            for detail in detailResultSet: 
-                # Get the name_of_reason, if defined.
-                if 'reason' in detail.keys(): reason_list.append(detail['reason'])
-                # Get the name_of_outcome, if defined.            
-                if 'outcome' in detail.keys(): outcome_list.append(detail['outcome']) 
-                # Create a list of type_of_events, if defined.            
-                if 'event_type' in detail.keys():  event_type_list.append(detail['event_type'])
 
-        # Set the lists to a string, eliminate duplicates
-        if event_type_list:  results['event_type'] = '; '.join(set(event_type_list))
-        else: results['event_type'] = "n/a" 
-        if reason_list:  results['reason'] = '; '.join(set(reason_list))
-        else: results['reason'] = "n/a"  
-        if outcome_list:  results['outcome'] = '; '.join(set(outcome_list))
-        else: results['outcome'] = "n/a"
-
-        # collect date information
-        ss=SparqlStore()
-        query=query_bank.events['date_range']         
-        dateResultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})
-        if dateResultSet:
-            for dateResult in dateResultSet:
-                for event in results['events']:
-                    if 'mindate' in dateResult.keys(): event['mindate'] = dateResult['mindate']
-                    if 'maxdate' in dateResult.keys(): event['maxdate'] = dateResult['maxdate']
-
-        # collect location information
-        ss=SparqlStore()
-        query=query_bank.events['locations']         
-        locationResultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                           
-        if locationResultSet:
-            lindex = 0
-            for locResult in locationResultSet:
-                index = 0  
-                for event in results['events']: 
-                    if event['event'] == locResult['event']:     
-                        location = None                 
-                        if 'city' in locResult.keys():
-                            location = "%s (city)" % locResult[u'city']
-                        if 'state' in locResult.keys():
-                            if location: location += ", %s (state)" %  locResult['state']
-                            else: location = locResult['state']                     
-                        if 'county' in locResult.keys():                            
-                            if location: location += ", %s (county)" %  locResult['county']
-                            else: location = "%s County" %  locResult['county'] 
-                        # Add/Append location to results
-                        if location and 'location' in event.keys() : 
-                            event['location'] += "; %s" %  location
-                        elif location:  event['location'] = location
-                    index =+ 1 
-                lindex =+ 1
-                
-        # Collect semantic triplets for each event.        
-        tripletResultSet = self.get_triplets_by_event()                           
-        if tripletResultSet:       
-            for event in results['events']:
-                if tripletResultSet[event['evlabel']]:  
-                    event['triplet_first'] = tripletResultSet[event['evlabel']][0]
-                    event['triplet_rest'] = tripletResultSet[event['evlabel']][1:]
-                    
-        # collect participant information
-        for p in ['uparto', 'uparts']:
-            ss=SparqlStore()
-            query=query_bank.events[p]
-            partoResultSet = ss.query(sparql_query=query,
-                                 initial_bindings={'macro': self.uri.n3()})
-            if partoResultSet:
-                for part in partoResultSet:
-                    for event in results['events']:
-                        partdict = {}                        
-                        if event['event'] == part['event']:
-                            # Set the first and last name, if defined
-                            if 'fname' in part.keys() and 'lname' in part.keys(): 
-                                partdict['name'] = "%s %s" % (part['fname'], part['lname'])
-                            elif 'fname' in part.keys(): partdict['name'] = part['fname']
-                            elif 'lname' in part.keys(): partdict['name'] = part['lname']
-                            # Set the qualitative age, if defined
-                            if 'qualitative_age' in part.keys(): partdict['age'] = part['qualitative_age']
-                            if 'race' in part.keys(): partdict['race'] = part['race']
-                            if 'gender' in part.keys(): partdict['gender'] = part['gender']
-                            if 'name_of_indivd_actor' in part.keys(): partdict['role'] = part['name_of_indivd_actor']
-                        if partdict:
-                            if p in event.keys(): event[p].append(partdict)
-                            else: event[p]= [partdict]
-
-                                            
         # return the dictionary results of the details information          
-        return results        
+        return results
+        
+    def get_events(self):
+        '''Get the events associated with this macro event.
+
+        :rtype: a mapping list of the type 
+                It has the following bindings:               
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `event`: the uri of the event associated with this article                  
+                  * `evlabel`: the event label
+        '''                
+        query=query_bank.events['macro']
+        ss=SparqlStore()
+        results = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})
+
+        # return the dictionary results of the details information          
+        return results               
         
     def get_triplets(self):
         '''Get the semantic triplets related to this macro event.
@@ -355,7 +249,7 @@ class MacroEvent(ComplexObject):
             events[triplet['evlabel']].append(triplet['trlabel'])
         return events
         
-    # TODO Add first name for participant object
+    # TODO this will likely be replaced by get_statement_data
     def get_statement_object_data(self):
         '''Get data about the particpant-O (sentence object) of statements
         related to this macro event.
@@ -384,7 +278,7 @@ class MacroEvent(ComplexObject):
         # return a dictionary of the resultSet
         return resultSet
 
-    # TODO Add first name for participant subject
+    # TODO this will likely be replaced by get_statement_data
     def get_statement_subject_data(self):
         '''Get data about the particpant-S (sentence subject) of statements
         related to this macro event.
@@ -413,6 +307,36 @@ class MacroEvent(ComplexObject):
         # return a dictionary of the resultSet
         return resultSet
         
+    # Get unique participant (of type subject or object) data
+    def get_statement_data(self, stmt_type):
+        '''Get unique data about the particpant (sentence object or subject) 
+        of statements related to this macro event.
+        
+        :param stmt_type: a type of participant 'uparto' or 'uparts' for
+                unique participant subject or object.        
+
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                It has the following bindings:
+                  * `fname`: fname of this actor                 
+                  * `lname`: lname of this actor 
+                  * `qualitative_age`: qualitative_age of this actor                                   
+                  * `race`: race of this actor 
+                  * `gender`: gender of this actor 
+                  * `name_of_indivd_actor`: Name of Individual Actor              
+                  * `event`: the uri of the event associated with this article                  
+                  * `melabel`: the :class:`MacroEvent` label
+                  * `evlabel`: the event label
+                  * `macro`: the macro event ID
+        '''
+
+        query=query_bank.events[stmt_type]
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query, 
+                             initial_bindings={'macro': self.uri.n3()})                                       
+        # return a dictionary of the resultSet
+        return resultSet        
+        
     def get_victim_data(self):
         '''Get the victim data related to this macro event.
 
@@ -434,7 +358,6 @@ class MacroEvent(ComplexObject):
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})                                       
         return resultSet        
-
 
 def get_events_by_locations():
     '''Get a list of events along with the location of the event.

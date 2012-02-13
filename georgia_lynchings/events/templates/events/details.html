@@ -4,87 +4,85 @@
 
 {% block content %}
 {% if results %}
-  <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
-  <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
-  <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
-      <tr><th>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
-      <tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
-      <tr><th>Victim:</th><td>{{ results.victim }}</td></tr>
-      <tr><th>Type of Event:</th><td>{{ results.event_type }}</td></tr>
-      <tr><th>Reason:</th><td>{{ results.reason }}</td></tr>    
-      <tr><th>Outcome:</th><td>{{ results.outcome }}</td></tr>
-      {% for event in results.events %} 
+    <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
+    <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
+    <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
+        <tr><th>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
+        {% if results.mindate %}<tr><th>Min Date:</th><td>{{ results.mindate }}</td></tr>{% endif %}
+        {% if results.maxdate %}<tr><th>Max Date:</th><td>{{ results.maxdate }}</td></tr>{% endif %}
+        <tr><th>Cities:</th><td>{% if results.location %}{{ results.location }}{% else %}n/a{% endif %}</td>
+        <tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
+        <tr><th>Victim:</th><td>{% if results.victim %}{{ results.victim }}{% else %}n/a{% endif %}</td> 
+        <tr><th>Type of Event:</th><td>{% if results.event_type %}{{ results.event_type }}{% else %}n/a{% endif %}</td>        
+        <tr><th>Reason:</th><td>{% if results.reason %}{{ results.reason }}{% else %}n/a{% endif %}</td>   
+        <tr><th>Outcome:</th><td>{% if results.reason %}{{ results.outcome }}{% else %}n/a{% endif %}</td>
+          {% for event in results.events %} 
 
-      <tr>
-        <th>
-            Event:<br/>
-            {% if event.mindate %}Min Date:<br/>{% endif %}  
-            {% if event.maxdate %}Max Date:<br/>{% endif %}                          
-            {% if event.location %}Location:<br/>{% endif %}  
-            {% if event.triplet_first %}Semantic Triplets:<br/><br/>{% endif %}       
-        </th>
-        <td>
-            {{ event.evlabel }}<br/>
-            {% if event.mindate %}{{ event.mindate }}<br/>{% endif %} 
-            {% if event.maxdate %}{{ event.maxdate }}<br/>{% endif %}                         
-            {% if event.location %}{{ event.location }}<br/>{% endif %}  
-            {% if event.triplet_first %}
-            &bull;&nbsp;{{ event.triplet_first }}
-            <div class="layer1">
-            <div class="more">. . .</div>
-            <div class="triplet_rest">
-              {% for triple in event.triplet_rest %}  
-                &bull;&nbsp;{{ triple }}<br/>&nbsp;<br/>
-              {% endfor %} </div>
-            </div>
-            {% endif %}            
-        </td></tr> 
-        
-        {% if event.uparto %}
-        <tr>
-        <th>Event<br/>{{ event.evlabel }}<br/>Participant-Objects:</th>
-        <td >
-            <table id="part">
-            <tr><th>Name</th>
-            <th>Role</th>
-            <th>Gender</th>
-            <th>Race</th>
-            <th>Age</th></tr>
-        {% for event in event.uparto %}
-            <tr>        
-            <td>{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>                                      
-            </tr>
-        {% endfor %}
-        </table></td></tr>
-        {% endif %}
+          <tr>
+            <th>
+                Event:<br/>
+                {% if event.triplet_first %}Semantic Triplets:<br/><br/>{% endif %}       
+            </th>
+            <td>
+                {{ event.evlabel }}<br/>                       
+                {% if event.location %}{{ event.location }}<br/>{% endif %}  
+                {% if event.triplet_first %}
+                &bull;&nbsp;{{ event.triplet_first }}
+                <div class="layer1">
+                <div class="more">. . .</div>
+                <div class="triplet_rest">
+                  {% for triple in event.triplet_rest %}  
+                    &bull;&nbsp;{{ triple }}<br/>&nbsp;<br/>
+                  {% endfor %} </div>
+                </div>
+                {% endif %}            
+            </td></tr> 
+            
+            {% if event.uparto %}
+            <tr>
+            <th>Event<br/>{{ event.evlabel }}<br/>Participant-Objects:</th>
+            <td >
+                <table id="part">
+                <tr><th>Name</th>
+                <th>Role</th>
+                <th>Gender</th>
+                <th>Race</th>
+                <th>Age</th></tr>
+            {% for event in event.uparto %}
+                <tr>        
+                <td>{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>                                      
+                </tr>
+            {% endfor %}
+            </table></td></tr>
+            {% endif %}
 
-        {% if event.uparts %}
-        <tr>
-        <th>Event:{{ event.evlabel }}<br/>Participant-Subjects:</th>
-        <td>
-            <table id="part">
-            <tr><th>Name</th>
-            <th>Role</th>
-            <th>Gender</th>
-            <th>Race</th>
-            <th>Age</th></tr>
-        {% for event in event.uparts %}
-            <tr>        
-            <td>{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
-            <td>{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>                                    
-            </tr>
-        {% endfor %}
-        </table></td></tr>
-        {% endif %}       
-        
-    {% endfor %}      
+            {% if event.uparts %}
+            <tr>
+            <th>Event:{{ event.evlabel }}<br/>Participant-Subjects:</th>
+            <td>
+                <table id="part">
+                <tr><th>Name</th>
+                <th>Role</th>
+                <th>Gender</th>
+                <th>Race</th>
+                <th>Age</th></tr>
+            {% for event in event.uparts %}
+                <tr>        
+                <td>{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
+                <td>{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>                                    
+                </tr>
+            {% endfor %}
+            </table></td></tr>
+            {% endif %}       
+            
+        {% endfor %}      
   </table>
 {% else %}
 <h1 class="main">Not Found</h1>

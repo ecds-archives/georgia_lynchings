@@ -5,8 +5,7 @@
 {% block content %}
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
-  <h1 class="main">Articles for Macro Event: {{ title }}</h1>
-  <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
+  <h1 class="main">Articles for Macro Event: {{ title }}</h1> 
   {% if resultSet %}
   <table summary="Articles for a Macro Event {{ results.melabel }}" id="gen">      
   <tr><th>Event</th><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></th>
@@ -21,7 +20,6 @@
           <img src="{{ STATIC_PREFIX }}/images/pdf-icon.jpg"/></a>{% else %}n/a{% endif %}</td>
       </tr>
   {% endfor %}
-  </table>
-  <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
+  </table> 
   {% endif %}     
 {% endblock %}

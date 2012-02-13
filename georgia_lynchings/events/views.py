@@ -6,6 +6,7 @@ from urllib import quote
 import urllib2
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
@@ -13,7 +14,8 @@ from django.utils.safestring import mark_safe
 from georgia_lynchings.events.models import MacroEvent, \
         get_events_by_locations, get_events_by_times, get_all_macro_events, \
         SemanticTriplet
-from georgia_lynchings.forms import SearchForm        
+from georgia_lynchings.forms import SearchForm    
+from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.timemap import Timemap   
 
 logger = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ def articles(request, row_id):
     '''
     event = MacroEvent(row_id)
     resultSet = event.get_articles()
-    if resultSet:   
+    if resultSet:      
         title = resultSet[0]['melabel']
         # create a link for the macro event articles
         for result in resultSet:
@@ -39,13 +41,8 @@ def articles(request, row_id):
                 result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
                 result['docpath'] = result['docpath'][10:] 
     else:   title = "No records found" 
-    # set prev/next links
-    # FIXME: this needs to be based on a defined set of actice macro events
-    pagelink = {}    
-    pagelink['prev']='../../%s/articles' % (int(row_id) - 1)    # FIXME: use reverse here
-    pagelink['next']='../../%s/articles' % (int(row_id) + 1)    # FIXME: use reverse here 
     return render(request, 'events/articles.html',
-                  {'resultSet': resultSet, 'row_id':row_id, 'title':title, 'pagelink':pagelink})
+                  {'resultSet': resultSet, 'row_id':row_id, 'title':title})
                   
 def details(request, row_id):
     '''
@@ -55,22 +52,24 @@ def details(request, row_id):
     :param row_id: the numeric identifier for the 
                    :class:`~georgia_lynchings.events.models.MacroEvent`.
     '''
-    results = {}
-    pagelink = {}
-    event = MacroEvent(row_id)
-    results = event.get_details()
-    # FIXME: this needs to be based on a defined set of actice macro events    
-    pagelink['prev']='../../%s/details' % (int(row_id) - 1)   # FIXME: use reverse here
-    pagelink['next']='../../%s/details' % (int(row_id) + 1)   # FIXME: use reverse here   
+    
+    # Get the details associate with this macro event.
+    details = Details()
+    results = details.get(row_id)
+
+    # FIXME: this needs to traverse a defined set of macro events
+    pagelink = {}    
+    pagelink['prev']=reverse('details', kwargs={'row_id': (int(row_id) - 1)})
+    pagelink['next']=reverse('details', kwargs={'row_id': (int(row_id) + 1)})   
     if results:   
         title = row_id
-        results['articles_link'] = '../../../events/%s/articles' % row_id
-        # TODO: change old format of simplex victim to new format complex victims (multiple)
-        results['victim'] = event.victim          
-    else:   title = "No records found"    
+        results['articles_link'] = reverse('articles', kwargs={'row_id': row_id})          
+    else:   title = "No records found"  
+     
     return render(request, 'events/details.html',
                   {'results': results, 'row_id':row_id, 'title':title, 'pagelink':pagelink})                   
 
+    
 def home(request):
     template = 'index.html'
     return render(request, template, {'search_form': SearchForm()})
