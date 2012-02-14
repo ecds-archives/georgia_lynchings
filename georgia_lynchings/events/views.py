@@ -54,8 +54,8 @@ def details(request, row_id):
     '''
     
     # Get the details associate with this macro event.
-    details = Details()
-    results = details.get(row_id)
+    details = Details(row_id)
+    results = details.get()
 
     # FIXME: this needs to traverse a defined set of macro events
     pagelink = {}    

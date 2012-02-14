@@ -7,10 +7,10 @@
     <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
     <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
     <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
-        <tr><th>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>
+        <tr><th>Macro Event Title:</th><td>{% if results.melabel %}{{ results.melabel }}{% else %}n/a{% endif %}</td></tr>
         {% if results.mindate %}<tr><th>Min Date:</th><td>{{ results.mindate }}</td></tr>{% endif %}
         {% if results.maxdate %}<tr><th>Max Date:</th><td>{{ results.maxdate }}</td></tr>{% endif %}
-        <tr><th>Cities:</th><td>{% if results.location %}{{ results.location }}{% else %}n/a{% endif %}</td>
+        <tr><th>Cities:</th><td>{% if results.location %}{{ results.location|join:" ; " }}{% else %}n/a{% endif %}</td>
         <tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
         <tr><th>Victim:</th><td>{% if results.victim %}{{ results.victim }}{% else %}n/a{% endif %}</td> 
         <tr><th>Type of Event:</th><td>{% if results.event_type %}{{ results.event_type|join:" ; " }}{% else %}n/a{% endif %}</td>        

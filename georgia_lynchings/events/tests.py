@@ -1,11 +1,13 @@
 import json
 import logging
+import rdflib
+from mock import patch, MagicMock
+from rdflib import Literal, URIRef
+from pprint import pprint
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
-from mock import patch, MagicMock
-from rdflib import Literal
-from pprint import pprint
 
 from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet, Victim
 from georgia_lynchings.events.details import Details
@@ -76,8 +78,8 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got)) 
         
     def test_get_details(self):
-        details = Details()
-        result = details.get(self.BROOKS_MACRO_ID)      
+        details = Details(self.BROOKS_MACRO_ID)
+        result = details.get()      
         # Test article total for BROOKS dcx:r57 macro event 
         expected, got = '3', result['articleTotal'] 
         self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))
@@ -87,9 +89,9 @@ class MacroEventTest(EventsAppTest):
         # Test melabel for BROOKS dcx:r57 macro event 
         expected, got = 'Brooks', result['melabel'] 
         self.assertEqual(expected, got, 'Expected %s macro event label, got %s' % (expected, got))
-        # Test evlabel for BROOKS dcx:r57 macro event 
-        expected, got = 'senatobia; barwick', result['location']
-        self.assertEqual(expected, got, 'Expected %s event label, got %s' % (expected, got))
+        # Test evlabel for BROOKS dcx:r57 macro event         
+        city_list, item = result['location'], 'barwick'
+        self.assertIn(item, city_list, 'Expected %s city in city_list' % (item))        
         # Test mindate for BROOKS dcx:r57 macro event 
         expected, got = '1909-07-02', result['mindate'] 
         self.assertEqual(expected, got, 'Expected %s mindate, got %s' % (expected, got)) 
@@ -100,6 +102,54 @@ class MacroEventTest(EventsAppTest):
         expected = 'mob hung (violence against people 7/2/1909 senatobia) negro (steven veasey male)'
         got = result['events'][0]['triplet_first'] 
         self.assertEqual(expected, got, 'Expected %s triplet_first, got %s' % (expected, got))
+        
+        # test get_me_articles
+        expected, got = '3', details.get_me_articles() 
+        self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))
+                
+        # test get_me_events
+        evdict=[{u'event': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r19684'),
+              u'evlabel': rdflib.term.Literal(u'lynching (senatobia)'),
+              u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r57'),
+              u'melabel': rdflib.term.Literal(u'Brooks')},
+             {u'event': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r19811'),
+              u'evlabel': rdflib.term.Literal(u'lynching (barwick)'),
+              u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r57'),
+              u'melabel': rdflib.term.Literal(u'Brooks')}]
+              
+        events = details.get_me_events(evdict)
+        event_list, item = events['events'][1]['evlabel'], 'lynching (barwick)'
+        self.assertIn(item, event_list, 'Expected %s in event_list' % (item))                 
+                
+        # test get_me_title
+        got, expected = details.get_me_title(evdict), 'Brooks'
+        self.assertEqual(expected, got, 'Expected %s title, got %s' % (expected, got))
+                
+        # test get_name
+        got, expected = details.get_name('Firstname', 'Lastname'), 'Firstname Lastname'
+        self.assertEqual(expected, got, 'Expected %s , got %s' % (expected, got))
+        got, expected = details.get_name('Firstname', None), 'Firstname'
+        self.assertEqual(expected, got, 'Expected %s , got %s' % (expected, got))
+        got, expected = details.get_name(None, 'Lastname'), 'Lastname'
+        self.assertEqual(expected, got, 'Expected %s , got %s' % (expected, got))
+        got, expected = details.get_name(None, None), None
+        self.assertEqual(expected, got, 'Expected %s , got %s' % (expected, got))                        
+                
+        # test update_me_participants
+        results = {}
+        results['events']=evdict
+        details.update_me_participants(results,['uparto'])
+        got, expected = results['events'][1]['uparto'][1]['role'], 'coroner'
+        self.assertEqual(expected, got, 'Expected %s participant role, got %s' % (expected, got))
+        
+        # test update_me_triplets
+        results = {}
+        results['events']=evdict
+        details.update_me_triplets(results)
+        expected = 'mob hung (violence against people 7/2/1909 senatobia) negro (steven veasey male)'
+        got = results['events'][0]['triplet_first']
+        self.assertEqual(expected, got, 'Expected %s triplet, got %s' % (expected, got))        
+            
 
         # Test participant-o for BROOKS dcx:r57 macro event 
         # parto age
@@ -121,7 +171,8 @@ class MacroEventTest(EventsAppTest):
         expected, got = 'sister', result['events'][0]['uparts'][1]['role']
         self.assertEqual(expected, got, 'Expected %s role, got %s' % (expected, got))                                
             
-        result = details.get(self.MERIWETHER_MACRO_ID) 
+        details = Details(self.MERIWETHER_MACRO_ID)
+        result = details.get()
         event_list, item = result['event_type'], 'murder'
         self.assertIn(item, event_list, 'Expected %s event_type in event_list' % (item))
         outcome_list, item = result['outcome'], 'reward of 250$'
@@ -131,7 +182,8 @@ class MacroEventTest(EventsAppTest):
         expected, got = 'Meriwether', result['melabel'] 
         self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))                                            
 
-        expected, got = None, details.get(self.NONEXISTENT_MACRO_ID) 
+        details = Details(self.NONEXISTENT_MACRO_ID)
+        expected, got = None, details.get() 
         self.assertEqual(expected, got, 'Expected %s for nonexistant date_range macro id, got %s' % (expected, got)) 
         
     def test_get_date_range(self):

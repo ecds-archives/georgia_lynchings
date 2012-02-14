@@ -214,7 +214,8 @@ class MacroEvent(ComplexObject):
     def get_events(self):
         '''Get the events associated with this macro event.
 
-        :rtype: a mapping list of the type 
+        :rtype: a mapping list of the type returned by
+                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
                 It has the following bindings:               
                   * `melabel`: the :class:`MacroEvent` label
                   * `event`: the uri of the event associated with this article                  
