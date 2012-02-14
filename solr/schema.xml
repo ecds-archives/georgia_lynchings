@@ -51,6 +51,9 @@ types and options, see:
     <field name="victim" type="text" indexed="true" stored="true"/>
     <field name="min_date" type="string" indexed="true" stored="true"/>
     <field name="max_date" type="string" indexed="true" stored="true"/>
+    <field name="event_type" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="outcome" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="reason" type="text" indexed="true" stored="true" multiValued="true"/>            
     <field name="city" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="triplet_label" type="text" indexed="true" stored="false" multiValued="true"/>
     <!-- MacroEvent participant data -->
@@ -99,6 +102,9 @@ types and options, see:
   <copyField source="uri" dest="text"/>
   <copyField source="label" dest="text"/>
   <copyField source="victim" dest="text"/>
+  <copyField source="event_type" dest="text"/>
+  <copyField source="outcome" dest="text"/>
+  <copyField source="reason" dest="text"/>      
   <copyField source="city" dest="text"/>
   <copyField source="triplet_label" dest="text"/>
   <copyField source="participant_last_name" dest="text"/>

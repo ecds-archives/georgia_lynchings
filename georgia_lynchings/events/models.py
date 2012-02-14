@@ -76,9 +76,13 @@ class MacroEvent(ComplexObject):
             data['min_date'] = datedict['mindate']
             data['max_date'] = datedict['maxdate']
 
+        details = self.get_details()
+        if details:
+            data = dict(data.items() + details.items())            
+
         cities = self.get_cities()
         if cities:
-            data['city'] = cities
+            data['city'] = cities            
 
         data['triplet_label'] = [row['trlabel'] for row in self.get_triplets()]
 

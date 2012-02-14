@@ -280,6 +280,10 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(hose_data['min_date'], '1899-12-04')
         self.assertEqual(hose_data['max_date'], '1899-12-04')
 
+        self.assertEqual(len(hose_data['event_type']), 2)
+        self.assertIn('lynching law creation', hose_data['event_type'])
+        self.assertIn('seeking of a negro', hose_data['event_type'])                                
+
         self.assertEqual(len(hose_data['city']), 1)
         self.assertEqual(hose_data['city'][0], 'palmetto')
 
