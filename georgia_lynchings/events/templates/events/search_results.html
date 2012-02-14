@@ -14,12 +14,7 @@
 
   {% for result in results %}
     <div class='match'>
-      <h2>
-        {% if result.row_id %}
-          <a href="{% url details result.row_id %}">{{ result.victim }}</a>
-        {% else %}
-          {{ result.victim }}
-        {% endif %}
+      <h2><a href="{% url details result.row_id %}">
         lynching
 
         {% if result.city %}
@@ -38,7 +33,7 @@
         {% else %}{% if result.max_date %}
           , {{ result.max_date|slice:":4" }}
         {% endif %}{% endif %}{% endif %}
-      </h2>
+      </a></h2>
       
       <ul class='triplets'>
         {% for triplet in result.triplets|slice:":3" %}
