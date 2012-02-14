@@ -95,15 +95,15 @@ class Details:
         '''Return all the events for this macro event.
         
         :param evdict: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:               
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `event`: the uri of the event associated with this article                  
-                  * `evlabel`: the event label     
-        :rtype: a dictionary of a list of events for this macro event with
-                the following bindings:
-                  * `event`: the uri of the event associated with this article                  
-                  * `evlabel`: the event label
+            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+            It has the following bindings:               
+            * `melabel`: the :class:`MacroEvent` label
+            * `event`: the uri of the event associated with this article                  
+            * `evlabel`: the event label
+        :rtype: a dictionary of a list of events for this macro event 
+            with the following bindings:
+            * `event`: the uri of the event associated with this article                  
+            * `evlabel`: the event label
         '''
         
         results = {}
@@ -120,11 +120,11 @@ class Details:
         '''Return the macro event title.
         
         :param evdict: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:               
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `event`: the uri of the event associated with this article                  
-                  * `evlabel`: the event label
+            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+            It has the following bindings:               
+            * `melabel`: the :class:`MacroEvent` label
+            * `event`: the uri of the event associated with this article                  
+            * `evlabel`: the event label
         :rtype: a string of the title        
         '''
         try:
