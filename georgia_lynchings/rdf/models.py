@@ -5,15 +5,12 @@ against project data.
 >>> from georgia_lynchings.rdf.ns import scxn, ssxn
 >>> class MacroEvent(ComplexObject):
 ...     rdf_type = scxn.Macro_Event
-...     victim = ssxn.Victim_OLD
 ... 
 >>> mac = MacroEvent(12)
 >>> mac.label
 rdflib.term.Literal(u'Coweta')
 >>> unicode(mac.label)
 u'Coweta'
->>> unicode(mac.victim)
-u'Sam Hose'
 '''
 
 from rdflib import URIRef, Variable, BNode, RDF

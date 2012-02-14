@@ -68,10 +68,7 @@ class Details:
         self.update_me_triplets(results) 
         
         # Collect participant information
-        self.update_me_participants(results, ['uparto', 'uparts'])           
-
-        # TODO: change old format of simplex victim to new format complex victims (multiple)
-        results['victim'] = self.me.victim
+        self.update_me_participants(results, ['uparto', 'uparts'])
         
         return results
             

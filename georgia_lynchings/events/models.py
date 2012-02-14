@@ -23,12 +23,7 @@ class MacroEvent(ComplexObject):
     # the RDF data imported from the database setup tables.
 
     rdf_type = scxn.Macro_Event
-    'the URI of the RDF Class describing macro event objects'
-    
-    # simplex fields potentially attached to a MacroEvent
-    
-    victim = ssxn.Victim_OLD # FIXME: data as of 2011-12-26 deprecates, favoring sxcxcxn.Victim
-    'the (old format) victim associated with this macro event'    
+    'the URI of the RDF Class describing macro event objects'     
     
     # complex fields potentially attached to a MacroEvent
     
@@ -40,11 +35,6 @@ class MacroEvent(ComplexObject):
 
     def index_data(self):
         data = super(MacroEvent, self).index_data().copy()
-        
-        # TODO: remove old victim format (single victim, name only)
-        victim = self.victim
-        if victim:
-            data['victim'] = victim        
         
         # victims new format (mutliple victims and assoc. properties)
         data['victim_uri'] = []        

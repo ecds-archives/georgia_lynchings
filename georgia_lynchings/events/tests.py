@@ -54,7 +54,6 @@ class MacroEventTest(EventsAppTest):
 
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
         self.assertEqual('Coweta', macro.label)
-        self.assertEqual('Sam Hose', macro.victim)
 
     def test_get_cities(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
@@ -276,7 +275,6 @@ class MacroEventTest(EventsAppTest):
         hose = MacroEvent(self.SAM_HOSE_MACRO_ID)
         hose_data = hose.index_data()
 
-        self.assertEqual(hose_data['victim'], 'Sam Hose')
         self.assertEqual(hose_data['min_date'], '1899-12-04')
         self.assertEqual(hose_data['max_date'], '1899-12-04')
 
