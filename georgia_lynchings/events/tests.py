@@ -465,7 +465,7 @@ class ViewsTest(EventsAppTest):
         mocksolr.boost_relevancy.return_value = mocksolr
         solr_result = mocksolr.execute.return_value
 
-        json_url = reverse('json-data')
+        json_url = reverse('map-json')
 
         # make sure url returns correctly
         response = self.client.get(json_url)
