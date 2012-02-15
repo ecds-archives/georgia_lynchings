@@ -2,34 +2,9 @@
 This file contains a dictionary of predefined SPARQL queries.
 '''
 
-actors={}
 articles={}
 events={}
 
-actors['events']="""
-    PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-    PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
-
-    SELECT ?actorlabel ?triplet ?role ?trlabel ?event ?evlabel ?macro ?melabel 
-    WHERE {
-      ?actor sxcxcxn:Individual ?individual;
-             dcx:Identifier ?actorlabel.
-      ?participant sxcxcxn:Actor ?actor. 
-      {
-        ?triplet sxcxcxn:Participant_S ?participant. 
-        BIND("subject" as ?role)
-      } UNION {
-        ?triplet sxcxcxn:Participant_O ?participant.  
-        BIND("object" as ?role)
-      } 
-
-      ?triplet dcx:Identifier ?trlabel.
-      ?event sxcxcxn:Semantic_Triplet ?triplet;       
-             dcx:Identifier ?evlabel.
-      ?macro sxcxcxn:Event ?event;          
-             dcx:Identifier ?melabel.      
-    }
-""" 
 articles['all']="""
     prefix dd: <http://galyn.example.com/source_data_files/data_Document.csv#>
     prefix ssxn: <http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
