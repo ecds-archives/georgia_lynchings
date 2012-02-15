@@ -362,30 +362,6 @@ class MacroEvent(ComplexObject):
                              initial_bindings={'macro': self.uri.n3()})                                       
         return resultSet        
 
-def get_events_by_locations():
-    '''Get a list of events along with the location of the event.
-
-    :rtype: a mapping list of the type returned by
-            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-            It has the following bindings:
-
-              * `macro`: the uri of the associated macro event
-              * `melabel`: the macro event label
-              * `event`: the uri of the event associated with this article
-              * `evlabel`: the event label
-              * `city`: a city associated with the event
-              * `county`: a county associated with the event
-              * `state`: a state associated with the event
-
-            The matches are ordered by `city`, `county`, `state`, `evlabel`, and `event`.
-    '''
-    logger.debug("events get_events_by_locations")
-    query=query_bank.events['locations']    
-    ss=SparqlStore()
-    resultSet = ss.query(sparql_query=query)
-    # return the dictionary resultset of the query          
-    return resultSet
-    
 def get_all_macro_events():
     '''Get a list of macro events along with number of linked articles.
 

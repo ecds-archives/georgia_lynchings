@@ -12,8 +12,7 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 from georgia_lynchings.events.models import MacroEvent, \
-        get_events_by_locations, get_all_macro_events, \
-        SemanticTriplet
+    get_all_macro_events, SemanticTriplet
 from georgia_lynchings.forms import SearchForm    
 from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.timemap import Timemap   
@@ -70,13 +69,6 @@ def home(request):
     template = 'index.html'
     return render(request, template, {'search_form': SearchForm()})
 
-def locations(request):
-    '''List all events, ordered by their location.'''
-
-    results = get_events_by_locations()
-    return render(request, 'events/locations.html',
-                  {'results': results})
-                  
 def macro_events(request):
     '''List all macro events, provide article count.'''
 

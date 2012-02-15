@@ -423,7 +423,7 @@ class ViewsTest(EventsAppTest):
         self.assertTrue('form' in response.context)
 
     @patch('sunburnt.SolrInterface')
-    def test_json_data(self, mock_solr_interface):
+    def test_map_json(self, mock_solr_interface):
         mocksolr = MagicMock()
         mock_solr_interface.return_value = mocksolr
         mocksolr.query.return_value = mocksolr
