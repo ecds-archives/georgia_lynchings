@@ -27,7 +27,9 @@
                 bandIntervals: [
                     Timeline.DateTime.MONTH,
                     Timeline.DateTime.DECADE
-                ]
+                ],
+                // may want to adjust this date to get different initial results
+                scrollTo: TimeMap.dateParsers.hybrid("Jul 15 1890")
             });
             
             // filter function for tags
@@ -52,7 +54,6 @@
                 tm.filter('map');
                 tm.filter('timeline');
             });
-            
         });
     </script>
 
