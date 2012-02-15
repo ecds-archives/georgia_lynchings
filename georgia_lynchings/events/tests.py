@@ -36,7 +36,7 @@ class EventsAppTest(TestCase):
 
         self.EVENT_ID = '552'
         self.TRIPLET_ID = '555'
-        self.VICTIM_ID = '135158'        
+        self.VICTIM_ID = '135239'  
 
     def tearDown(self):
         # restore settings
@@ -348,7 +348,36 @@ class SemanticTripletTest(EventsAppTest):
         self.assertTrue(idata['uri'].endswith('#r555'))
         self.assertTrue(idata['complex_type'].endswith('Semantic_Triplet'))
         self.assertTrue(idata['label'].startswith('party (male unknown armed)'))
-        self.assertTrue(idata['macro_event_uri'].endswith('#r1')) 
+        self.assertTrue(idata['macro_event_uri'].endswith('#r1'))
+        
+class VictimTest(EventsAppTest):
+    # some fields on Victim are unused but listed for later reference. for
+    # now test only the ones we actually use
+    def test_basic_rdf_properties(self):
+        victim = Victim(self.VICTIM_ID)
+        self.assertEqual(victim.victim_name, 'Eli Cooper')
+        self.assertEqual(victim.victim_alleged_crime, 'Organizing Black Farmers')
+        self.assertEqual(victim.victim_county_of_lynching, 'Laurens')        
+
+    def test_related_object_properties(self):
+        victim = Victim(self.VICTIM_ID)
+        
+        # macro_event
+        self.assertTrue(isinstance(victim.macro_event, MacroEvent))
+        self.assertEqual(victim.macro_event.id, '108')
+        self.assertEqual(victim.macro_event.label, 'Laurens') 
+        
+    def test_index_data(self):
+        victim = Victim(self.VICTIM_ID)
+        idata = victim.index_data()
+
+        self.assertEqual(idata['row_id'], '135239')
+        self.assertTrue(idata['uri'].endswith('#r135239'))
+        self.assertTrue(idata['complex_type'].endswith('Victim'))
+        self.assertTrue(idata['label'].startswith('Laurens'))
+        self.assertTrue(idata['macro_event_uri'].endswith('#r108'))                
+                
+        
                 
 class ViewsTest(EventsAppTest):
 
