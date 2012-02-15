@@ -56,18 +56,14 @@ def details(request, row_id):
     # Get the details associate with this macro event.
     details = Details(row_id)
     results = details.get()
-
-    # FIXME: this needs to traverse a defined set of macro events
-    pagelink = {}    
-    pagelink['prev']=reverse('details', kwargs={'row_id': (int(row_id) - 1)})
-    pagelink['next']=reverse('details', kwargs={'row_id': (int(row_id) + 1)})   
+  
     if results:   
         title = row_id
         results['articles_link'] = reverse('articles', kwargs={'row_id': row_id})          
     else:   title = "No records found"  
      
     return render(request, 'events/details.html',
-                  {'results': results, 'row_id':row_id, 'title':title, 'pagelink':pagelink})                   
+                  {'results': results, 'row_id':row_id, 'title':title})                   
 
     
 def home(request):

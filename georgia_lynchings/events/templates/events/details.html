@@ -4,8 +4,7 @@
 
 {% block content %}
 {% if results %}
-    <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1>
-    <a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>  
+    <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1> 
     <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
         <tr><th>Macro Event Title:</th><td>{% if results.melabel %}{{ results.melabel }}{% else %}n/a{% endif %}</td></tr>
         {% if results.mindate %}<tr><th>Min Date:</th><td>{{ results.mindate }}</td></tr>{% endif %}
@@ -85,5 +84,4 @@
 {% else %}
 <h1 class="main">Not Found</h1>
 {% endif %}  
-<a href={{ pagelink.prev }}>Prev</a>&nbsp;&nbsp;<a href={{ pagelink.next }}>Next</a>
 {% endblock %}
