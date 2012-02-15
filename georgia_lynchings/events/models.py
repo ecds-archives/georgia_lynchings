@@ -386,33 +386,6 @@ def get_events_by_locations():
     # return the dictionary resultset of the query          
     return resultSet
     
-def get_events_by_times():
-    '''Get a list of events along with the times (date range) of the event.
-
-    :rtype: a mapping list of the type returned by
-            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-            It has the following bindings:
-
-              * `macro`: the uri of the associated macro event
-              * `melabel`: the macro event label
-              * `event`: the uri of the event associated with this article
-              * `evlabel`: the event label
-              * `mindate`: the minimum date of the associated with the event
-              * `maxdate`: the maximum date of the associated with the event
-
-            The matches are ordered by `mindate`.
-    '''
-    logger.debug("events get_events_by_times")
-    query=query_bank.events['date_range']    
-    ss=SparqlStore()
-    resultSet = ss.query(sparql_query=query)
-    # create a link for the macro event articles
-    for result in resultSet:
-        row_id = result['macro'].split('#r')[1]
-        result['macro_link'] = '../%s/articles' % row_id
-    # return the dictionary resultset of the query          
-    return resultSet    
-    
 def get_all_macro_events():
     '''Get a list of macro events along with number of linked articles.
 

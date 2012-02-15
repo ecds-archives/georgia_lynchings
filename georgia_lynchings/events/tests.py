@@ -382,40 +382,6 @@ class ViewsTest(EventsAppTest):
         self.assertEqual(title, articles_response.context['title'][:6], 
             'Expected %s but returned %s for title' % (row_id, articles_response.context['title'][:6]))
  
-    def test_times_url(self):
-        # times_url = '/events/times/'        
-        times_url = reverse('times')       
-        time_response = self.client.get(times_url)       
-        
-        expected, got = 200, time_response.status_code
-        self.assertEqual(expected, got, 'Expected %s status code, got %s' % (expected, got))
-        self.assertGreater(len(time_response.context['results']), 325, 
-            'Expected len is greater than 325 but returned %s for results' % (len(time_response.context['results']))) 
-          
-        # test type of macro event label, should be literal
-        self.assertTrue(isinstance(time_response.context['results'][0]['melabel'], Literal),
-                        'Expected melabel type Literal')
-        # test value of macro event label        
-        expected, got = time_response.context['results'][0]['melabel'][:7], u'Houston'
-        msg = 'Expected macro event label [%s] but returned [%s] for results' % (expected, got)
-        self.assertEqual(expected, got, msg)
-        
-        # test value of mindate format        
-        expected, got = time_response.context['results'][0]['mindate'], u'1879-11-25'
-        msg = 'Expected mindate [%s] but returned [%s] for results' % (expected, got)
-        self.assertEqual(expected, got, msg)
-        msg = 'mindate pattern [%s] does not match yyyy-mm-dd' % (got)
-        pattern = r'1\d\d\d-\d\d-\d\d'
-        self.assertRegexpMatches(got, pattern, msg) 
-        
-        # test value of maxdate format        
-        expected, got = time_response.context['results'][0]['maxdate'], u'1879-11-26'
-        msg = 'Expected maxdate [%s] but returned [%s] for results' % (expected, got)
-        self.assertEqual(expected, got, msg)
-        msg = 'maxdate pattern [%s] does not match yyyy-mm-dd' % (got)
-        pattern = r'1\d\d\d-\d\d-\d\d'
-        self.assertRegexpMatches(got, pattern, msg)
-        
     def test_macro_events_url(self):
         # times_url = '/events/'        
         macro_events_url = reverse('macro_events')       
