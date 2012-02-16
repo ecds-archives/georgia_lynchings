@@ -10,6 +10,8 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/lib/mxn/mxn.js?(googlev3)"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/lib/timeline-1.2.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/timemap.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/json.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/progressive.js"></script>
     <script type="text/javascript">
         {# Might want to find a way to move this into another file #}
         {# if if grows to much #}
@@ -21,9 +23,20 @@
                 mapId: "map",               // Id of map div element (required)
                 timelineId: "timeline",     // Id of timeline div element (required)
                 options: {
-                      eventIconPath: "{{ STATIC_URL }}js/timemap/images/"
+                    eventIconPath: "{{ STATIC_URL }}js/timemap/images/",
                 },
-                datasets: {{ data }},
+                datasets: [{
+                  options: {
+                      id:"event",
+                     title:"Events",
+                     theme:"red",
+                      // Data to be loaded in JSON from a URL
+                      type: "json_string",
+                      url: "{% url map-json %}",
+                      infoTemplate: "<div><b>\{\{title\}\}</b></div><div>Start Date: \{\{min_date\}\}</div><div>Location: \{\{county\}\} County</div><div>Tags: \{\{tags\}\}</div><div><a target='_blank' href='\{\{detail_link\}\}'>more info</a></div>"
+                  }
+
+                }],
                 bandIntervals: [
                     Timeline.DateTime.MONTH,
                     Timeline.DateTime.DECADE
@@ -80,7 +93,6 @@
         {% endfor %}        
         
               
-        {% if data %}
             {# divs for timemap display #}
             <div id="timemap" />
             <div id="timelinecontainer" />
@@ -88,5 +100,4 @@
             <div id="mapcontainer">
             <div id="map"></div>
             </div>
-        {% endif %}
 {% endblock %}

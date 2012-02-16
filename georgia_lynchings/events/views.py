@@ -120,16 +120,15 @@ def search(request):
 filters = ['victim_allegedcrime_brundage']
 
 def timemap(request):
-    '''Send timemap json data created from solr to the timemap template.
+    '''Send list of filters for timemap..
     '''
 
     # Get the json object require for displaying timemap data
-    timemap = Timemap(filters)    
-    jsonResult = timemap.get_json()
+    timemap = Timemap(filters)
+    timemap.get_json()
 
     return render(request, 'events/timemap.html', \
-        {'data' : mark_safe(jsonResult), \
-         'filters' : timemap.filterTags})
+        {'filters' : timemap.filterTags})
 
 def map_json(request):
     '''
@@ -137,8 +136,8 @@ def map_json(request):
     '''
 
     map_data = Timemap(filters)
-    map_json = json.dumps(map_data.get_json(), indent=4)
-    response = HttpResponse(map_json, mimetype='application/json')
+    json_str = json.dumps(map_data.get_json(), indent=4)
+    response = HttpResponse(json_str, mimetype='application/json')
 
     return response
 

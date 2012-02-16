@@ -38,6 +38,8 @@ class Timemap(Mapdata):
             self.filters = filters
 
     def format(self, solr_items):
+        #TODO since now only a list of itmes are being returned
+        #TODO this function may need some cleanup
         ''' Format the solr results into a json structure for timemap.
         
             :param solr_items: solr query result set
@@ -52,16 +54,7 @@ class Timemap(Mapdata):
             self.filterTags[fitem] = {}
 
         # Timemap JSON Result initialization
-        jsonResult = [{"id":"event",
-            "title":"Events",
-            "theme":"red",
-            "type":"basic",
-            "infoTemplate": "<div><b>{{title}}</b></div><div>Start Date: {{start}}</div><div>Location: {{county}} County</div><div>Tags: {{tags}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>",
-            "options":{
-                'infoTemplate': "<div><b>{{title}}</b></div><div>Start Date: {{min_date}}</div><div>Location: {{county}} County</div><div>Tags: {{tags}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>",
-                'items':[]
-            }
-        }] 
+        jsonResult = []
             
         for solr_item in solr_items:
             
@@ -85,7 +78,7 @@ class Timemap(Mapdata):
                 # populated with data. If that changes, we should use this 
                 # date as a backup for when min_date is not defined.            
                 if 'min_date' in solr_item and county in geo_coordinates.countymap:
-                    jsonResult[0]['options']['items'].append(self.create_item(solr_item, county, all_tag_list))
+                    jsonResult.append(self.create_item(solr_item, county, all_tag_list))
                 # Display missing data items
                 elif county not in geo_coordinates.countymap: 
                     logger.info(" Did not add macro event %s because county [%s] not defined in geo_coordinates" % (solr_item['row_id'], county))                    

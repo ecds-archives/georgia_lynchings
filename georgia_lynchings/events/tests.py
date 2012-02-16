@@ -523,15 +523,15 @@ class TimemapTest(TestCase):
         
     def test_timemap_format(self):
         result = self.tmap.format(self.solr_items)
-        self.assertEqual('1896-06-01', result[0]['options']['items'][0]['start']) 
-        self.assertEqual('[]', result[0]['options']['items'][0]['options']['tags'])  
-        self.assertEqual('Debt Dispute', result[0]['options']['items'][0]['title'])
+        self.assertEqual('1896-06-01', result[0]['start'])
+        self.assertEqual('[]', result[0]['options']['tags'])
+        self.assertEqual('Debt Dispute', result[0]['title'])
         
     def test_timemap_format_filters(self):
         result = self.tmapfilter.format(self.solr_items)
-        self.assertEqual('1896-06-01', result[0]['options']['items'][0]['start']) 
-        self.assertEqual('[Assault]', result[0]['options']['items'][0]['options']['tags'])  
-        self.assertEqual('Debt Dispute', result[0]['options']['items'][0]['title'])                             
+        self.assertEqual('1896-06-01', result[0]['start'])
+        self.assertEqual('[Assault]', result[0]['options']['tags'])
+        self.assertEqual('Debt Dispute', result[0]['title'])
         
     def test_timemap_create_item(self):
         result = self.tmap.create_item(self.solr_items[0], 'Muscogee', []) 
