@@ -468,9 +468,6 @@ class Victim(ComplexObject):
 
     rdf_type = scxn.Victim
     'the URI of the RDF Class describing victim objects'
-
-    multiple_results = True
-    'this ComplexObject may have multiple return objects'
     
     # simplex fields potentially attached to a Victim
     # Victim has a name (Brundage)

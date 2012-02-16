@@ -37,7 +37,7 @@ class RdfPropertyField(object):
     :param multiple: If True, this returns a list of result_type.                        
     '''
 
-    def __init__(self, prop, result_type=None, multiple=None):
+    def __init__(self, prop, result_type=None, multiple=False):
         self.prop = prop
         self.result_type = result_type
         self.multiple = multiple
@@ -120,11 +120,14 @@ class ChainedRdfPropertyField(RdfPropertyField):
         self.props = props
         
         # Check if this prop has mulitple results
+        self.multiple = any([getattr(prop, 'multiple', False) for prop in props])  
+        '''      
         for prop in self.props:
             if hasattr(prop, 'multiple') and prop.multiple is True:
                 self.multiple=True
             else:
                 self.multiple=None
+        '''
 
     def add_to_query(self, q, source, target):
         # Given a property chain of p1, p2, p3, we want to add:
