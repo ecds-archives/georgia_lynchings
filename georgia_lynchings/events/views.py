@@ -120,7 +120,7 @@ def search(request):
 filters = ['victim_allegedcrime_brundage']
 
 def timemap(request):
-    '''Send list of filters for timemap..
+    '''Send list of filters generated from :class:`~georgia_lynchings.events.timemap.Timemap`.
     '''
 
     # Get the json object require for displaying timemap data
@@ -128,7 +128,7 @@ def timemap(request):
     timemap.get_json()
 
     return render(request, 'events/timemap.html', \
-        {'filters' : timemap.filterTags})
+        {'filters' : timemap.get_filterTags()})
 
 def map_json(request):
     '''

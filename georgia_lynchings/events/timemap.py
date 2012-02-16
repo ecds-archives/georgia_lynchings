@@ -31,7 +31,6 @@ class Timemap(Mapdata):
         super(Timemap, self).__init__(*args, **kwargs)
         
         # Add filter capabilities
-        self.filterTags = {}        
         if filters is None:
             self.filters = []
         else:
@@ -49,9 +48,6 @@ class Timemap(Mapdata):
         tags and their frequency
         '''
         
-        # Initialize filters for their tags and frequency
-        for fitem in self.filters:
-            self.filterTags[fitem] = {}
 
         # Timemap JSON Result initialization
         jsonResult = []
@@ -64,8 +60,6 @@ class Timemap(Mapdata):
                 # Create a frequency list of unique filter items, default to "Not Available"
                 tag_list = solr_item.get(fitem, ['Not Available'])  
                 for tag in set(tag_list):
-                    self.filterTags[fitem][tag.encode('ascii')] = \
-                        self.filterTags[fitem].get(tag.encode('ascii'), 0) + 1 
                     all_tag_list.append(tag.encode('ascii'))
                 #TODO: for mulitple filters, find a way to distinguish tags w/in a filter
 
@@ -87,13 +81,7 @@ class Timemap(Mapdata):
             except:
                 logger.info(" Timemap format error on macro event [%s]." % solr_item['row_id'])
         
-        if settings.DEBUG:        
-            # This will output the list of filters with their tags and frequency to the log 
-            logger.debug("FILTERS:")       
-            for fitem in self.filters:
-                logger.debug("FILTER TAGS for %s:" % fitem)
-                for w in sorted(self.filterTags[fitem], key=self.filterTags[fitem].get, reverse=True):
-                    logger.debug("%-25s %d" % (w, self.filterTags[fitem][w]))            
+
                               
         return jsonResult
         
@@ -136,3 +124,31 @@ class Timemap(Mapdata):
                         'tags': tag_list.encode('ascii')}
                                                 
         return item
+
+    def get_filterTags(self, solr_items=None):
+        '''
+        Returns dict containing name and count of tags that timemap data can be filtered on.
+
+        :param solr_items: (Optional) solr query result set
+        '''
+
+        filterTags = {}
+
+        for fitem in self.filters:
+            filterTags[fitem] = {}
+
+        if solr_items == None:
+            solr_items = self.get_solr_data()
+        
+        # Initialize filters for their tags and frequency
+        for solr_item in solr_items:
+            # For each filter item create a dict with key=tags value=freq
+            for fitem in self.filters:
+                   # Create a frequency list of unique filter items, default to "Not Available"
+                   tag_list = solr_item.get(fitem, ['Not Available'])
+                   for tag in set(tag_list):
+                       filterTags[fitem][tag.encode('ascii')] = \
+                       filterTags[fitem].get(tag.encode('ascii'), 0) + 1
+                       #TODO: for mulitple filters, find a way to distinguish tags w/in a filter
+
+        return filterTags

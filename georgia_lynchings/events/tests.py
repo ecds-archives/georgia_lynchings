@@ -545,3 +545,6 @@ class TimemapTest(TestCase):
         self.assertEqual('[Assault]', result['options']['tags'])  
         self.assertEqual('Debt Dispute', result['title']) 
 
+    def test_timemap_get_filterTags(self):
+        results = self.tmapfilter.get_filterTags(self.solr_items)
+        self.assertEqual(2, results['victim_allegedcrime_brundage']['Assault'])
