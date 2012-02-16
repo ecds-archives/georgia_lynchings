@@ -27,7 +27,8 @@ class EventsAppTest(TestCase):
         
         # some handy fixtures from test data
         self.NONEXISTENT_MACRO_ID = '0'
-        self.CRISP_MACRO_ID = '3'           
+        self.CRISP_MACRO_ID = '3' 
+        self.PULASKI_MACRO_ID = '10'                  
         self.SAM_HOSE_MACRO_ID = '12'
         self.MERIWETHER_MACRO_ID = '25'        
         self.BROOKS_MACRO_ID = '57'        
@@ -36,7 +37,11 @@ class EventsAppTest(TestCase):
 
         self.EVENT_ID = '552'
         self.TRIPLET_ID = '555'
-        self.VICTIM_ID = '135239'  
+        
+        self.VICTIM_E_COOPER_ID = '135239'   # Eli Cooper
+        self.VICTIM_JH_PINKNEY_ID = '135165' # John Henry Pinkney
+        self.VICTIM_J_BUCHAN_ID = '136088'   # Jerry Buchan
+        self.VICTIM_C_ROBERSON_ID = '136089' # Curry Roberson      
 
     def tearDown(self):
         # restore settings
@@ -354,13 +359,13 @@ class VictimTest(EventsAppTest):
     # some fields on Victim are unused but listed for later reference. for
     # now test only the ones we actually use
     def test_basic_rdf_properties(self):
-        victim = Victim(self.VICTIM_ID)
+        victim = Victim(self.VICTIM_E_COOPER_ID)
         self.assertEqual(victim.victim_name, 'Eli Cooper')
         self.assertEqual(victim.victim_alleged_crime, 'Organizing Black Farmers')
         self.assertEqual(victim.victim_county_of_lynching, 'Laurens')        
 
     def test_related_object_properties(self):
-        victim = Victim(self.VICTIM_ID)
+        victim = Victim(self.VICTIM_E_COOPER_ID)
         
         # macro_event
         self.assertTrue(isinstance(victim.macro_event, MacroEvent))
@@ -368,16 +373,28 @@ class VictimTest(EventsAppTest):
         self.assertEqual(victim.macro_event.label, 'Laurens') 
         
     def test_index_data(self):
-        victim = Victim(self.VICTIM_ID)
+        victim = Victim(self.VICTIM_E_COOPER_ID)
         idata = victim.index_data()
 
         self.assertEqual(idata['row_id'], '135239')
         self.assertTrue(idata['uri'].endswith('#r135239'))
         self.assertTrue(idata['complex_type'].endswith('Victim'))
         self.assertTrue(idata['label'].startswith('Laurens'))
-        self.assertTrue(idata['macro_event_uri'].endswith('#r108'))                
-                
-        
+        self.assertTrue(idata['macro_event_uri'].endswith('#r108'))
+
+    def test_macro_event_victims(self):
+        # This macro event has 3 victims        
+        victim1 = Victim(self.VICTIM_JH_PINKNEY_ID)
+        self.assertEqual(victim1.victim_name, 'John Henry Pinkney')
+        victim2 = Victim(self.VICTIM_J_BUCHAN_ID)
+        self.assertEqual(victim2.victim_name, 'Jerry Buchan')
+        victim3 = Victim(self.VICTIM_C_ROBERSON_ID)
+        self.assertEqual(victim3.victim_name, 'Curry Roberson')
+
+        macro = MacroEvent(self.PULASKI_MACRO_ID)
+        self.assertEqual(victim1.id, macro.victims[0].id)
+        self.assertEqual(victim2.id, macro.victims[1].id)
+        self.assertEqual(victim3.id, macro.victims[2].id)                        
                 
 class ViewsTest(EventsAppTest):
 

@@ -34,34 +34,36 @@ class RdfPropertyField(object):
                         constructor. If unspecified, no such wrapping will
                         occur, and the property will return the RDF node
                         itself.
+    :param multiple: If True, this returns a list of result_type.                        
     '''
 
-    def __init__(self, prop, result_type=None):
+    def __init__(self, prop, result_type=None, multiple=None):
         self.prop = prop
         self.result_type = result_type
+        self.multiple = multiple
 
     def __get__(self, obj, owner):
         # per convention, return self when evaluated on the class
         if obj is None:
             return self
-
+            
         # generate a sparql query for the data we want
         q = SelectQuery(results=['result'])
         if hasattr(obj, 'rdf_type'):
             q.append((Variable('obj'), RDF.type, obj.rdf_type))
         self.add_to_query(q, Variable('obj'), Variable('result'))
-        
+
         # ask the default SparqlStore for that data
         store = SparqlStore()
         bindings = store.query(sparql_query=unicode(q),
                                initial_bindings={'obj': obj.uri.n3()})
-
         # and interpret and return the results
         if bindings:
-            # FIXME: for now assume one row and a literal value. can't
-            # assume these for long.
-            result = bindings[0]['result']
-            return self.wrap_result(result)
+            if self.multiple:                
+                return([self.wrap_result(b['result']) for b in bindings])
+            else:
+                result = bindings[0]['result']
+                return self.wrap_result(result)
         # else None
 
     def add_to_query(self, q, source, target):
@@ -116,6 +118,13 @@ class ChainedRdfPropertyField(RdfPropertyField):
 
     def __init__(self, *props):
         self.props = props
+        
+        # Check if this prop has mulitple results
+        for prop in self.props:
+            if hasattr(prop, 'multiple') and prop.multiple is True:
+                self.multiple=True
+            else:
+                self.multiple=None
 
     def add_to_query(self, q, source, target):
         # Given a property chain of p1, p2, p3, we want to add:

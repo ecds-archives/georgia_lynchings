@@ -197,6 +197,14 @@ class ComplexObjectTest(TestCase):
                                           result_type=int)
         self.SampleThingie = SampleThingie
         self.thingie = SampleThingie(42)
+        
+        class SampleMutlipleThing(ComplexObject):
+            # a ComplexObject without an rdf_type
+            data = self.sample.data
+            typed_data = RdfPropertyField(self.sample.typed_data,
+                                          multiple=True)
+        self.SampleMutlipleThing = SampleMutlipleThing
+        self.thingies = SampleMutlipleThing(42)        
 
         class SampleWidget(ComplexObject):
             # a ComplexObject with an rdf_type
@@ -304,3 +312,10 @@ class ComplexObjectTest(TestCase):
         
         typed_data = self.thingie.typed_data
         self.assertEqual(typed_data, 14)
+        
+    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    def test_property_multiple_results(self, MockStore):
+        mock_query = MockStore.return_value.query
+        mock_query.return_value = [{'result': ['14']},{'result': ['41']}]       
+        typed_data = self.thingies.typed_data
+        self.assertIn('14', typed_data[0])        

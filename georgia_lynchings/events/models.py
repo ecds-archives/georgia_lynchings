@@ -2,7 +2,8 @@ from collections import defaultdict
 from rdflib import Variable
 from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject, \
-    ReversedRdfPropertyField, ChainedRdfPropertyField
+    ReversedRdfPropertyField, ChainedRdfPropertyField, \
+    RdfPropertyField
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
@@ -30,7 +31,7 @@ class MacroEvent(ComplexObject):
     events = sxcxcxn.Event
     'the events associated with this macro event'
     
-    victims = sxcxcxn.Victim
+    victims = RdfPropertyField(sxcxcxn.Victim, multiple=True)
     'the (new format) victims associated with this macro event'
 
     def index_data(self):
@@ -468,6 +469,13 @@ class Victim(ComplexObject):
     rdf_type = scxn.Victim
     'the URI of the RDF Class describing victim objects'
 
+    multiple_results = True
+    'this ComplexObject may have multiple return objects'
+    
+    # simplex fields potentially attached to a Victim
+    # Victim has a name (Brundage)
+    victim_uri = sxcxcxn.Victim
+    
     # simplex fields potentially attached to a Victim
     # Victim has a name (Brundage)
     victim_name = ssxn.Name_of_victim_Brundage
