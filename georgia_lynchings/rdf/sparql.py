@@ -31,6 +31,7 @@ class SelectQuery(object):
         self.result_variables = [ self._massage_into_variable(res)
                                   for res in results ]
         self.patterns = []
+        self.optionalgraphs = []         
 
     def _massage_into_variable(self, var):
         '''Wrap a single object in a :class:`rdflib.Variable` object if it
@@ -67,7 +68,12 @@ class SelectQuery(object):
         line_break = u'\n' if pretty else u' '
 
         result_variables = self._result_variables_as_sparql()
-        graph_pattern = self._patterns_as_sparql(pretty=pretty)
+        graph_pattern = self._patterns_as_sparql()
+        
+        # Add optional graphs
+        for optgraph in self.optionalgraphs:
+            graph_pattern += self._add_optional_graph(optgraph)
+                    
         return u'SELECT %s%sWHERE {%s%s%s}' % (
             result_variables, line_break,
             line_break, graph_pattern, line_break)
@@ -84,11 +90,16 @@ class SelectQuery(object):
     def _patterns_as_sparql(self, pretty=False):
         'Encode the query main graph pattern.'
 
-        stmt_indent = u'  ' if pretty else u''
-        stmt_break = u'\n' if pretty else u' '
+        patterns = [ unicode(pat) for pat in self.patterns ]
+        return u' '.join(patterns)
 
-        patterns = [ stmt_indent + unicode(pat) for pat in self.patterns ]
-        return stmt_break.join(patterns)
+    def _add_optional_graph(self, optgraph, pretty=False):
+        'Encode the query main graph pattern.'   
+        
+        pattern_list = [ unicode(pat) for pat in optgraph.patterns ]
+        all_patterns = u' '.join(pattern_list) 
+        optional_graph = u' OPTIONAL {%s%s%s}' % (u' ', all_patterns, u' ')      
+        return optional_graph          
 
     def append(self, pattern):
         '''Append a single triple to the query graph.
@@ -99,7 +110,10 @@ class SelectQuery(object):
                         :class:`rdflib.Variable`, or else it must provide a
                         compatible ``n3()`` method.
         '''
-        self.patterns.append(self._massage_into_triple(pattern))
+        if isinstance(pattern, OptionalGraph):
+            self.optionalgraphs.append(pattern)
+        else:
+            self.patterns.append(self._massage_into_triple(pattern))
 
 
 class Triple(object):
@@ -114,3 +128,19 @@ class Triple(object):
 
     def __str__(self):
         return self.__unicode__().encode()
+        
+class OptionalGraph(SelectQuery):
+    '''An optional graph of patterns in a :class:`SelectQuery`.
+    
+    :param singlepattern: if a single pattern is being added,
+            then it can be set here for simplicity. 
+    '''
+
+    def __init__(self, singlepattern=None):
+        
+        # List of patterns for OptionalGraph
+        self.patterns = []
+        
+        # A single pattern maybe appended when this object is instantiated.
+        if singlepattern:
+            self.append(singlepattern)

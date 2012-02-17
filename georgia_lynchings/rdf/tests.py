@@ -7,7 +7,7 @@ from django.test import TestCase
 from mock import patch
 from rdflib import URIRef, Literal, Namespace, BNode, Variable, RDF, RDFS
 
-from georgia_lynchings.rdf.sparql import SelectQuery
+from georgia_lynchings.rdf.sparql import SelectQuery, OptionalGraph
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
 from georgia_lynchings.rdf.management.commands import run_sparql_query
 from georgia_lynchings.rdf.models import ComplexObject, RdfPropertyField, \
@@ -179,6 +179,36 @@ class SelectQueryTest(TestCase):
         q = SelectQuery(results=['s', 'p', 'o'])
         q.append((Variable('s'), Variable('p'), Variable('o')))
         self.assertEqual(unicode(q), 'SELECT ?s ?p ?o WHERE { ?s ?p ?o . }')
+        
+class OptionalGraphTest(TestCase):
+
+    def test_OptionalGraph(self):
+        optionalgraph = OptionalGraph()
+        
+        # instance of Select Query
+        self.assertTrue(isinstance(optionalgraph, SelectQuery))
+        
+        # Optional statement singlepattern
+        q = SelectQuery(results=['s', 'p', 'o'])
+        q.append((Variable('s'), Variable('p'), Variable('o')))
+        q.append(OptionalGraph((Variable('a'), Variable('b'), Variable('c'))))  
+        quni = 'SELECT ?s ?p ?o WHERE { ?s ?p ?o . OPTIONAL { ?a ?b ?c . } }'  
+        self.assertEqual(unicode(q), quni) 
+        
+        # Optional statement with multiple patterns
+        q = SelectQuery(results=['s', 'p', 'o'])
+        q.append((Variable('s'), Variable('p'), Variable('o')))
+        # optional graph pattern 1
+        optgraph = OptionalGraph()
+        optgraph.append((Variable('a'), Variable('b'), Variable('c')))
+        q.append(optgraph)
+        # optional graph pattern 2        
+        optgraph = OptionalGraph()
+        optgraph.append((Variable('d'), Variable('e'), Variable('f')))
+        q.append(optgraph)   
+             
+        quni = 'SELECT ?s ?p ?o WHERE { ?s ?p ?o . OPTIONAL { ?a ?b ?c . } OPTIONAL { ?d ?e ?f . } }'  
+        self.assertEqual(unicode(q), quni)              
 
 
 class ComplexObjectTest(TestCase):
