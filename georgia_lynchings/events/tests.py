@@ -438,7 +438,11 @@ class ViewsTest(EventsAppTest):
             'Expected len 4 but returned %s for resultSet' % (len(articles_response.context['resultSet'])))
         self.assertEqual(title, articles_response.context['title'][:6], 
             'Expected %s but returned %s for title' % (row_id, articles_response.context['title'][:6]))
- 
+
+
+        for article in articles_response.context['resultSet']:
+            self.assertTrue('\\' not in article['docpath_link'])
+
     def test_macro_events_url(self):
         # times_url = '/events/'        
         macro_events_url = reverse('macro_events')       

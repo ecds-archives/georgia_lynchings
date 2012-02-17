@@ -139,6 +139,7 @@ width: 500px;
 margin: 1px;
 cursor: pointer;
 position: relative;
+text-decoration: underline;
 }
 
 .triplet_rest {

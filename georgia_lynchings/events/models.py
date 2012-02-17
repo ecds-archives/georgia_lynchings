@@ -1,5 +1,6 @@
 from collections import defaultdict
 from rdflib import Variable
+from urllib import quote
 from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, \
@@ -109,9 +110,12 @@ class MacroEvent(ComplexObject):
     # hope in time to be able to generate these queries from the RDF
     # properties above.
 
-    def get_articles(self):
+    #TODO: consider moving the PDF documents to /static/documents so that it can work with runserver and apache
+    def get_articles(self, clean=True):
         '''Get all articles associated with this macro event, along with the
         particular events that the articles are attached to.
+
+        :param clean: when True(default) will modify docpath and add docpath_link to make results more html friendly.
 
         :rtype: a mapping list of the type returned by
                 :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
@@ -121,7 +125,9 @@ class MacroEvent(ComplexObject):
                   * `event`: the uri of the event associated with this article
                   * `evlabel`: the event label
                   * `dd`: the uri of the article
-                  * `docpath`: a relative path to the document data
+                  * `docpath`: a relative path to the document data, if clean=True it is changed to the filename only
+                  * `docpath_link`:  only present when clean=True, relative path to the document that is quoted and
+                    all back slashes have been changed to forward slashes
 
                 The matches are ordered by `event` and `docpath`.
         '''
@@ -130,7 +136,15 @@ class MacroEvent(ComplexObject):
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query, 
                              initial_bindings={'macro': self.uri.n3()})
-        # return the dictionary resultset of the query          
+        # return the dictionary resultset of the query
+
+        if clean:
+            for result in resultSet:
+                # Clean up data, add "n/a" if value does not exist
+                if 'docpath' in result.keys():
+                    # TODO find a better way to do this
+                    result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
+                    result['docpath'] = result['docpath'][10:]
         return resultSet
         
     def get_cities(self):

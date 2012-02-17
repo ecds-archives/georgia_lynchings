@@ -10,7 +10,13 @@
         {% if results.mindate %}<tr><th>Min Date:</th><td>{{ results.mindate }}</td></tr>{% endif %}
         {% if results.maxdate %}<tr><th>Max Date:</th><td>{{ results.maxdate }}</td></tr>{% endif %}
         {% if results.location %}<tr><th>Cities:</th><td>{{ results.location|join:" ; " }}</td></tr>{% endif %}
-        {% if results.articleTotal > 0 %}<tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>{% endif %}
+        {% if results.articleTotal > 0 %}<tr><th>Articles:</th><td>
+             <div>
+                <div class="more">View {{ results.articleTotal }} Article{{ results.articleTotal|pluralize }}</div>
+                <div class="triplet_rest">
+                    {% include "events/snippets/articles_by_macro_event.html" %}
+                </div>
+            </div></td></tr>{% endif %}
         {% if results.event_type %}<tr><th>Type of Event:</th><td>{{ results.event_type|join:" ; " }}</td></tr>{% endif %}  
         {% if results.reason %}<tr><th>Reason:</th><td>{{ results.reason|join:" ; " }}</td></tr>{% endif %}
         {% if results.outcome %}<tr><th>Outcome:</th><td>{{ results.outcome|join:" ; " }}</td></tr>{% endif %}
@@ -27,7 +33,7 @@
                     {% if event.triplet_first %}
                     &bull;&nbsp;{{ event.triplet_first }}
                     <div class="layer1">
-                    <div class="more">. . .</div>
+                    <div class="more">view more</div>
                     <div class="triplet_rest">
                       {% for triple in event.triplet_rest %}  
                         &bull;&nbsp;{{ triple }}<br/>&nbsp;<br/>

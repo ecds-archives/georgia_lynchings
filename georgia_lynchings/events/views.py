@@ -33,13 +33,7 @@ def articles(request, row_id):
     if resultSet:      
         title = resultSet[0]['melabel']
         # create a link for the macro event articles
-        for result in resultSet:
-            # Clean up data, add "n/a" if value does not exist
-            if 'docpath' in result.keys(): 
-                # FIXME: find a better way to do this
-                result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
-                result['docpath'] = result['docpath'][10:] 
-    else:   title = "No records found" 
+    else:   title = "No records found"
     return render(request, 'events/articles.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title})
                   
@@ -55,14 +49,18 @@ def details(request, row_id):
     # Get the details associate with this macro event.
     details = Details(row_id)
     results = details.get()
-  
-    if results:   
+
+    #Article data
+    event = MacroEvent(row_id)
+    article_data = event.get_articles()
+
+    if results:
         title = row_id
         results['articles_link'] = reverse('articles', kwargs={'row_id': row_id})          
     else:   title = "No records found"  
      
     return render(request, 'events/details.html',
-                  {'results': results, 'row_id':row_id, 'title':title})                   
+                  {'results': results, 'row_id':row_id, 'title':title, 'article_data':article_data})
 
     
 def home(request):
