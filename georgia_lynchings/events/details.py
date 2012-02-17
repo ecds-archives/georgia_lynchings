@@ -63,6 +63,9 @@ class Details:
 
         # Set the city location(s)    
         results['location'] = self.me.get_cities()
+        
+        # Collect victim information for each event.
+        self.update_me_victims(results)        
                 
         # Collect semantic triplets for each event.
         self.update_me_triplets(results) 
@@ -176,4 +179,25 @@ class Details:
                     event['triplet_first'] = tripletResultSet[event['evlabel']][0]
                     event['triplet_rest'] = tripletResultSet[event['evlabel']][1:]
                     
-           
+    def update_me_victims(self, detailDict):
+        '''Update the results with victim information for this macro event.
+        :param detailDict: a dictionary of the details           
+        '''
+        victimResultSet = self.me.get_victim_data()
+        if victimResultSet:
+            detailDict['victims'] = []            
+            for vic in victimResultSet:
+                vicdict = {}
+                vicdict['name'] = vic.get('vname_brdg', None)
+                vicdict['county'] = vic.get('vcounty_brdg', None)
+                vicdict['alleged_crime'] = vic.get('vallegedcrime_brdg', None)
+                vicdict['lynching_date'] = vic.get('vlydate_brdg', None)
+                vicdict['race'] = vic.get('vrace_brdg', None)
+                if vicdict:
+                    try:
+                        detailDict['victims'].append(vicdict)
+                    except KeyError:
+                        detailDict['victims']= [vicdict]                          
+                    except Exception, err:
+                        logger.debug("victim is not found in this macro event %s; Error: %s" % (self.row_id, str(err)))
+                        return None     
