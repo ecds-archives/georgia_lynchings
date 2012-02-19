@@ -6,14 +6,14 @@
 {% if results %}
     <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1> 
     <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
-        <tr><th>Macro Event Title:</th><td>{% if results.melabel %}{{ results.melabel }}{% else %}n/a{% endif %}</td></tr>
+        {% if results.melabel %}<tr><th>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>{% endif %}
         {% if results.mindate %}<tr><th>Min Date:</th><td>{{ results.mindate }}</td></tr>{% endif %}
         {% if results.maxdate %}<tr><th>Max Date:</th><td>{{ results.maxdate }}</td></tr>{% endif %}
-        <tr><th>Cities:</th><td>{% if results.location %}{{ results.location|join:" ; " }}{% else %}n/a{% endif %}</td></tr>
-        <tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>
-        <tr><th>Type of Event:</th><td>{% if results.event_type %}{{ results.event_type|join:" ; " }}{% else %}n/a{% endif %}</td></tr>        
-        <tr><th>Reason:</th><td>{% if results.reason %}{{ results.reason|join:" ; " }}{% else %}n/a{% endif %}</td></tr>  
-        <tr><th>Outcome:</th><td>{% if results.outcome %}{{ results.outcome|join:" ; " }}{% else %}n/a{% endif %}</td></tr>
+        {% if results.location %}<tr><th>Cities:</th><td>{{ results.location|join:" ; " }}</td></tr>{% endif %}
+        {% if results.articleTotal > 0 %}<tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>{% endif %}
+        {% if results.event_type %}<tr><th>Type of Event:</th><td>{{ results.event_type|join:" ; " }}</td></tr>{% endif %}  
+        {% if results.reason %}<tr><th>Reason:</th><td>{{ results.reason|join:" ; " }}</td></tr>{% endif %}
+        {% if results.outcome %}tr><th>Outcome:</th><td>{{ results.outcome|join:" ; " }}</td></tr>{% endif %}
         {% if results.events %}
             {% for event in results.events %} 
               <tr>

@@ -39,12 +39,18 @@ class Details:
         eventsResultSet = self.me.get_events()
         
         # If no events exist for this macro event, then return immediately
-        if not eventsResultSet:
-            return None
+        #if not eventsResultSet:
+        #    return None
 
         # Load all the events for this macro event
         results = self.get_me_events(eventsResultSet)
-                    
+                
+        # Collect semantic triplets for each event.
+        self.update_me_triplets(results) 
+        
+        # Collect participant information
+        self.update_me_participants(results, ['uparto', 'uparts'])
+        
         # Set the title for the macro event
         results['melabel'] = self.get_me_title(eventsResultSet)
 
@@ -64,14 +70,8 @@ class Details:
         # Set the city location(s)    
         results['location'] = self.me.get_cities()
         
-        # Collect victim information for each event.
-        self.update_me_victims(results)        
-                
-        # Collect semantic triplets for each event.
-        self.update_me_triplets(results) 
-        
-        # Collect participant information
-        self.update_me_participants(results, ['uparto', 'uparts'])
+        # Collect victim information.
+        self.update_me_victims(results)         
         
         return results
             
