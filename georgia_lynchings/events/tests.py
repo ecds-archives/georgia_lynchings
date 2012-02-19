@@ -153,7 +153,6 @@ class MacroEventTest(EventsAppTest):
         expected = 'mob hung (violence against people 7/2/1909 senatobia) negro (steven veasey male)'
         got = results['events'][0]['triplet_first']
         self.assertEqual(expected, got, 'Expected %s triplet, got %s' % (expected, got))        
-            
 
         # Test participant-o for BROOKS dcx:r57 macro event 
         # parto age
@@ -173,8 +172,19 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got))
         # parts role
         expected, got = 'sister', result['events'][0]['uparts'][1]['role']
-        self.assertEqual(expected, got, 'Expected %s role, got %s' % (expected, got))                                
-            
+        self.assertEqual(expected, got, 'Expected %s role, got %s' % (expected, got))
+        
+        # test get_me_victims
+        results = details.get_me_victims()
+        got, expected = results['victims'][0]['alleged_crime'], 'Attempted Theft'
+        self.assertEqual(expected, got, 'Expected %s victim alleged crime, got %s' % (expected, got))  
+        got, expected = results['victims'][0]['name'], 'Henry Isaac'
+        self.assertEqual(expected, got, 'Expected %s victim name, got %s' % (expected, got)) 
+        got, expected = results['victims'][0]['county'], 'Brooks'
+        self.assertEqual(expected, got, 'Expected %s victim county, got %s' % (expected, got))
+        got, expected = results['victims'][0]['lynching_date'], '1909-07-02'
+        self.assertEqual(expected, got, 'Expected %s victim lynching date, got %s' % (expected, got))                                                         
+  
         details = Details(self.MERIWETHER_MACRO_ID)
         result = details.get()
         event_list, item = result['event_type'], 'murder'

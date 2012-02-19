@@ -13,7 +13,7 @@
         {% if results.articleTotal > 0 %}<tr><th>Articles:</th><td><a href={{ results.articles_link }}>{{ results.articleTotal }}</a></td></tr>{% endif %}
         {% if results.event_type %}<tr><th>Type of Event:</th><td>{{ results.event_type|join:" ; " }}</td></tr>{% endif %}  
         {% if results.reason %}<tr><th>Reason:</th><td>{{ results.reason|join:" ; " }}</td></tr>{% endif %}
-        {% if results.outcome %}tr><th>Outcome:</th><td>{{ results.outcome|join:" ; " }}</td></tr>{% endif %}
+        {% if results.outcome %}<tr><th>Outcome:</th><td>{{ results.outcome|join:" ; " }}</td></tr>{% endif %}
         {% if results.events %}
             {% for event in results.events %} 
               <tr>

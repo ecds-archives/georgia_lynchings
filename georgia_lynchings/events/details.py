@@ -35,22 +35,25 @@ class Details:
         '''
         results = {}
         
-        # get all the events associated with the macro event      
+        # Get victim information.
+        results = self.get_me_victims()
+                
+        # Get all the events associated with the macro event      
         eventsResultSet = self.me.get_events()
         
-        # If no events exist for this macro event, then return immediately
-        #if not eventsResultSet:
-        #    return None
+        # If no events or victims exist for this macro event, then return
+        if not eventsResultSet and results is None:
+            return None         
 
         # Load all the events for this macro event
-        results = self.get_me_events(eventsResultSet)
-                
+        results = dict(results.items() + self.get_me_events(eventsResultSet).items())
+
         # Collect semantic triplets for each event.
         self.update_me_triplets(results) 
-        
+
         # Collect participant information
         self.update_me_participants(results, ['uparto', 'uparts'])
-        
+
         # Set the title for the macro event
         results['melabel'] = self.get_me_title(eventsResultSet)
 
@@ -69,9 +72,6 @@ class Details:
 
         # Set the city location(s)    
         results['location'] = self.me.get_cities()
-        
-        # Collect victim information.
-        self.update_me_victims(results)         
         
         return results
             
@@ -152,52 +152,59 @@ class Details:
         '''      
         for p in parts:
             partResultSet = self.me.get_statement_data(p)
-            if partResultSet:
-                for part in partResultSet:
-                    for event in detailDict['events']:
-                        partdict = {}
-                        # if the events match, then add participant info                
-                        if event['event'] == part['event']:
-                            partdict['name'] = self.get_name(part.get('fname', None),part.get('lname', None))
-                            partdict['age'] = part.get('qualitative_age', None)
-                            partdict['race'] = part.get('race', None)
-                            partdict['gender'] = part.get('gender', None)
-                            partdict['role'] = part.get('name_of_indivd_actor', None)
-                            partdict['age'] = part.get('qualitative_age', None)
-                        if partdict:
-                            if p in event.keys(): event[p].append(partdict)
-                            else: event[p]= [partdict]                         
+            
+            if not partResultSet:
+                return None
+            for part in partResultSet:
+                for event in detailDict['events']:
+                    partdict = {}
+                    # if the events match, then add participant info                
+                    if event['event'] == part['event']:
+                        partdict['name'] = self.get_name(part.get('fname', None),part.get('lname', None))
+                        partdict['age'] = part.get('qualitative_age', None)
+                        partdict['race'] = part.get('race', None)
+                        partdict['gender'] = part.get('gender', None)
+                        partdict['role'] = part.get('name_of_indivd_actor', None)
+                        partdict['age'] = part.get('qualitative_age', None)
+                    if partdict:
+                        if p in event.keys(): event[p].append(partdict)
+                        else: event[p]= [partdict]                         
             
     def update_me_triplets(self, detailDict):   
         '''Update the triplets for this macro event in the details dictionary.
         :param detailDict: a dictionary of the details   
         '''
-        tripletResultSet = self.me.get_triplets_by_event()                           
-        if tripletResultSet:       
-            for event in detailDict['events']:
-                if tripletResultSet[event['evlabel']]:
-                    event['triplet_first'] = tripletResultSet[event['evlabel']][0]
-                    event['triplet_rest'] = tripletResultSet[event['evlabel']][1:]
+        tripletResultSet = self.me.get_triplets_by_event()
+        if not tripletResultSet:
+            return None                               
+        for event in detailDict['events']:
+            if tripletResultSet[event['evlabel']]:
+                event['triplet_first'] = tripletResultSet[event['evlabel']][0]
+                event['triplet_rest'] = tripletResultSet[event['evlabel']][1:]
                     
-    def update_me_victims(self, detailDict):
+    def get_me_victims(self):
         '''Update the results with victim information for this macro event.
         :param detailDict: a dictionary of the details           
         '''
         victimResultSet = self.me.get_victim_data()
-        if victimResultSet:
-            detailDict['victims'] = []            
-            for vic in victimResultSet:
-                vicdict = {}
-                vicdict['name'] = vic.get('vname_brdg', None)
-                vicdict['county'] = vic.get('vcounty_brdg', None)
-                vicdict['alleged_crime'] = vic.get('vallegedcrime_brdg', None)
-                vicdict['lynching_date'] = vic.get('vlydate_brdg', None)
-                vicdict['race'] = vic.get('vrace_brdg', None)
-                if vicdict:
-                    try:
-                        detailDict['victims'].append(vicdict)
-                    except KeyError:
-                        detailDict['victims']= [vicdict]                          
-                    except Exception, err:
-                        logger.debug("victim is not found in this macro event %s; Error: %s" % (self.row_id, str(err)))
-                        return None     
+        if not victimResultSet:
+            return None
+            
+        results = {}
+        results['victims'] = []            
+        for vic in victimResultSet:
+            vicdict = {}
+            vicdict['name'] = vic.get('vname_brdg', None)
+            vicdict['county'] = vic.get('vcounty_brdg', None)
+            vicdict['alleged_crime'] = vic.get('vallegedcrime_brdg', None)
+            vicdict['lynching_date'] = vic.get('vlydate_brdg', None)
+            vicdict['race'] = vic.get('vrace_brdg', None)
+            if vicdict:
+                try:
+                    results['victims'].append(vicdict)
+                except KeyError:
+                    results['victims']= [vicdict]                          
+                except Exception, err:
+                    logger.debug("victim is not found in this macro event %s; Error: %s" % (self.row_id, str(err)))
+                    return None
+        return results
