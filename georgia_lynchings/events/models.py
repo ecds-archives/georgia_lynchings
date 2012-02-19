@@ -5,7 +5,7 @@ from georgia_lynchings.rdf.models import ComplexObject, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, \
     RdfPropertyField
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn
-from georgia_lynchings.rdf.sparql import SelectQuery
+from georgia_lynchings.rdf.sparql import SelectQuery, OptionalGraph
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 import logging
 from pprint import pprint
@@ -345,7 +345,7 @@ class MacroEvent(ComplexObject):
         '''Get the victim data related to this macro event.
 
         :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+                :meth:`~georgia_lynchings.rdf.sparqlstore.SparqlStore.query`.
                 It returns one row per victim associated with this Macro
                 Event, with the following bindings:              
                   * `vname_brdg`: the (Brundage) name of the Victim
@@ -354,13 +354,11 @@ class MacroEvent(ComplexObject):
                   * `vlydate_brdg`: the (Brundage) lynching date of the Victim
                   * `vrace_brdg`: the (Brundage) race of the Victim                                                                       
                   * `victim`: the URI of the Victim
-                  * `vlabel`: the label of that Victim
-                  * `melabel`: the label of this Macro Event
+                  * `macro`: the URI of this Macro Event
         '''
-        query=query_bank.events['victims']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                                       
+        store = SparqlStore()
+        resultSet = store.query(sparql_query=get_victim_query(), 
+                             initial_bindings={'macro': self.uri.n3()})
         return resultSet        
 
 def get_all_macro_events():
@@ -386,6 +384,27 @@ def get_all_macro_events():
         result['articles_link'] = '%s/articles' % row_id
     # return the dictionary resultset of the query          
     return resultSet
+    
+def get_victim_query():
+    '''Get the query to retrieve victim information.
+
+    :rtype: a unicode string of the SPARQL query
+
+    '''
+    q = SelectQuery(results=['macro', 'victim', 'vname_brdg', \
+        'vlydate_brdg', 'vcounty_brdg', 'vallegedcrime_brdg'])
+    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))         
+    q.append(OptionalGraph((Variable('victim'), \
+        ssxn.Date_of_lynching_Brundage, Variable('vlydate_brdg'))))
+    q.append(OptionalGraph((Variable('victim'), \
+        ssxn.County_of_lynching_Brundage, Variable('vcounty_brdg'))))
+    q.append(OptionalGraph((Variable('victim'), \
+        ssxn.Alleged_crime_Brundage, Variable('vallegedcrime_brdg'))))
+    q.append(OptionalGraph((Variable('victim'), \
+        ssxn.Name_of_victim_Brundage, Variable('vname_brdg'))))
+    q.append(OptionalGraph((Variable('victim'), \
+        ssxn.Race_Brundage, Variable('vrace_brdg'))))        
+    return unicode(q)    
 
 class Event(ComplexObject):
     '''An Event is an object type defined by the project's private PC-ACE
@@ -506,4 +525,3 @@ class Victim(ComplexObject):
 # means a little corner of the Victim definition is way down here. need to
 # find a better way to do this.
 MacroEvent.victims.result_type = Victim
-
