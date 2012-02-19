@@ -13,7 +13,7 @@
         {% if results.articleTotal > 0 %}<tr><th>Articles:</th><td>
              <div>
                 <div class="more">View {{ results.articleTotal }} Article{{ results.articleTotal|pluralize }}</div>
-                <div class="triplet_rest">
+                <div class="toggle_hide">
                     {% include "events/snippets/articles_by_macro_event.html" %}
                 </div>
             </div></td></tr>{% endif %}
@@ -34,7 +34,7 @@
                     &bull;&nbsp;{{ event.triplet_first }}
                     <div class="layer1">
                     <div class="more">view more</div>
-                    <div class="triplet_rest">
+                    <div class="toggle_hide">
                       {% for triple in event.triplet_rest %}  
                         &bull;&nbsp;{{ triple }}<br/>&nbsp;<br/>
                       {% endfor %} </div>
