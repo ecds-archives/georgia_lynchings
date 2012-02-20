@@ -516,7 +516,7 @@ class TimemapTest(TestCase):
         self.filters = [
             { 
                 'title': 'Alleged Crime',
-                'qvar': 'victim_allegedcrime_brundage',
+                'name': 'victim_allegedcrime_brundage',
                 'prefix': 'ac_',
                 # example of tags tuple (display name, slug, frequency):
                 # 'tags': [
@@ -580,7 +580,7 @@ class TimemapTest(TestCase):
 
     def test_get_filters(self):
         results = get_filters(self.filters)
-        self.assertEqual(results[0]['qvar'],'victim_allegedcrime_brundage')
+        self.assertEqual(results[0]['name'],'victim_allegedcrime_brundage')
         self.assertEqual(results[0]['title'],'Alleged Crime')
         self.assertEqual(results[0]['prefix'],'ac_')
         self.assertEqual(results[0]['tags'][0][0],'Murder') 

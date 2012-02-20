@@ -118,7 +118,7 @@ def search(request):
 filters= [
     { 
         'title': 'Alleged Crime',
-        'qvar': 'victim_allegedcrime_brundage',
+        'name': 'victim_allegedcrime_brundage',
         'prefix': 'ac',
         # example of tag tuple (display name, slug, frequency):
         # 'tags': [

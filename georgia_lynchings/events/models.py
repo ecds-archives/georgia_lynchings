@@ -1,12 +1,13 @@
 from collections import defaultdict
 from rdflib import Variable
 from urllib import quote
+
 from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, \
     RdfPropertyField
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
-from georgia_lynchings.rdf.sparql import SelectQuery, OptionalGraph
+from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 import logging
 from pprint import pprint
@@ -60,8 +61,8 @@ class MacroEvent(ComplexObject):
                 data['victim_lynchingdate_brundage'].append(victim_row['vlydate_brdg'])
             if 'vrace_brdg' in victim_row:
                 data['victim_race_brundage'].append(victim_row['vrace_brdg'])
-            if 'vallegedcrime_brdg' in victim_row:
-                data['victim_allegedcrime_brundage'].append(victim_row['vallegedcrime_brdg'])
+            if 'victim_allegedcrime_brundage' in victim_row:
+                data['victim_allegedcrime_brundage'].append(victim_row['victim_allegedcrime_brundage'])
 
         datedict = self.get_date_range()
         if datedict:
@@ -407,16 +408,16 @@ def get_victim_query():
     q = SelectQuery(results=['macro', 'victim', 'vname_brdg', \
         'vlydate_brdg', 'vcounty_brdg', 'victim_allegedcrime_brundage'])
     q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))         
-    q.append(OptionalGraph((Variable('victim'), \
-        ssxn.Date_of_lynching_Brundage, Variable('vlydate_brdg'))))
-    q.append(OptionalGraph((Variable('victim'), \
-        ssxn.County_of_lynching_Brundage, Variable('vcounty_brdg'))))
-    q.append(OptionalGraph((Variable('victim'), \
-        ssxn.Alleged_crime_Brundage, Variable('victim_allegedcrime_brundage'))))
-    q.append(OptionalGraph((Variable('victim'), \
-        ssxn.Name_of_victim_Brundage, Variable('vname_brdg'))))
-    q.append(OptionalGraph((Variable('victim'), \
-        ssxn.Race_Brundage, Variable('vrace_brdg')))) 
+    q.append((Variable('victim'), ssxn.Date_of_lynching_Brundage, \
+        Variable('vlydate_brdg')), optional=True)
+    q.append((Variable('victim'), ssxn.County_of_lynching_Brundage, \
+        Variable('vcounty_brdg')), optional=True)
+    q.append((Variable('victim'), ssxn.Alleged_crime_Brundage, \
+        Variable('victim_allegedcrime_brundage')), optional=True)
+    q.append((Variable('victim'), ssxn.Name_of_victim_Brundage, \
+        Variable('vname_brdg')), optional=True)
+    q.append((Variable('victim'), ssxn.Race_Brundage, \
+        Variable('vrace_brdg')), optional=True)
 
     return unicode(q)  
     
@@ -426,7 +427,6 @@ def get_metadata_query():
     :rtype: a unicode string of the SPARQL query
 
     '''
-  
     q = SelectQuery(results=['macro', 'label', 'min_date', 'max_date', 'vcounty_brdg', 'victim_allegedcrime_brundage'])
     q.append((Variable('macro'), sxcxcxn.Event, Variable('event')))
     q.append((Variable('macro'), dcx.Identifier, Variable('label')))  
@@ -435,8 +435,8 @@ def get_metadata_query():
     q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim'))) 
     q.append((Variable('victim'), ssxn.County_of_lynching_Brundage, \
             Variable('vcounty_brdg')))
-    q.append(OptionalGraph((Variable('victim'), \
-            ssxn.Alleged_crime_Brundage, Variable('victim_allegedcrime_brundage'))))
+    q.append((Variable('victim'), ssxn.Alleged_crime_Brundage, \
+            Variable('victim_allegedcrime_brundage')), optional=True)
       
     return unicode(q)
     
@@ -466,15 +466,14 @@ def get_filters(filters):
             It has the following bindings:
 
               * `title`: the display name of the filter tag
-              * `qvar`: the query variable name
-              * `prefix`: the prefix to the slug value
-              * `qvar`: the query variable name                            
+              * `name`: the filter name
+              * `prefix`: the prefix to the slug value                          
 
             The matches are ordered by `mindate`.
     '''
 
     for filter in filters:       
-        query=query_bank.filters[filter['qvar']]   
+        query=query_bank.filters[filter['name']]   
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query)
 
@@ -482,8 +481,8 @@ def get_filters(filters):
         # Add tags and frequency as tuples to filter dict
         for item in resultSet:
             # Slugify the tag (lc, add prefix, replace spaces with underscore.
-            slug = filter['prefix'] + item[filter['qvar']].replace(' ','_').lower()
-            tag_tuples.append((item[filter['qvar']],slug,item['frequency']))
+            slug = filter['prefix'] + item[filter['name']].replace(' ','_').lower()
+            tag_tuples.append((item[filter['name']],slug,item['frequency']))
 
         filter['tags'] = tag_tuples           
          
