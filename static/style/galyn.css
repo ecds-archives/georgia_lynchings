@@ -116,6 +116,22 @@ table#left td {
     padding:5px;    
 }
 
+table#advanced-search {
+  border-style: none;
+  width: inherit; 
+}
+table#advanced-search td, table#advanced-search th {
+  border-style: none;
+  padding: 0px;
+}
+table#advanced-search th {
+  font-weight: normal;
+  text-align: right;
+}
+table#advanced-search td {
+  text-indent: 0px;
+}
+
 ul.articles, ul.articles li {
     display: inline;
 }
@@ -148,5 +164,4 @@ text-decoration: underline;
 div#filtertitle {
     font-size: 16px;
 }
-
 

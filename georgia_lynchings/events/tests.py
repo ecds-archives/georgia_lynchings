@@ -483,6 +483,14 @@ class ViewsTest(EventsAppTest):
         self.assertEqual(response.context['results'], solr_result)
         self.assertTrue('form' in response.context)
 
+    @patch('sunburnt.SolrInterface', new_callable=MagicMock)
+    def test_advanced_search_url(self, mock_solr_interface):
+        search_url = reverse('advanced_search')
+
+        # for now just verify that we can get the advanced search page
+        response = self.client.get(search_url)
+        self.assertEqual(200, response.status_code)
+
     @patch('sunburnt.SolrInterface')
     def test_map_json(self, mock_solr_interface):
         mocksolr = MagicMock()

@@ -11,10 +11,10 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
+from georgia_lynchings.events.details import Details   
+from georgia_lynchings.events.forms import SearchForm, AdvancedSearchForm
 from georgia_lynchings.events.models import MacroEvent, \
     get_all_macro_events, SemanticTriplet, get_filters
-from georgia_lynchings.forms import SearchForm    
-from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.timemap import Timemap   
 
 logger = logging.getLogger(__name__)
@@ -111,6 +111,13 @@ def search(request):
 
     return render(request, 'events/search_results.html',
                   {'results': results, 'term': term, 'form': form})
+
+
+def advanced_search(request):
+    form = AdvancedSearchForm()
+    return render(request, 'events/advanced_search.html',
+                  {'form': form})
+
 
 #These views and variables are for Map display
 

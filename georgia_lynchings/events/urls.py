@@ -10,7 +10,7 @@ Patterns:
 '''
   
 urlpatterns = patterns('georgia_lynchings.events.views',
-
+    url(r'search/advanced/$', 'advanced_search', name='advanced_search'),# advanced event search
     url(r'search/$', 'search', name='search'),                           # event search results
     url(r'^(?P<row_id>[0-9]+)/articles/$', 'articles', name='articles'), # articles for macro event id
     url(r'^(?P<row_id>[0-9]+)/details/$', 'details', name='details'),    # articles for macro event id       
