@@ -6,7 +6,9 @@ from django.core.management.base import CommandError
 from django.test import TestCase
 from mock import patch
 from rdflib import URIRef, Literal, Namespace, BNode, Variable, RDF, RDFS
+import rdflib
 
+from georgia_lynchings.rdf.ns import ix_ebd, scxn, sxcxcxn
 from georgia_lynchings.rdf.sparql import SelectQuery, OptionalGraph
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
 from georgia_lynchings.rdf.management.commands import run_sparql_query
@@ -348,4 +350,15 @@ class ComplexObjectTest(TestCase):
         mock_query = MockStore.return_value.query
         mock_query.return_value = [{'result': ['14']},{'result': ['41']}]       
         typed_data = self.thingies.typed_data
-        self.assertIn('14', typed_data[0])        
+        self.assertIn('14', typed_data[0]) 
+        
+class NsTest(TestCase):
+    def test_constructed_stmts_ns(self):
+        expected = rdflib.term.URIRef('http://galyn.example.com/constructed_statements/index/events_by_date/#mindate')
+        self.assertEqual(ix_ebd.mindate, expected)
+
+    def test_source_file_ns(self):
+        expected = rdflib.term.URIRef('http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Event')        
+        self.assertEqual(sxcxcxn.Event, expected)
+        expected = rdflib.term.URIRef('http://galyn.example.com/source_data_files/setup_Complex.csv#name-Macro_Event')
+        self.assertEqual(scxn.Macro_Event, expected)               
