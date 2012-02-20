@@ -9,7 +9,8 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
-from georgia_lynchings.events.models import MacroEvent, Event, SemanticTriplet, Victim
+from georgia_lynchings.events.models import MacroEvent, Event, \
+    SemanticTriplet, Victim, get_filters
 from georgia_lynchings.events.details import Details
 from georgia_lynchings.events.timemap import Timemap
 from georgia_lynchings.rdf.ns import dcx
@@ -511,50 +512,58 @@ class TimemapTest(TestCase):
         filters = ['victim_allegedcrime_brundage']       
         self.tmapfilter = Timemap(filters) 
                  
-        self.solr_items = [
-            {'label': u'Debt Dispute', 
-                'max_date': u'1896-06-02',
-                'min_date': u'1896-06-01', 
-                'row_id': u'89', 
-                'victim_county_brundage': (u'Muscogee', u'Muscogee'),
-                'victim_allegedcrime_brundage': (u'Assault',)},    
-            {'label': u'Wild Talking',
-                'max_date': u'1913-03-07',
-                'min_date': u'1913-02-28',
-                'row_id': u'240',
-                'victim_county_brundage': (u'Habersham',),
-                'victim_allegedcrime_brundage': (u'Assault',)}
+        self.metadata = [
+{u'label': rdflib.term.Literal(u'Crisp'),
+ u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r3'),
+ u'max_date': rdflib.term.Literal(u'1918-05-23', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+ u'min_date': rdflib.term.Literal(u'1918-05-23', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+ u'vcounty_brdg': rdflib.term.Literal(u'Crisp'),
+ u'victim_allegedcrime_brundage': rdflib.term.Literal(u'Assault')},    
+{u'label': rdflib.term.Literal(u'Attempted rape   & 10/30/1890   & Lowndes'),
+ u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r5'),
+ u'max_date': rdflib.term.Literal(u'1890-10-31', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+ u'min_date': rdflib.term.Literal(u'1890-10-31', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+ u'vcounty_brdg': rdflib.term.Literal(u'Lowndes'),
+ u'victim_allegedcrime_brundage': rdflib.term.Literal(u'Debt Dispute')}
         ]
         
+        self.item = {'label': 'Debt Dispute', 
+                'row_id': '3',
+                'max_date': '1896-06-02',
+                'min_date': '1896-06-01', 
+                'county': 'Muscogee',
+                'victim_allegedcrime_brundage': ['Assault']}     
+        
     def test_init(self):
-        self.assertGreater(len(self.tmap.me_list), 300)
         self.assertEqual(self.tmap.filters, []) 
         self.assertEqual(self.tmapfilter.filters, ['victim_allegedcrime_brundage'])             
         
     def test_timemap_format(self):
-        result = self.tmap.format(self.solr_items)
-        self.assertEqual('1896-06-01', result[0]['start'])
-        self.assertEqual('[]', result[0]['options']['tags'])
-        self.assertEqual('Debt Dispute', result[0]['title'])
+        result = self.tmap.format(self.metadata)
+        self.assertEqual('1918-05-23', result[0]['start'])
+        self.assertNotIn('tags', result[0]['options'])
+        self.assertEqual('Crisp', result[0]['title'])
         
     def test_timemap_format_filters(self):
-        result = self.tmapfilter.format(self.solr_items)
-        self.assertEqual('1896-06-01', result[0]['start'])
+        result = self.tmapfilter.format(self.metadata)
+        self.assertEqual('1918-05-23', result[0]['start'])
         self.assertEqual('[Assault]', result[0]['options']['tags'])
-        self.assertEqual('Debt Dispute', result[0]['title'])
+        self.assertEqual('Crisp', result[0]['title'])
         
     def test_timemap_create_item(self):
-        result = self.tmap.create_item(self.solr_items[0], 'Muscogee', []) 
+        result = self.tmap.create_item(self.item) 
         self.assertEqual('1896-06-02', result['end']) 
-        self.assertEqual('[]', result['options']['tags'])  
+        self.assertNotIn('tags', result['options'])        
         self.assertEqual('Debt Dispute', result['title'])            
         
     def test_timemap_create_item_filters(self):
-        result = self.tmapfilter.create_item(self.solr_items[0], 'Muscogee', ['Assault']) 
+        result = self.tmapfilter.create_item(self.item) 
         self.assertEqual('1896-06-02', result['end']) 
         self.assertEqual('[Assault]', result['options']['tags'])  
         self.assertEqual('Debt Dispute', result['title']) 
 
-    def test_timemap_get_filterTags(self):
-        results = self.tmapfilter.get_filterTags(self.solr_items)
-        self.assertEqual(2, results['victim_allegedcrime_brundage']['Assault'])
+    def test_get_filters(self):
+        filter = 'victim_allegedcrime_brundage'
+        results = get_filters([filter])
+        self.assertTrue(results.has_key('victim_allegedcrime_brundage'))
+        self.assertTrue(results[filter].has_key('Assault'))        

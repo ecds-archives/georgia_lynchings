@@ -1,154 +1,119 @@
 '''
 Tool for creating JSON Object for usage in Timemap display.
 '''
-import httplib2
-import json
 import logging
-from pprint import pprint
 
-from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from georgia_lynchings import geo_coordinates
-from georgia_lynchings.events.models import MacroEvent
-from georgia_lynchings.events.mapdata import Mapdata
-from georgia_lynchings.utils import solr_interface  
+from georgia_lynchings.events.mapdata import Mapdata 
 
 logger = logging.getLogger(__name__)
-
-# solr fields we want for creating timemap json
-
 
 class Timemap(Mapdata):
     '''Extends :class:`georgia_lynchings.events.mapdata.Mapdata`. This is the
     main class for creating json data for timemap display.
     '''
 
-    MAP_VIEW_FIELDS = [ 'row_id', 'label', 'min_date', 'max_date',
-                        'victim_county_brundage', 'victim_allegedcrime_brundage']
-
     def __init__(self, filters= None, *args, **kwargs):
-        super(Timemap, self).__init__(*args, **kwargs)
         
         # Add filter capabilities
         if filters is None:
             self.filters = []
         else:
-            self.filters = filters
+            self.filters = filters        
 
-    def format(self, solr_items):
-        #TODO since now only a list of itmes are being returned
-        #TODO this function may need some cleanup
-        ''' Format the solr results into a json structure for timemap.
+
+    def format(self, metadata):
+        ''' Format the metadata results into a json structure for timemap.
         
-            :param solr_items: solr query result set
+            :param metadata: macro event metadata result set
         '''
         
-        ''' Set up a dictionary of filters to contain a dictionary of 
+        ''' Create a dictionary of filters to contain a dictionary of 
         tags and their frequency
         '''
-        
 
         # Timemap JSON Result initialization
         jsonResult = []
-            
-        for solr_item in solr_items:
-            
-            # For each filter item create a dict with key=tags value=freq
-            all_tag_list = []
-            for fitem in self.filters:
-                # Create a frequency list of unique filter items, default to "Not Available"
-                tag_list = solr_item.get(fitem, ['Not Available'])  
-                for tag in set(tag_list):
-                    all_tag_list.append(tag.encode('ascii'))
-                #TODO: for mulitple filters, find a way to distinguish tags w/in a filter
-
-            # skip over if county or min_date is not defined  
-            try:
-                # use first county in list.
-                county = solr_item.get('victim_county_brundage', [])[0]
-                # Only add the timemap item, if the start date and county are defined
-                # NOTE: at this time, victim_lynchingdate_brundage is not 
-                # populated with data. If that changes, we should use this 
-                # date as a backup for when min_date is not defined.            
-                if 'min_date' in solr_item and county in geo_coordinates.countymap:
-                    jsonResult.append(self.create_item(solr_item, county, all_tag_list))
-                # Display missing data items
-                elif county not in geo_coordinates.countymap: 
-                    logger.info(" Did not add macro event %s because county [%s] not defined in geo_coordinates" % (solr_item['row_id'], county))                    
-                else: 
-                    logger.info(" Did not add macro event %s because min_date not defined." % (solr_item['row_id']))
-            except:
-                logger.info(" Timemap format error on macro event [%s]." % solr_item['row_id'])
         
+        # a metadata dictionary for a single macro event
+        me_item = {}
+            
+        for item in metadata:
+            
+            # Collect all the information for a single macro event
+            row_id = item['macro'].split('#r')[1]
+            # macro event row id has changed; create json          
+            if me_item and (not me_item['row_id'] == row_id): 
+                for fitem in self.filters:
+                    tag_list = []
+                    # Create a list of unique filter items, default to "Not Available"
+                    tag_list = me_item.get(fitem, ['Not Available'])  
+                    me_item[fitem] = set(tag_list)               
+                
+                try:
+                    # The macro event must geo coordinates for the timemap
+                    if me_item['county'] in geo_coordinates.countymap:
+                        jsonResult.append(self.create_item(me_item))
+                    else: 
+                        logger.info("Did not add macro event %s because county [%s] not defined in geo_coordinates" % (row_id, me_item['county']))
+                except Exception, err:
+                    logger.debug("Timemap format error on macro event [%s]; Error: %s" % (row_id, str(err)))
+                    
+                # finished adding macro event item, so reset macro event
+                me_item = {}
 
-                              
+            # parse metadata for this macro event.
+            me_item['row_id'] = me_item.get('row_id', row_id)
+            me_item['label'] = me_item.get('label', item.get('label')).encode('ascii')                  
+            me_item['county'] = me_item.get('county', item.get('vcounty_brdg')).encode('ascii')            
+            me_item['min_date'] = me_item.get('min_date', item.get('min_date')).encode('ascii')             
+            me_item['max_date'] = me_item.get('max_date', item.get('max_date')).encode('ascii')
+            if item.get('victim_allegedcrime_brundage', None):
+                try:
+                    alleged_crime = item['victim_allegedcrime_brundage'].encode('ascii')
+                    me_item['victim_allegedcrime_brundage'].append(alleged_crime)
+                except KeyError:
+                    me_item['victim_allegedcrime_brundage']=[alleged_crime]                   
+
         return jsonResult
         
-    def create_item(self, solr_item, county, all_tag_list):
+    def create_item(self, metadata):
         '''Create a pinpoint item for timemap json file
         
-        :param solr_item: a dictionary item from the solr query result set   
-        :param county: string, victim_county_brundag
-        :param all_tag_list: string, a combined list of tags for the filters
+        :param metadata: a dictionary item from the metadata query result set   
         '''
-        
+
         item={}         # create a timemap pinpoint item 
         
         # Add 'title', if defined
-        item["title"]=solr_item['label'].encode('ascii')
+        item["title"]=metadata['label']
             
         # Add 'start' date
-        item["start"]=solr_item['min_date'].encode('ascii')
+        item["start"]=metadata['min_date']
         
         # Add 'end' date if defined
-        if solr_item['max_date']:    item["end"]=solr_item['max_date'].encode('ascii')
-        
+        if metadata['max_date']:    item["end"]=metadata['max_date']
+                
         # NOTE: geo_coordinates is a temporary solution until values are in PC-ACE.    
         # Add longitude and latitude values
-        lat=geo_coordinates.countymap[county]['latitude']
-        lon=geo_coordinates.countymap[county]['longitude']        
+        lat=geo_coordinates.countymap[metadata['county']]['latitude']
+        lon=geo_coordinates.countymap[metadata['county']]['longitude']        
         item["point"]={"lat" : lat, "lon" : lon}
         
-        # Add tags to pinpoint popup
-        tag_list = "[" + ", ".join(all_tag_list) + "]"          
-        
         # Add more info link to details page
-        detail_link = reverse('details', kwargs={'row_id': solr_item['row_id'].encode('ascii')})
-        
+        detail_link = reverse('details', kwargs={'row_id': metadata['row_id']})
+            
         # infotemplate popup details
-        item["options"]={'title': solr_item['label'].encode('ascii'),
-                        'min_date': solr_item['min_date'].encode('ascii'),
-                        'county': county.encode('ascii'),
-                        'detail_link': detail_link,        
-                        'tags': tag_list.encode('ascii')}
-                                                
-        return item
-
-    def get_filterTags(self, solr_items=None):
-        '''
-        Returns dict containing name and count of tags that timemap data can be filtered on.
-
-        :param solr_items: (Optional) solr query result set
-        '''
-
-        filterTags = {}
-
+        item["options"]={'title': metadata['label'],
+                        'min_date': metadata['min_date'],
+                        'county':  metadata['county'],
+                        'detail_link': detail_link}
+                        
+        # Create the tag list
         for fitem in self.filters:
-            filterTags[fitem] = {}
-
-        if solr_items == None:
-            solr_items = self.get_solr_data()
-        
-        # Initialize filters for their tags and frequency
-        for solr_item in solr_items:
-            # For each filter item create a dict with key=tags value=freq
-            for fitem in self.filters:
-                   # Create a frequency list of unique filter items, default to "Not Available"
-                   tag_list = solr_item.get(fitem, ['Not Available'])
-                   for tag in set(tag_list):
-                       filterTags[fitem][tag.encode('ascii')] = \
-                       filterTags[fitem].get(tag.encode('ascii'), 0) + 1
-                       #TODO: for mulitple filters, find a way to distinguish tags w/in a filter
-
-        return filterTags
+            tag_list = "[" + ", ".join(metadata[fitem]) + "]" 
+            item["options"]['tags']= tag_list.encode('ascii')  
+                          
+        return item

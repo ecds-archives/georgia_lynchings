@@ -196,7 +196,7 @@ class Details:
             vicdict = {}
             vicdict['name'] = vic.get('vname_brdg', None)
             vicdict['county'] = vic.get('vcounty_brdg', None)
-            vicdict['alleged_crime'] = vic.get('vallegedcrime_brdg', None)
+            vicdict['alleged_crime'] = vic.get('victim_allegedcrime_brundage', None)
             vicdict['lynching_date'] = vic.get('vlydate_brdg', None)
             vicdict['race'] = vic.get('vrace_brdg', None)
             if vicdict:

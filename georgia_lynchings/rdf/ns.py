@@ -6,6 +6,11 @@ def _source_file_ns(fname, id_prefix=''):
                                          fname, id_prefix)
     return Namespace(uri)
 
+def _constructed_stmts_ns(construct_stmt_path, id_prefix=''):
+    uri = '%sconstructed_statements/index/%s/#%s' % (settings.APPLICATION_RDF_NS_ROOT,
+                                         construct_stmt_path, id_prefix)                                         
+    return Namespace(uri)
+
 # NOTE: RDF namespaces for this project are derived by project scripts from
 # PC-ACE database tables. Each CSV file here is a table in the source
 # database. These table-base namespaces are shared by all PC-ACE databases
@@ -41,3 +46,5 @@ sxcxcx = _source_file_ns('setup_xref_Complex-Complex.csv')
 sxcxcxn = _source_file_ns('setup_xref_Complex-Complex.csv', id_prefix='name-')
 sxsxcx = _source_file_ns('setup_xref_Simplex-Complex.csv')
 sxsxd = _source_file_ns('setup_xref_Simplex-Document.csv')
+
+ix_ebd = _constructed_stmts_ns('events_by_date')

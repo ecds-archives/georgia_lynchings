@@ -4,6 +4,7 @@ This file contains a dictionary of predefined SPARQL queries.
 
 articles={}
 events={}
+filters={}
 
 articles['all']="""
     prefix dd: <http://galyn.example.com/source_data_files/data_Document.csv#>
@@ -528,4 +529,17 @@ events['triplets']="""
     }
     # Order by UCASE to fold case.
     ORDER BY ?event UCASE(?trlabel)
+"""
+
+
+'Find filter count for alleged crime'
+filters['victim_allegedcrime_brundage']="""
+SELECT ?victim_allegedcrime_brundage (COUNT(?victim_allegedcrime_brundage) AS ?frequency)
+WHERE { 
+?macro <http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Event> ?event .  
+?macro <http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Victim> ?victim . 
+?victim <http://galyn.example.com/source_data_files/setup_Simplex.csv#name-Alleged_crime_Brundage> ?victim_allegedcrime_brundage . 
+}
+GROUP BY ?victim_allegedcrime_brundage
+ORDER BY DESC(?frequency)
 """

@@ -4,7 +4,7 @@ from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, \
     RdfPropertyField
-from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn
+from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
 from georgia_lynchings.rdf.sparql import SelectQuery, OptionalGraph
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 import logging
@@ -222,7 +222,7 @@ class MacroEvent(ComplexObject):
                              initial_bindings={'macro': self.uri.n3()})
 
         # return the dictionary results of the details information          
-        return results               
+        return results
         
     def get_triplets(self):
         '''Get the semantic triplets related to this macro event.
@@ -373,7 +373,6 @@ def get_all_macro_events():
               * `articleTotal`: article count.
 
     '''
-    logger.debug("events get_events_by_times")
     query=query_bank.events['all']    
     ss=SparqlStore()
     resultSet = ss.query(sparql_query=query)
@@ -392,19 +391,86 @@ def get_victim_query():
 
     '''
     q = SelectQuery(results=['macro', 'victim', 'vname_brdg', \
-        'vlydate_brdg', 'vcounty_brdg', 'vallegedcrime_brdg'])
+        'vlydate_brdg', 'vcounty_brdg', 'victim_allegedcrime_brundage'])
     q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))         
     q.append(OptionalGraph((Variable('victim'), \
         ssxn.Date_of_lynching_Brundage, Variable('vlydate_brdg'))))
     q.append(OptionalGraph((Variable('victim'), \
         ssxn.County_of_lynching_Brundage, Variable('vcounty_brdg'))))
     q.append(OptionalGraph((Variable('victim'), \
-        ssxn.Alleged_crime_Brundage, Variable('vallegedcrime_brdg'))))
+        ssxn.Alleged_crime_Brundage, Variable('victim_allegedcrime_brundage'))))
     q.append(OptionalGraph((Variable('victim'), \
         ssxn.Name_of_victim_Brundage, Variable('vname_brdg'))))
     q.append(OptionalGraph((Variable('victim'), \
-        ssxn.Race_Brundage, Variable('vrace_brdg'))))        
-    return unicode(q)    
+        ssxn.Race_Brundage, Variable('vrace_brdg')))) 
+
+    return unicode(q)  
+    
+def get_metadata_query():
+    '''Get the query to retrieve metadata information.
+
+    :rtype: a unicode string of the SPARQL query
+
+    '''
+  
+    q = SelectQuery(results=['macro', 'label', 'min_date', 'max_date', 'vcounty_brdg', 'victim_allegedcrime_brundage'])
+    q.append((Variable('macro'), sxcxcxn.Event, Variable('event')))
+    q.append((Variable('macro'), dcx.Identifier, Variable('label')))  
+    q.append((Variable('event'), ix_ebd.mindate, Variable('min_date')))
+    q.append((Variable('event'), ix_ebd.maxdate, Variable('max_date')))
+    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim'))) 
+    q.append((Variable('victim'), ssxn.County_of_lynching_Brundage, \
+            Variable('vcounty_brdg')))
+    q.append(OptionalGraph((Variable('victim'), \
+            ssxn.Alleged_crime_Brundage, Variable('victim_allegedcrime_brundage'))))
+      
+    return unicode(q)
+    
+def get_metadata():
+    '''Get the macro event metadata from sesame triplestore.
+
+    :rtype: a mapping list of the type returned by
+            :meth:`~georgia_lynchings.rdf.sparqlstore.SparqlStore.query`.
+            It returns metadata for all  MacroEvents, 
+            with the following bindings:
+              * `macro`: the URI of this Macro Event
+              * `label`: the label of this Macro Event              
+              * `min_date`: the minimum date related to this event
+              * `max_date`: the maximum date related to this event
+              * `victim_county_brundage`: the (Brundage) county of the Victim
+              * `victim_allegedcrime_brundage`: the (Brundage) alleged crime of the Victim
+    '''
+    store = SparqlStore()
+    resultSet = store.query(sparql_query=get_metadata_query())
+    return resultSet
+    
+def get_filters(filters):
+    '''Get the queries to retrieve filters tags and frequency.
+
+    :rtype: a mapping list of the type returned by
+            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+            It has the following bindings:
+
+              * tag: the name of the filter tag
+              * `frequency`: the frequency of the filter
+
+            The matches are ordered by `mindate`.
+    '''
+
+    filterTags = {}
+    for filter in filters:
+        query=query_bank.filters[filter]    
+        ss=SparqlStore()
+        resultSet = ss.query(sparql_query=query)
+
+        filterTags[filter] = {}
+        
+        # Initialize filters for their tags and frequency
+        for item in resultSet:
+            filterTags[filter][item[filter]] = item['frequency']
+
+    # return the dictionary resultset of the query          
+    return filterTags  
 
 class Event(ComplexObject):
     '''An Event is an object type defined by the project's private PC-ACE

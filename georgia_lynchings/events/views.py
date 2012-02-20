@@ -4,6 +4,7 @@ from pprint import pprint
 import sunburnt
 from urllib import quote
 import urllib2
+import simplejson
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -12,7 +13,7 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 from georgia_lynchings.events.models import MacroEvent, \
-    get_all_macro_events, SemanticTriplet
+    get_all_macro_events, SemanticTriplet, get_filters
 from georgia_lynchings.forms import SearchForm    
 from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.timemap import Timemap   
@@ -123,12 +124,12 @@ def timemap(request):
     '''Send list of filters generated from :class:`~georgia_lynchings.events.timemap.Timemap`.
     '''
 
-    # Get the json object require for displaying timemap data
+    # Get the json object require for displaying timemap data   
     timemap = Timemap(filters)
     timemap.get_json()
 
     return render(request, 'events/timemap.html', \
-        {'filters' : timemap.get_filterTags()})
+        {'filters' : get_filters(filters)})
 
 def map_json(request):
     '''
@@ -140,5 +141,3 @@ def map_json(request):
     response = HttpResponse(json_str, mimetype='application/json')
 
     return response
-
-
