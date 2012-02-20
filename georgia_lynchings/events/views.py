@@ -114,8 +114,20 @@ def search(request):
 
 #These views and variables are for Map display
 
-# Create filters
-filters = ['victim_allegedcrime_brundage']
+# Create filters for timemap
+filters= [
+    { 
+        'title': 'Alleged Crime',
+        'qvar': 'victim_allegedcrime_brundage',
+        'prefix': 'ac',
+        # example of tag tuple (display name, slug, frequency):
+        # 'tags': [
+        #   ('Argument', 'ac_argument', 4), 
+        #   ('Debt Dispute', 'ac_debt_dispute', 7), 
+        #   ('Kidnapping/Theft', 'ac_kidnapping/theft', 17)
+        # ]        
+    }
+]
 
 def timemap(request):
     '''Send list of filters generated from :class:`~georgia_lynchings.events.timemap.Timemap`.

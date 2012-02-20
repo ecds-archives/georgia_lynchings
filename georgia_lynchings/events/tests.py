@@ -513,8 +513,20 @@ class TimemapTest(TestCase):
         self.tmap = Timemap()
         
         # Filters
-        filters = ['victim_allegedcrime_brundage']       
-        self.tmapfilter = Timemap(filters) 
+        self.filters = [
+            { 
+                'title': 'Alleged Crime',
+                'qvar': 'victim_allegedcrime_brundage',
+                'prefix': 'ac_',
+                # example of tags tuple (display name, slug, frequency):
+                # 'tags': [
+                #   ('Argument', 'ac_argument', 4), 
+                #   ('Debt Dispute', 'ac_debt_dispute', 7), 
+                #   ('Kidnapping/Theft', 'ac_kidnapping/theft', 17)
+                # ]  
+            }
+        ]       
+        self.tmapfilter = Timemap(self.filters) 
                  
         self.metadata = [
 {u'label': rdflib.term.Literal(u'Crisp'),
@@ -540,7 +552,7 @@ class TimemapTest(TestCase):
         
     def test_init(self):
         self.assertEqual(self.tmap.filters, []) 
-        self.assertEqual(self.tmapfilter.filters, ['victim_allegedcrime_brundage'])             
+        self.assertEqual(self.tmapfilter.filters, self.filters)             
         
     def test_timemap_format(self):
         result = self.tmap.format(self.metadata)
@@ -567,7 +579,10 @@ class TimemapTest(TestCase):
         self.assertEqual('Debt Dispute', result['title']) 
 
     def test_get_filters(self):
-        filter = 'victim_allegedcrime_brundage'
-        results = get_filters([filter])
-        self.assertTrue(results.has_key('victim_allegedcrime_brundage'))
-        self.assertTrue(results[filter].has_key('Assault'))        
+        results = get_filters(self.filters)
+        self.assertEqual(results[0]['qvar'],'victim_allegedcrime_brundage')
+        self.assertEqual(results[0]['title'],'Alleged Crime')
+        self.assertEqual(results[0]['prefix'],'ac_')
+        self.assertEqual(results[0]['tags'][0][0],'Murder') 
+        self.assertEqual(results[0]['tags'][0][1],'ac_murder') 
+        self.assertEqual(results[0]['tags'][0][2],'127')                     

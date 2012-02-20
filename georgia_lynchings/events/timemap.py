@@ -46,11 +46,11 @@ class Timemap(Mapdata):
             row_id = item['macro'].split('#r')[1]
             # macro event row id has changed; create json          
             if me_item and (not me_item['row_id'] == row_id): 
-                for fitem in self.filters:
+                for fdict in self.filters:
                     tag_list = []
                     # Create a list of unique filter items, default to "Not Available"
-                    tag_list = me_item.get(fitem, ['Not Available'])  
-                    me_item[fitem] = set(tag_list)               
+                    tag_list = me_item.get(fdict['qvar'], ['Not Available'])  
+                    me_item[fdict['qvar']] = set(tag_list)               
                 
                 try:
                     # The macro event must geo coordinates for the timemap
@@ -112,8 +112,8 @@ class Timemap(Mapdata):
                         'detail_link': detail_link}
                         
         # Create the tag list
-        for fitem in self.filters:
-            tag_list = "[" + ", ".join(metadata[fitem]) + "]" 
+        for fdict in self.filters:
+            tag_list = "[" + ", ".join(metadata[fdict['qvar']]) + "]" 
             item["options"]['tags']= tag_list.encode('ascii')  
                           
         return item

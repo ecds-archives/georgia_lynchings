@@ -27,12 +27,12 @@
     {% block content %}
         <h1 class="main">Lynchings in Georgia (1875-1930) Timeline Map</h1> 
         
-        {% for filter, tags in filters.items %}
-            {{ filter }}: 
+        {% for filter in filters %}
+            <div id="filtertitle">Filter by {{ filter.title }}:</div>
             <form>
                 <select id="tag_select">
                     <option value="">All tags</option>
-                    {% for tag,freq in tags.items %}                  
+                    {% for tag, slug, freq in filter.tags %}                  
                         <option value="{{ tag }}">{{ tag }} ({{ freq }})</option>
                     {% endfor %}
                 </select>

@@ -465,26 +465,29 @@ def get_filters(filters):
             :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
             It has the following bindings:
 
-              * tag: the name of the filter tag
-              * `frequency`: the frequency of the filter
+              * `title`: the display name of the filter tag
+              * `qvar`: the query variable name
+              * `prefix`: the prefix to the slug value
+              * `qvar`: the query variable name                            
 
             The matches are ordered by `mindate`.
     '''
 
-    filterTags = {}
-    for filter in filters:
-        query=query_bank.filters[filter]    
+    for filter in filters:       
+        query=query_bank.filters[filter['qvar']]   
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query)
 
-        filterTags[filter] = {}
-        
-        # Initialize filters for their tags and frequency
+        tag_tuples = []
+        # Add tags and frequency as tuples to filter dict
         for item in resultSet:
-            filterTags[filter][item[filter]] = item['frequency']
+            # Slugify the tag (lc, add prefix, replace spaces with underscore.
+            slug = filter['prefix'] + item[filter['qvar']].replace(' ','_').lower()
+            tag_tuples.append((item[filter['qvar']],slug,item['frequency']))
 
-    # return the dictionary resultset of the query          
-    return filterTags  
+        filter['tags'] = tag_tuples           
+         
+    return filters  
 
 class Event(ComplexObject):
     '''An Event is an object type defined by the project's private PC-ACE

@@ -145,4 +145,8 @@ text-decoration: underline;
 .toggle_hide {
 }
 
+div#filtertitle {
+    font-size: 16px;
+}
+
 
