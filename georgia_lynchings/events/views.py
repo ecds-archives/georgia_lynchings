@@ -4,7 +4,6 @@ from pprint import pprint
 import sunburnt
 from urllib import quote
 import urllib2
-import simplejson
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
