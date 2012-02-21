@@ -6,7 +6,7 @@
 {% block content %}
   {% get_static_prefix as STATIC_PREFIX %}
   <div class="main">search results for: 
-    <form action="{% url search %}" method="get">
+    <form action="{% url events:search %}" method="get">
       {{ form.q }}
       <input type="submit" value="search again">
     </form>
@@ -14,7 +14,7 @@
 
   {% for result in results %}
     <div class='match'>
-      <h2><a href="{% url details result.row_id %}">
+      <h2><a href="{% url events:details result.row_id %}">
         lynching
 
         {% if result.city %}

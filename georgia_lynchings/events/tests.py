@@ -476,15 +476,11 @@ class ViewsTest(EventsAppTest):
         solr_result = mocksolr.execute.return_value
 
         search_url = reverse('events:search')
-        #FIXME: namespace urls in mock
-        '''
         response = self.client.get(search_url, {'q': 'coweta'})
         self.assertContains(response, 'search results for')
         self.assertEqual(response.context['term'], 'coweta')
         self.assertEqual(response.context['results'], solr_result)
         self.assertTrue('form' in response.context)
-        '''
-
 
     @patch('sunburnt.SolrInterface', new_callable=MagicMock)
     def test_advanced_search_url(self, mock_solr_interface):
