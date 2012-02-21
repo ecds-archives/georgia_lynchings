@@ -26,31 +26,31 @@
     <div class="pane" id="topleft">
       <div class="floater"></div>
       <div class="panecontent">
-        <a href="{% url macro_events %}">macro events</a><br/>
+        <a href="{% url events:macro_events %}">macro events</a><br/>
       </div>
     </div>
 
     <div class="pane" id="topright">
       <div class="floater"></div>
       <div class="panecontent">
-          <a href="{% url timemap %}">Timemap</a>
+          <a href="{% url events:timemap %}">Timemap</a>
       </div>
     </div>
 
 
     <div class="pane" id="bottomleft">
       <div class="floater"></div>
-      <div class="panecontent"><a href="{% url newspaper_articles %}">articles</a></div>
+      <div class="panecontent"><a href="{% url articles:newspaper_articles %}">articles</a></div>
     </div>
 
     <div class="pane" id="bottomright">
       <div class="floater"></div>
       <div class="panecontent">
-        <form action="{% url search %}" method="get">
+        <form action="{% url events:search %}" method="get">
           {{ search_form.q }}
           <input type="submit" value="search">
         </form>
-        <p><a href="{% url advanced_search %}">advanced search</a></p>
+        <p><a href="{% url events:advanced_search %}">advanced search</a></p>
       </div>
     </div>
 
