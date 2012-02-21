@@ -64,11 +64,10 @@ class GeoCoordinates(object):
     '''A class to serve the longitude and latitude geo coordinates for the county.
     '''  
     
-    def __init__(self, row_id=None, county=None):
+    def __init__(self, county=None):
         '''Initialize the :class:`timemap.GeoCoordinates` with geo
         coordinates.
-                
-            :param row_id: macro event row id
+
             :param county: macro event county            
         '''
         self.lat=geo_coordinates.countymap[county]['latitude']
@@ -101,7 +100,7 @@ class MacroEvent_Item(object):
         '''        
         try:            
             county = self.jsonitem.get('county', queryresults.get('vcounty_brdg')).encode('ascii')                
-            geo = GeoCoordinates(row_id=self.row_id, county=county)      
+            geo = GeoCoordinates(county=county)      
             self.jsonitem["point"]={"lat" : geo.lat, "lon" : geo.lon}            
             self.jsonitem["title"]=queryresults.get('label').encode('ascii')
             self.jsonitem["start"]=queryresults.get('min_date').encode('ascii') 

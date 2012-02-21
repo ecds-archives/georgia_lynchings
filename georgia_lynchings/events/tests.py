@@ -12,7 +12,8 @@ from django.test import TestCase, Client
 from georgia_lynchings.events.models import MacroEvent, Event, \
     SemanticTriplet, Victim, get_filters
 from georgia_lynchings.events.details import Details
-from georgia_lynchings.events.timemap import Timemap
+from georgia_lynchings.events.timemap import Timemap, GeoCoordinates, \
+    MacroEvent_Item
 from georgia_lynchings.rdf.ns import dcx
 
 logger = logging.getLogger(__name__)
@@ -582,4 +583,21 @@ class TimemapTest(TestCase):
         self.assertEqual(results[0]['tags'][0][1],'ac_murder') 
         self.assertEqual(results[0]['tags'][0][2],'127')
         
-        #TODO: Create test for revised Timemap                     
+class GeoCoordinatesTest(TestCase):              
+        
+    def test_geo_properties(self):
+        geo = GeoCoordinates(county="Macon")
+        self.assertEqual(32.354068, geo.lat)
+        self.assertEqual(-84.037633, geo.lon)
+        
+    def test_no_county_properties(self):
+        try:
+            geo = GeoCoordinates(county=None)
+        except KeyError, err:
+            self.assertRaises(KeyError)
+            
+    def test_bad_county_properties(self):
+        try:
+            geo = GeoCoordinates(county='Bogus')
+        except KeyError, err:
+            self.assertRaises(KeyError)            
