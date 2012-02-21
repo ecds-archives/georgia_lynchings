@@ -8,8 +8,8 @@ from georgia_lynchings.events.views import home
 
 urlpatterns = patterns('',
     #url(r'^articles/', 'georgia_lynchings.articles.views.newspaper_articles', name="newspaper_articles"),
-    url(r'^articles/', include('georgia_lynchings.articles.urls'), name="articles"),    
-    url(r'^events/', include('georgia_lynchings.events.urls'), name="events"),
+    url(r'^articles/', include('georgia_lynchings.articles.urls', namespace="articles")),    
+    url(r'^events/', include('georgia_lynchings.events.urls', namespace="events")),
     url(r'^$', 'georgia_lynchings.events.views.home', name="home"), 
     
     # Uncomment the admin/doc line below to enable admin documentation:

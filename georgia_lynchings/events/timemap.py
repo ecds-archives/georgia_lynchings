@@ -103,7 +103,7 @@ class Timemap(Mapdata):
         item["point"]={"lat" : lat, "lon" : lon}
         
         # Add more info link to details page
-        detail_link = reverse('details', kwargs={'row_id': metadata['row_id']})
+        detail_link = reverse('events:details', kwargs={'row_id': metadata['row_id']})
             
         # infotemplate popup details
         item["options"]={'title': metadata['label'],

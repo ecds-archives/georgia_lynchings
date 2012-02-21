@@ -22,7 +22,7 @@ class NewspaperArticlesTest(TestCase):
         settings.SPARQL_STORE_REPOSITORY = self.sparql_store_repo_orig
        
     def test_articles_url(self):       
-        articles_url = reverse('newspaper_articles')       
+        articles_url = reverse('articles:newspaper_articles')       
         articles_response = self.client.get(articles_url)
 
         expected, got = 200, articles_response.status_code
