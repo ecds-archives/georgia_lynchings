@@ -62,6 +62,10 @@ types and options, see:
     <field name="participant_race" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_gender" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_actor_name" type="text" indexed="true" stored="true" multiValued="true"/>
+    <!-- participant names/roles; populated by copyField below -->
+    <field name="participant_name" type="text" indexed="true" stored="true" multiValued="true"/>
+    <!-- location names; populated by copyField below -->
+    <field name="location" type="text" indexed="true" stored="true" multiValued="true"/>
     
     <!-- MacroEvent victims data -->
     <field name="victim_uri" type="string" indexed="true" stored="true" multiValued="true"/>
@@ -116,6 +120,12 @@ types and options, see:
   <copyField source="victim_race_brundage" dest="text"/>
   <copyField source="victim_allegedcrime_brundage" dest="text"/>    
 
+  <!-- advanced search fields collected from other fields -->
+  <copyField source="participant_last_name" dest="participant_name"/>
+  <copyField source="participant_actor_name" dest="participant_name"/>
+  <copyField source="city" dest="location"/>
+  <copyField source="victim_county_brundage" dest="location"/>
+
   <!-- MacroEvent fields that are probably also interesting as facets -->
   <copyField source="city" dest="city_facet"/>
   <copyField source="participant_last_name" dest="participant_last_name_facet"/>
@@ -128,5 +138,6 @@ types and options, see:
   <copyField source="victim_lynchingdate_brundage" dest="victim_lynchingdate_brundage_facet"/>
   <copyField source="victim_race_brundage" dest="victim_race_brundage_facet"/>
   <copyField source="victim_allegedcrime_brundage" dest="victim_allegedcrime_brundage_facet"/>    
+  <copyField source="participant_name" dest="participant_name_facet"/>
 
 </schema>
