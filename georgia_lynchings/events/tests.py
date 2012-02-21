@@ -38,7 +38,7 @@ class EventsAppTest(TestCase):
         self.CAMPBELL_MACRO_ID = '360'
 
         self.EVENT_ID = '552'
-        self.TRIPLET_ID = '555'
+        self.TRIPLET_ID = '571'
         
         self.VICTIM_E_COOPER_ID = '135239'   # Eli Cooper
         self.VICTIM_JH_PINKNEY_ID = '135165' # John Henry Pinkney
@@ -347,6 +347,13 @@ class SemanticTripletTest(EventsAppTest):
     def test_related_object_properties(self):
         triplet = SemanticTriplet(self.TRIPLET_ID)
 
+        # participants
+        self.assertEqual(len(triplet.participants), 2)
+        self.assertTrue(unicode(triplet.participants[0]).endswith('#r572'))
+        self.assertTrue(unicode(triplet.participants[1]).endswith('#r584'))
+        # note participants does not currently have a type, though
+        # ultimately it probably should.
+
         # event
         self.assertTrue(isinstance(triplet.event, Event))
         self.assertEqual(triplet.event.id, '552')
@@ -361,8 +368,8 @@ class SemanticTripletTest(EventsAppTest):
         triplet = SemanticTriplet(self.TRIPLET_ID)
         idata = triplet.index_data()
 
-        self.assertEqual(idata['row_id'], '555')
-        self.assertTrue(idata['uri'].endswith('#r555'))
+        self.assertEqual(idata['row_id'], '571')
+        self.assertTrue(idata['uri'].endswith('#r571'))
         self.assertTrue(idata['complex_type'].endswith('Semantic_Triplet'))
         self.assertTrue(idata['label'].startswith('party (male unknown armed)'))
         self.assertTrue(idata['macro_event_uri'].endswith('#r1'))

@@ -16,7 +16,7 @@ u'Coweta'
 import logging
 from rdflib import URIRef, Variable, BNode, RDF
 from georgia_lynchings.rdf.ns import dcx, scx, ssxn
-from georgia_lynchings.rdf.sparql import SelectQuery
+from georgia_lynchings.rdf.sparql import SelectQuery, GraphPattern, Union
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
 __all__ = [ 'ComplexObject', 'RdfPropertyField', 'ReversedRdfPropertyField',
@@ -143,14 +143,24 @@ class ChainedRdfPropertyField(RdfPropertyField):
     '''
 
     def __init__(self, *props):
+        props = [self._massage_property(prop) for prop in props]
         # this is multiple if any of its constituent props is multiple
-        multiple = any([getattr(prop, 'multiple', False) for prop in props])  
+        multiple = any(prop.multiple for prop in props)
+        result_type = props[-1].result_type
 
         super_init = super(ChainedRdfPropertyField, self).__init__
-        super_init(prop=None, multiple=multiple)
+        super_init(prop=None, multiple=multiple, result_type=result_type)
 
         self.props = props
-        # TODO: support result_type, reverse_field_name
+        # TODO: support reverse_field_name
+
+    def _massage_property(self, prop):
+        '''Make this property into an :class:`RdfPropertyField` if it's not
+        already one.'''
+        if hasattr(prop, 'add_to_query'):
+            return prop
+        else:
+            return RdfPropertyField(prop)
 
     def add_to_query(self, q, source, target):
         # Given a property chain of p1, p2, p3, we want to add:
@@ -163,28 +173,61 @@ class ChainedRdfPropertyField(RdfPropertyField):
         link_source = source
         for prop in self.props[:-1]:
             link_target = BNode()
-            if hasattr(prop, 'add_to_query'):
-                prop.add_to_query(q, link_source, link_target)
-            else:
-                q.append((link_source, prop, link_target))
+            prop.add_to_query(q, link_source, link_target)
             # prepare for the next link
             link_source = link_target
         
         # And the final link just results in the original target
         prop = self.props[-1]
-        if hasattr(prop, 'add_to_query'):
-            prop.add_to_query(q, link_source, target)
-        else:
-            q.append((link_source, prop, target))
+        prop.add_to_query(q, link_source, target)
 
-    def wrap_result(self, result_val):
-        # The result of evaluating this property is the result of evaluating
-        # the last property in the chain, if there is such a wrapper.
-        last_wrap = getattr(self.props[-1], 'wrap_result', None)
-        if last_wrap:
-            return last_wrap(result_val)
+
+class UnionRdfPropertyField(RdfPropertyField):
+    '''An :class:`RdfPropertyField` that uses SQL UNION to join multiple
+    properties or property chains together. When evaluaged on a
+    :class:`ComplexObject`, it will execute a single query that returns all
+    of the values from all its constituent properties. These properties may
+    be simple RDF URIs, or they may be instances of
+    :class:`RdfPropertyField` or any subclass or compatible type.
+    '''
+
+    def __init__(self, *props):
+        props = [self._massage_property(prop) for prop in props]
+
+        super_init = super(UnionRdfPropertyField, self).__init__
+        super_init(prop=None, multiple=True)
+
+        self.props = props
+        # TODO: is it possible to support result_type and
+        # reverse_field_name?
+
+    def _massage_property(self, prop):
+        '''Make this property into an :class:`RdfPropertyField` if it's not
+        already one.'''
+        if hasattr(prop, 'add_to_query'):
+            return prop
         else:
-            return result_val
+            return RdfPropertyField(prop)
+
+    def add_to_query(self, q, source, target):
+        # Given union properties of p1, p2, and p3, we want to add:
+        #   { ?source p1 ?target }
+        #   UNION
+        #   { ?source p2 ?target }
+        #   UNION
+        #   { ?source p3 ?target }
+        # :class:`georgia_lynchings.rdf.sparql.Union` basically does this
+        # for us automatically.
+        subgraphs = [self._make_subgraph(prop, source, target)
+                     for prop in self.props]
+        q.append(Union(subgraphs))
+
+    def _make_subgraph(self, prop, source, target):
+        '''Generate a :class:`~georgia_lynchings.rdf.sparql.GraphPattern`
+        for a single constituent property.'''
+        g = GraphPattern()
+        prop.add_to_query(g, source, target)
+        return g
 
 
 class ComplexObjectType(type):

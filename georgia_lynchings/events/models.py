@@ -5,7 +5,7 @@ from urllib import quote
 from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, \
-    RdfPropertyField
+    RdfPropertyField, UnionRdfPropertyField
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
@@ -536,6 +536,7 @@ class SemanticTriplet(ComplexObject):
     'does the statement use passive voice? (typically specified only if true)'
 
     # reverse and aggregate properties
+    participants = UnionRdfPropertyField(participant_s, participant_o)
     event = ReversedRdfPropertyField(sxcxcxn.Semantic_Triplet,
                                      result_type=Event, 
                                      reverse_field_name='triplets')

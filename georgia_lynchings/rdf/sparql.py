@@ -140,6 +140,26 @@ class GraphPattern(object):
                                    pretty.line_break, pretty.current_indent)
 
 
+class Union(object):
+    '''A UNION of several graph patterns in a SPARQL query.'''
+
+    def __init__(self, graphs):
+        self.graphs = graphs
+
+    def as_sparql(self, pretty):
+        '''Serialize this union as for a SPARQL query.
+
+        :param pretty: a :class:`SparqlPrettyfier` object or
+                       interface-equivalent stand-in. Used for selecting
+                       whitespace for pretty- or terse-printing.
+        '''
+        union_str = '%s%sUNION%s' % (pretty.line_break,
+                                     pretty.current_indent,
+                                     pretty.line_break)
+        graph_strings = [g.as_sparql(pretty) for g in self.graphs]
+        return union_str.join(graph_strings)
+
+
 class Triple(object):
     '''A single triple pattern in a :class:`SelectQuery`.'''
 
