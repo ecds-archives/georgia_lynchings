@@ -21,22 +21,21 @@ class MacroEvent(ComplexObject):
     individual events associated with it.
     '''
 
-    # NOTE: Many of these relationships are defined in the private PC-ACE
-    # database for this project. The URIs were found a priori by examining
-    # the RDF data imported from the database setup tables.
-
     rdf_type = scxn.Macro_Event
     'the URI of the RDF Class describing macro event objects'     
-    
-    # complex fields potentially attached to a MacroEvent
-    
-    events = sxcxcxn.Event
-    'the events associated with this macro event'
-    
-    victims = RdfPropertyField(sxcxcxn.Victim, multiple=True)
-    'the (new format) victims associated with this macro event'
 
+    # NOTE: Fields for complex subobjects are defined on the subobjects
+    # themselves to simplify syntax. For example, see Event.macro_event,
+    # below, which adds an "events" property to MacroEvent with its
+    # reverse_field_name.
+    
     def index_data(self):
+        '''Return a dictionary of index terms for this macro event.
+        `sunburnt <http://opensource.timetric.com/sunburnt/>`_ expects a
+        dictionary whose keys are solr field names and whose values are the
+        values to index for those terms. These values can be single values
+        or lists. Lists will be indexed in solr as multi-valued fields.
+        '''
         data = super(MacroEvent, self).index_data().copy()
         
         # victims new format (mutliple victims and assoc. properties)
@@ -498,8 +497,6 @@ class Event(ComplexObject):
     'the URI of the RDF Class describing event objects'
 
     # complex fields potentially attached to an Event
-    triplets = sxcxcxn.Semantic_Triplet
-    'the semantic triplets associated with this event'
     space = sxcxcxn.Space
     'a place associated with this event'
 
@@ -508,13 +505,9 @@ class Event(ComplexObject):
     'a word or short phrase describing the type of event'
 
     # reverse and aggregate properties
-    macro_event = ReversedRdfPropertyField(MacroEvent.events,
-                                           result_type=MacroEvent)
-
-# FIXME: patching MacroEvent.events from down here isn't great: it
-# essentially means a little corner of the MacroEvent definition is way down
-# here. need to find a better way to do this.
-MacroEvent.events.result_type = Event
+    macro_event = ReversedRdfPropertyField(sxcxcxn.Event,
+                                           result_type=MacroEvent,
+                                           reverse_field_name='events')
 
 
 class SemanticTriplet(ComplexObject):
@@ -543,8 +536,9 @@ class SemanticTriplet(ComplexObject):
     'does the statement use passive voice? (typically specified only if true)'
 
     # reverse and aggregate properties
-    event = ReversedRdfPropertyField(Event.triplets,
-                                     result_type=Event)
+    event = ReversedRdfPropertyField(sxcxcxn.Semantic_Triplet,
+                                     result_type=Event, 
+                                     reverse_field_name='triplets')
     macro_event = ChainedRdfPropertyField(event, Event.macro_event)
 
     def index_data(self):
@@ -556,10 +550,6 @@ class SemanticTriplet(ComplexObject):
 
         return data
 
-# FIXME: patching Event.triplets from down here isn't great: it essentially
-# means a little corner of the Event definition is way down here. need to
-# find a better way to do this.
-Event.triplets.result_type = SemanticTriplet
 
 class Victim(ComplexObject):
     '''A Victim is an object type defined by the project's private
@@ -591,8 +581,9 @@ class Victim(ComplexObject):
     victim_race = ssxn.Race_Brundage
                     
     # reverse and aggregate properties
-    macro_event = ReversedRdfPropertyField(MacroEvent.victims,
-                                           result_type=MacroEvent)
+    macro_event = ReversedRdfPropertyField(sxcxcxn.Victim,
+                                           result_type=MacroEvent,
+                                           reverse_field_name='victims')
 
     def index_data(self):
         data = super(Victim, self).index_data().copy()
@@ -602,8 +593,3 @@ class Victim(ComplexObject):
             data['macro_event_uri'] = macro_event.uri
 
         return data
-
-# FIXME: patching Victim from down here isn't great: it essentially
-# means a little corner of the Victim definition is way down here. need to
-# find a better way to do this.
-MacroEvent.victims.result_type = Victim

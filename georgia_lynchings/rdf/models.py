@@ -13,12 +13,16 @@ rdflib.term.Literal(u'Coweta')
 u'Coweta'
 '''
 
+import logging
 from rdflib import URIRef, Variable, BNode, RDF
 from georgia_lynchings.rdf.ns import dcx, scx, ssxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
-__all__ = [ 'ComplexObject' ]
+__all__ = [ 'ComplexObject', 'RdfPropertyField', 'ReversedRdfPropertyField',
+            'ChainedRdfPropertyField', ]
+
+logger = logging.getLogger(__name__)
 
 class RdfPropertyField(object):
     '''A Python `descriptor <http://docs.python.org/reference/datamodel.html#descriptors>`_
@@ -35,12 +39,18 @@ class RdfPropertyField(object):
                         occur, and the property will return the RDF node
                         itself.
     :param multiple: If True, this returns a list of result_type.                        
+    :param reverse_field_name: if specified with ``result_type``, create a
+                               property on ``result_type`` named
+                               ``reverse_field_name`` that reverses this
+                               relationship.
     '''
 
-    def __init__(self, prop, result_type=None, multiple=False):
+    def __init__(self, prop, result_type=None, multiple=False,
+                 reverse_field_name=None):
         self.prop = prop
         self.result_type = result_type
         self.multiple = multiple
+        self.reverse_field_name = reverse_field_name
 
     def __get__(self, obj, owner):
         # per convention, return self when evaluated on the class
@@ -55,8 +65,10 @@ class RdfPropertyField(object):
 
         # ask the default SparqlStore for that data
         store = SparqlStore()
+        bindings = {'obj': obj.uri.n3()}
+        logger.debug('Executing query: `%s`; bindings: `%r`' % (q, bindings))
         bindings = store.query(sparql_query=unicode(q),
-                               initial_bindings={'obj': obj.uri.n3()})
+                               initial_bindings=bindings)
         # and interpret and return the results
         if bindings:
             if self.multiple:                
@@ -91,6 +103,13 @@ class RdfPropertyField(object):
         else:
             return result_val
 
+    def add_reverse_property(self, forward_class):
+        if self.result_type and self.reverse_field_name:
+            reverse_property = ReversedRdfPropertyField(self.prop,
+                    result_type=forward_class, multiple=True)
+            setattr(self.result_type, self.reverse_field_name,
+                    reverse_property)
+
 
 class ReversedRdfPropertyField(RdfPropertyField):
     '''An :class:`RdfPropertyField` that operates in reverse. When evaluated
@@ -108,6 +127,13 @@ class ReversedRdfPropertyField(RdfPropertyField):
             # directly to the graph.
             q.append((target, self.prop, source))
 
+    def add_reverse_property(self, forward_class):
+        if self.result_type and self.reverse_field_name:
+            reverse_property = RdfPropertyField(self.prop,
+                    result_type=forward_class, multiple=True)
+            setattr(self.result_type, self.reverse_field_name,
+                    reverse_property)
+
 
 class ChainedRdfPropertyField(RdfPropertyField):
     '''An :class:`RdfPropertyField` that chains multiple properties
@@ -117,17 +143,14 @@ class ChainedRdfPropertyField(RdfPropertyField):
     '''
 
     def __init__(self, *props):
+        # this is multiple if any of its constituent props is multiple
+        multiple = any([getattr(prop, 'multiple', False) for prop in props])  
+
+        super_init = super(ChainedRdfPropertyField, self).__init__
+        super_init(prop=None, multiple=multiple)
+
         self.props = props
-        
-        # Check if this prop has mulitple results
-        self.multiple = any([getattr(prop, 'multiple', False) for prop in props])  
-        '''      
-        for prop in self.props:
-            if hasattr(prop, 'multiple') and prop.multiple is True:
-                self.multiple=True
-            else:
-                self.multiple=None
-        '''
+        # TODO: support result_type, reverse_field_name
 
     def add_to_query(self, q, source, target):
         # Given a property chain of p1, p2, p3, we want to add:
@@ -183,15 +206,18 @@ class ComplexObjectType(type):
             # if it's a bare URIRef
             if isinstance(val, URIRef):
                 # then translate it to an RdfPropertyField
-                field = RdfPropertyField(val)
-                forward_attrs[attr] = field
-            else:
-                # otherwise leave it alone
-                forward_attrs[attr] = val
+                val = RdfPropertyField(val)
+            forward_attrs[attr] = val
 
         # create the class
         super_new = super(ComplexObjectType, cls).__new__
-        return super_new(cls, name, bases, forward_attrs)
+        new_class = super_new(cls, name, bases, forward_attrs)
+
+        for attr, val in forward_attrs.items():
+            if hasattr(val, 'add_reverse_property'):
+                val.add_reverse_property(new_class)
+
+        return new_class
 
 
 class ComplexObject(object):
