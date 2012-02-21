@@ -18,6 +18,17 @@ from rdflib import Variable
 
 __all__ = [ 'SelectQuery' ]
 
+def _massage_into_variable(var):
+    '''Wrap a single object in a :class:`rdflib.Variable` object if it
+    isn't already one.
+    '''
+
+    if isinstance(var, Variable):
+        return var
+    else:
+        return Variable(var)
+
+
 class SelectQuery(object):
     '''A SPARQL SELECT query to aid in programmatic query construction.
     
@@ -28,30 +39,9 @@ class SelectQuery(object):
     def __init__(self, results=None):
         if results is None:
             results = []
-        self.result_variables = [ self._massage_into_variable(res)
+        self.result_variables = [ _massage_into_variable(res)
                                   for res in results ]
-        self.patterns = []
-        self.optpatterns = []         
-
-    def _massage_into_variable(self, var):
-        '''Wrap a single object in a :class:`rdflib.Variable` object if it
-        isn't already one.
-        '''
-
-        if isinstance(var, Variable):
-            return var
-        else:
-            return Variable(var)
-
-    def _massage_into_triple(self, triple):
-        '''Wrap a single tuple in a :class:`Triple` object if it
-        isn't already one.
-        '''
-
-        if isinstance(triple, Triple):
-            return triple
-        else:
-            return Triple(triple)
+        self.graph = GraphPattern()
 
     def __unicode__(self):
         return self.as_sparql()
@@ -65,18 +55,14 @@ class SelectQuery(object):
         :param pretty: boolean, add linebreaks and indentation
         '''
 
-        line_break = u'\n' if pretty else u' '
+        if isinstance(pretty, bool):
+            pretty = SparqlPrettyfier.from_bool(pretty)
 
         result_variables = self._result_variables_as_sparql()
-        graph_pattern = self._patterns_as_sparql()
+        graph_pattern = self.graph.as_sparql(pretty)
         
-        # Add optional graphs
-        for optpat in self.optpatterns:
-            graph_pattern += self._format_optional_pattern(optpat)
-                    
-        return u'SELECT %s%sWHERE {%s%s%s}' % (
-            result_variables, line_break,
-            line_break, graph_pattern, line_break)
+        return u'SELECT %s%sWHERE %s' % (
+            result_variables, pretty.line_break, graph_pattern)
 
     def _result_variables_as_sparql(self):
         'Encode query result variables.'
@@ -87,30 +73,71 @@ class SelectQuery(object):
         vars = [ var.n3() for var in self.result_variables ]
         return u' '.join(vars)
 
-    def _patterns_as_sparql(self, pretty=False):
-        'Encode the query main graph pattern.'
-
-        patterns = [ unicode(pat) for pat in self.patterns ]
-        return u' '.join(patterns)
-
-    def _format_optional_pattern(self, optpat):
-        'Encode the query main graph pattern.'   
-        
-        return u' OPTIONAL {%s%s%s} ' % (u' ', optpat, u' ')               
-
-    def append(self, pattern, optional=None):
+    def append(self, pattern, optional=False):
         '''Append a single triple to the query graph.
         
-        :param pattern: a tuple with 3 elements: the subject, predicate and
-                        object. Each should be a :class:`rdflib.URIRef`,
-                        :class:`rdflib.Literal`, or
+        :param pattern: a graph pattern. Typically a tuple with 3 elements:
+                        the subject, predicate and object. Each should be a
+                        :class:`rdflib.URIRef`, :class:`rdflib.Literal`, or
                         :class:`rdflib.Variable`, or else it must provide a
-                        compatible ``n3()`` method.
+                        compatible ``n3()`` method. Though this is typically
+                        a tuple, it may instead be a :class:`GraphPattern`
+                        or :class:`Triple` or any other object with a
+                        :meth:`GraphPattern.as_sparql` method matching their
+                        interface.
+        :param optional: wrap the pattern in an OPTIONAL graph before
+                         appending.
         '''
         if optional:
-            self.optpatterns.append(self._massage_into_triple(pattern))
+            subgraph = GraphPattern(optional=True)
+            subgraph.append(pattern)
+            self.graph.append(subgraph)
         else:
-            self.patterns.append(self._massage_into_triple(pattern))
+            self.graph.append(pattern)
+
+
+def _massage_into_sparql(node):
+    '''Wrap a node in a pattern compatible with :class:`SelectQuery` and
+    :class:`GraphPattern` serialization. For now, if it as an ``as_sparql``
+    method then just return it, otherwise try to wrap it in a
+    :class:`Triple`.'''
+
+    if hasattr(node, 'as_sparql'):
+        return node
+    else:
+        # hope it's a tuple representing a triple
+        return Triple(node)
+
+
+class GraphPattern(object):
+    '''A graph pattern in a SPARQL query, required by default but
+    potentially optional. Callers can :meth:`append` other arbitrary
+    patterns, including subordinate :class:`GraphPattern` objects and
+    :class:`Triples`.'''
+
+    def __init__(self, optional=False):
+        self.patterns = []
+        self.optional = optional
+
+    def append(self, pattern):
+        '''Append a single pattern (triple or subordinate graph pattern) to
+        this graph pattern.'''
+        self.patterns.append(_massage_into_sparql(pattern))
+
+    def as_sparql(self, pretty):
+        '''Serialize this graph pattern as for a SPARQL query.
+
+        :param pretty: a :class:`SparqlPrettyfier` object or
+                       interface-equivalent stand-in. Used for selecting
+                       whitespace for pretty- or terse-printing.
+        '''
+        optional_str = u'OPTIONAL ' if self.optional else u''
+        pattern_pretty = pretty.indent()
+        patterns = [ pat.as_sparql(pattern_pretty) for pat in self.patterns ]
+        patterns_str = pattern_pretty.line_break.join(patterns)
+        return '%s%s{%s%s%s%s}' % (pretty.current_indent, optional_str, pretty.line_break,
+                                   patterns_str,
+                                   pretty.line_break, pretty.current_indent)
 
 
 class Triple(object):
@@ -119,9 +146,49 @@ class Triple(object):
     def __init__(self, items):
         self.subject, self.predicate, self.object = items
 
-    def __unicode__(self):
-        return u'%s %s %s .' % \
-            (self.subject.n3(), self.predicate.n3(), self.object.n3())
-
     def __str__(self):
         return self.__unicode__().encode()
+
+    def __unicode__(self):
+        return self.as_sparql(SparqlPrettyfier.from_bool(False))
+
+    def as_sparql(self, pretty):
+        '''Serialize this triple as for a SPARQL query.
+
+        :param pretty: a :class:`SparqlPrettyfier` object or
+                       interface-equivalent stand-in. Used for selecting
+                       whitespace for pretty- or terse-printing.
+        '''
+        return u'%s%s %s %s .' % (pretty.current_indent,
+            self.subject.n3(), self.predicate.n3(), self.object.n3())
+
+
+class SparqlPrettyfier(object):
+    '''Whitespace-aware serialization state for printing SPARQL queries.'''
+
+    def __init__(self, line_break=u' ', indent_space=u'', indent_level=0):
+        self.line_break = line_break
+        self.indent_space = indent_space
+        self.indent_level = indent_level
+
+    def indent(self, add_level=1):
+        '''Return a new :class:`SparqlPrettyfier`, but indented one step
+        more than this one.
+        '''
+        cls = self.__class__
+        return cls(line_break=self.line_break,
+                   indent_space=self.indent_space,
+                   indent_level=self.indent_level + add_level)
+
+    @property
+    def current_indent(self):
+        '''the indent string at this indent level'''
+        return self.indent_space * self.indent_level
+
+    @classmethod
+    def from_bool(cls, pretty):
+        '''convenience method to return a prettyfier with default pretty or
+        terse whitespace settings'''
+        line_break = u'\n' if pretty else u' '
+        indent_space = u'  ' if pretty else u''
+        return cls(line_break, indent_space)

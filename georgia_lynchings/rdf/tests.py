@@ -186,7 +186,8 @@ class SelectQueryTest(TestCase):
         q = SelectQuery(results=['s', 'p', 'o'])
         q.append((Variable('s'), Variable('p'), Variable('o')))        
         q.append((Variable('a'), Variable('b'), Variable('c')), optional=True)
-        self.assertEqual(unicode(q), 'SELECT ?s ?p ?o WHERE { ?s ?p ?o . OPTIONAL { ?a ?b ?c . }  }')        
+        self.assertEqual(unicode(q), 'SELECT ?s ?p ?o WHERE { ?s ?p ?o . OPTIONAL { ?a ?b ?c . } }')
+
 
 class ComplexObjectTest(TestCase):
     sample = Namespace('http://example.com/#')
