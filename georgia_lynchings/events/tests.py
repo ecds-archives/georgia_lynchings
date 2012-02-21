@@ -572,18 +572,6 @@ class TimemapTest(TestCase):
         self.assertEqual('1918-05-23', result[0]['start'])
         self.assertEqual('[Assault]', result[0]['options']['tags'])
         self.assertEqual('Crisp', result[0]['title'])
-        
-    def test_timemap_create_item(self):
-        result = self.tmap.create_item(self.item) 
-        self.assertEqual('1896-06-02', result['end']) 
-        self.assertNotIn('tags', result['options'])        
-        self.assertEqual('Debt Dispute', result['title'])            
-        
-    def test_timemap_create_item_filters(self):
-        result = self.tmapfilter.create_item(self.item) 
-        self.assertEqual('1896-06-02', result['end']) 
-        self.assertEqual('[Assault]', result['options']['tags'])  
-        self.assertEqual('Debt Dispute', result['title']) 
 
     def test_get_filters(self):
         results = get_filters(self.filters)
@@ -592,4 +580,6 @@ class TimemapTest(TestCase):
         self.assertEqual(results[0]['prefix'],'ac_')
         self.assertEqual(results[0]['tags'][0][0],'Murder') 
         self.assertEqual(results[0]['tags'][0][1],'ac_murder') 
-        self.assertEqual(results[0]['tags'][0][2],'127')                     
+        self.assertEqual(results[0]['tags'][0][2],'127')
+        
+        #TODO: Create test for revised Timemap                     

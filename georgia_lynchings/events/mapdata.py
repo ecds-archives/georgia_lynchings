@@ -7,7 +7,7 @@ from georgia_lynchings.events.models import get_metadata
 
 class Mapdata(object):
     '''The abstract class for creating json data for map display.
-    :meth:`format` and :meth:`create_item` methods should be overridden in the subclass.
+    :meth:`format` method should be overridden in the subclass.
     '''
 
     #This allows methods to be marked as abstract
@@ -21,12 +21,5 @@ class Mapdata(object):
     @abstractmethod
     def format(self, metadata):
         '''Format the metadata results into a json structure for map display.
-        **This method must be implemented in the subclass**
-        '''
-        
-
-    @abstractmethod
-    def create_item(self, metadata):
-        '''Create a pinpoint item for map json file
         **This method must be implemented in the subclass**
         '''

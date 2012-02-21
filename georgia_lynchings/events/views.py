@@ -56,7 +56,7 @@ def details(request, row_id):
 
     if results:
         title = row_id
-        results['articles_link'] = reverse('articles', kwargs={'row_id': row_id})          
+        results['articles_link'] = reverse('events:articles', kwargs={'row_id': row_id})          
     else:   title = "No records found"  
      
     return render(request, 'events/details.html',
