@@ -298,7 +298,7 @@ PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
 PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
 PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
-SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?event ?evlabel ?melabel ?macro
+SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?event ?evlabel ?melabel ?macro ?occupation
 WHERE {
     # First find all the Macro events, and all the Events for those macros,
     # and all of the Triplets for those events, and all the Participant-O
@@ -359,6 +359,13 @@ WHERE {
         ?pchar sxcxcxn:First_name_and_last_name ?name.
         ?name ssxn:Last_name ?lname.
         FILTER (?lname != "?")
+    }
+
+    # Provide Occupation, if it exists
+    OPTIONAL {
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Occupation ?occupation.
+        FILTER (?occupation != "?")
     }
 }
 """
@@ -444,7 +451,7 @@ PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
 PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
 PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
 
-SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?event ?evlabel ?melabel ?macro
+SELECT DISTINCT ?fname ?lname ?qualitative_age ?race ?gender ?name_of_indivd_actor ?event ?evlabel ?melabel ?macro  ?occupation
 WHERE {
     # First find all the Macro events, and all the Events for those macros,
     # and all of the Triplets for those events, and all the Participant-S
@@ -505,6 +512,13 @@ WHERE {
         ?pchar sxcxcxn:First_name_and_last_name ?name.
         ?name ssxn:Last_name ?lname.
         FILTER (?lname != "?")
+    }
+
+    # Provide Occupation, if it exists
+    OPTIONAL {
+        ?individual sxcxcxn:Personal_characteristics ?pchar.
+        ?pchar ssxn:Occupation ?occupation.
+        FILTER (?occupation != "?")
     }
 }
 

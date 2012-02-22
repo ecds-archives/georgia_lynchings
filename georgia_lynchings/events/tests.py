@@ -30,7 +30,8 @@ class EventsAppTest(TestCase):
         # some handy fixtures from test data
         self.NONEXISTENT_MACRO_ID = '0'
         self.CRISP_MACRO_ID = '3' 
-        self.PULASKI_MACRO_ID = '10'                  
+        self.RANDOLPH8_MACRO_ID = '8'
+        self.PULASKI_MACRO_ID = '10'
         self.SAM_HOSE_MACRO_ID = '12'
         self.MERIWETHER_MACRO_ID = '25'        
         self.BROOKS_MACRO_ID = '57'        
@@ -196,7 +197,18 @@ class MacroEventTest(EventsAppTest):
         reason_list, item = result['reason'], 'capture of the negro'
         self.assertIn(item, reason_list, 'Expected %s reason in reason_list' % (item))  
         expected, got = 'Meriwether', result['melabel'] 
-        self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))                                            
+        self.assertEqual(expected, got, 'Expected %s articleTotal, got %s' % (expected, got))
+
+        #test Occupation
+        details = Details(self.RANDOLPH8_MACRO_ID)
+        result = details.get()
+
+        expected, got = 'merchant', result['events'][0]['uparto'][0]['occupation']
+        self.assertEqual(expected, got, "Should have gotten %s but got %s" % (expected, got))
+        expected, got = 'magistrate', result['events'][0]['uparts'][5]['occupation']
+        self.assertEqual(expected, got, "Should have gotten %s but got %s" % (expected, got))
+
+
 
         details = Details(self.NONEXISTENT_MACRO_ID)
         expected, got = None, details.get() 

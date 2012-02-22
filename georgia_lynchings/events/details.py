@@ -166,6 +166,7 @@ class Details:
                         partdict['gender'] = part.get('gender', None)
                         partdict['role'] = part.get('name_of_indivd_actor', None)
                         partdict['age'] = part.get('qualitative_age', None)
+                        partdict['occupation'] = part.get('occupation', None)
                     if partdict:
                         if p in event.keys(): event[p].append(partdict)
                         else: event[p]= [partdict]                         
