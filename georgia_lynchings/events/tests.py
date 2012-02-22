@@ -590,6 +590,73 @@ class TimemapTest(TestCase):
         self.assertEqual(results[0]['tags'][0][1],'ac_murder') 
         self.assertEqual(results[0]['tags'][0][2],'127')
         
+class MacroEvent_ItemTest(TestCase):
+    
+    def setUp(self):
+        # some handy fixtures from test data
+        self.NONEXISTENT_MACRO_ID = '0'
+        self.CRISP_MACRO_ID = '3' 
+        self.PULASKI_MACRO_ID = '10'                  
+        self.SAM_HOSE_MACRO_ID = '12'
+        self.MERIWETHER_MACRO_ID = '25'        
+        self.BROOKS_MACRO_ID = '57'        
+        self.RANDOLPH_MACRO_ID = '208'        
+        self.CAMPBELL_MACRO_ID = '360'
+            
+        # Filters
+        self.filters = [
+            { 
+                'title': 'Alleged Crime',
+                'name': 'victim_allegedcrime_brundage',
+                'prefix': 'ac_', 
+            }
+        ]
+        
+        self.queryresult = {u'label': rdflib.term.Literal(u'Lowndes, Brooks, Colquitt'),
+             u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r143'),
+             u'max_date': rdflib.term.Literal(u'1918-05-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+             u'min_date': rdflib.term.Literal(u'1918-05-18', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+             u'vcounty_brdg': rdflib.term.Literal(u'Brooks'),
+             u'victim_allegedcrime_brundage': rdflib.term.Literal(u'Murder Accomplice')}
+      
+        self.macroevent_item = MacroEvent_Item(self.SAM_HOSE_MACRO_ID, self.filters) 
+        
+    def test_meitem_properties(self):
+        self.assertEqual(self.SAM_HOSE_MACRO_ID, self.macroevent_item.row_id)
+        self.assertEqual(self.macroevent_item.jsonitem_filters.keys(), [self.filters[0]['name']])
+        
+    def test_init_item(self):
+        self.macroevent_item.init_item(self.queryresult)
+        self.assertEqual(self.macroevent_item.jsonitem['title'], 'Lowndes, Brooks, Colquitt')
+        self.assertEqual(self.macroevent_item.jsonitem['start'], '1918-05-18')
+        self.assertEqual(self.macroevent_item.jsonitem['end'], '1918-05-19')
+        self.assertEqual(self.macroevent_item.jsonitem['point']['lat'], 30.846525)
+        self.assertEqual(self.macroevent_item.jsonitem['point']['lon'], -83.577257)        
+        self.assertEqual(self.macroevent_item.jsonitem['options']['title'], 'Lowndes, Brooks, Colquitt')
+        self.assertEqual(self.macroevent_item.jsonitem['options']['detail_link'], reverse('events:details', kwargs={'row_id': self.macroevent_item.row_id}))        
+        self.assertEqual(self.macroevent_item.jsonitem['options']['county'], 'Brooks')
+        self.assertEqual(self.macroevent_item.jsonitem['options']['min_date'], '1918-05-18')
+        
+    def test_add_filter_tags(self):       
+        self.macroevent_item.add_filter_tags(self.queryresult)
+        self.assertEqual(self.macroevent_item.jsonitem_filters['victim_allegedcrime_brundage'], ['Murder Accomplice'])
+        
+    def test_process_json(self):
+        expected = [{'end': '1918-05-19',
+          'options': {'county': 'Brooks',
+                      'detail_link': '/events/12/details/',
+                      'min_date': rdflib.term.Literal(u'1918-05-18', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                      'tags': '[Murder Accomplice]',
+                      'title': rdflib.term.Literal(u'Lowndes, Brooks, Colquitt')},
+          'point': {'lat': 30.846525, 'lon': -83.577257},
+          'start': '1918-05-18',
+          'title': 'Lowndes, Brooks, Colquitt'}]     
+        self.macroevent_item.init_item(self.queryresult)
+        self.macroevent_item.add_filter_tags(self.queryresult)
+        jsonResult = []
+        self.macroevent_item.process_json(jsonResult)
+        self.assertEqual(jsonResult, expected)             
+        
 class GeoCoordinatesTest(TestCase):              
         
     def test_geo_properties(self):
