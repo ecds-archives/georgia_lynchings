@@ -593,15 +593,8 @@ class TimemapTest(TestCase):
 class MacroEvent_ItemTest(TestCase):
     
     def setUp(self):
-        # some handy fixtures from test data
-        self.NONEXISTENT_MACRO_ID = '0'
-        self.CRISP_MACRO_ID = '3' 
-        self.PULASKI_MACRO_ID = '10'                  
+        # macro event for testing
         self.SAM_HOSE_MACRO_ID = '12'
-        self.MERIWETHER_MACRO_ID = '25'        
-        self.BROOKS_MACRO_ID = '57'        
-        self.RANDOLPH_MACRO_ID = '208'        
-        self.CAMPBELL_MACRO_ID = '360'
             
         # Filters
         self.filters = [
@@ -611,7 +604,7 @@ class MacroEvent_ItemTest(TestCase):
                 'prefix': 'ac_', 
             }
         ]
-        
+        # Query result for timemap macro event item
         self.queryresult = {u'label': rdflib.term.Literal(u'Lowndes, Brooks, Colquitt'),
              u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r143'),
              u'max_date': rdflib.term.Literal(u'1918-05-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
