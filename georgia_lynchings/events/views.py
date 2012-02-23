@@ -137,23 +137,35 @@ filters= [
 ]
 
 def timemap(request):
-    '''Send list of filters generated from :class:`~georgia_lynchings.events.timemap.Timemap`.
+    '''Send list of filters generated from :class:`~georgia_lynchings.events.timemap.Timemap`
+    to the template for the filter dropdown lists.
     '''
-
-    # Get the json object require for displaying timemap data   
-    timemap = Timemap(filters)
-    timemap.get_json()
 
     return render(request, 'events/timemap.html', \
         {'filters' : get_filters(filters)})
 
 def map_json(request):
     '''
-    Returns json data from :class:`~georgia_lynchings.events.timemap.Timemap` for map display
+    Renders json data from :class:`~georgia_lynchings.events.timemap.Timemap` for map display
     '''
 
     map_data = Timemap(filters)
-    json_str = json.dumps(map_data.get_json(), indent=4)
+    add_fields = get_additional_fields()
+    # Get the json for core metadata plus any additional fields for the timemap filter
+    json_str = json.dumps(map_data.get_json(add_fields=add_fields), indent=4)    
     response = HttpResponse(json_str, mimetype='application/json')
 
     return response
+    
+def get_additional_fields():
+    '''
+    Create a list of names for the timemap filter fields.
+    
+    :rtype: a list of filter names    
+    '''    
+        
+    # Get a list of filter names
+    fields = []
+    for filter in filters:
+        fields.append(filter['name'])
+    return fields    

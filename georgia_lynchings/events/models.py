@@ -421,12 +421,13 @@ def get_victim_query():
     return unicode(q)  
     
 def get_metadata_query():
-    '''Get the query to retrieve metadata information.
+    '''Get the query to retrieve core metadata information.
 
     :rtype: a unicode string of the SPARQL query
 
     '''
-    q = SelectQuery(results=['macro', 'label', 'min_date', 'max_date', 'vcounty_brdg', 'victim_allegedcrime_brundage'])
+    q = SelectQuery(results=['macro', 'label', 'min_date', 'max_date', \
+        'vcounty_brdg'], distinct=True)
     q.append((Variable('macro'), sxcxcxn.Event, Variable('event')))
     q.append((Variable('macro'), dcx.Identifier, Variable('label')))  
     q.append((Variable('event'), ix_ebd.mindate, Variable('min_date')))
@@ -434,15 +435,40 @@ def get_metadata_query():
     q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim'))) 
     q.append((Variable('victim'), ssxn.County_of_lynching_Brundage, \
             Variable('vcounty_brdg')))
-    q.append((Variable('victim'), ssxn.Alleged_crime_Brundage, \
-            Variable('victim_allegedcrime_brundage')), optional=True)
-      
     return unicode(q)
     
-def get_metadata():
-    '''Get the macro event metadata from sesame triplestore.
+def get_metadata(add_fields=[]):
+    '''Get the macro event core metadata from sesame triplestore, plus
+    any additional fields used in the timemap filter.
+    
+    :param add_fields: add extra fields to the basic metadata set.    
 
-    :rtype: a mapping list of the type returned by
+    :rtype: a mapping dict of core metadata plus timemap field using
+            core data returned by
+            :meth:`~georgia_lynchings.rdf.sparqlstore.SparqlStore.query`.
+            joined with data from additional filter fields, and indexed
+            on the macro event id.
+            with the following bindings:
+              * `label`: the label of this Macro Event              
+              * `min_date`: the minimum date related to this event
+              * `max_date`: the maximum date related to this event
+              * `victim_county_brundage`: the (Brundage) county of the Victim
+              plus any additional fields used by the timemap filter
+    '''
+    store = SparqlStore()
+    resultSet = store.query(sparql_query=get_metadata_query())
+    
+    resultSetIndexed = indexOnMacroEvent(resultSet)
+    
+    # Add any additional field requests
+    update_filter_fields(add_fields, resultSetIndexed)
+    
+    return resultSetIndexed
+    
+def indexOnMacroEvent(resultSet=[]):
+    '''Create a new dictionary using the macroevent id as the key.
+    
+    :param resultSet: a mapping list of the type returned by
             :meth:`~georgia_lynchings.rdf.sparqlstore.SparqlStore.query`.
             It returns metadata for all  MacroEvents, 
             with the following bindings:
@@ -451,24 +477,79 @@ def get_metadata():
               * `min_date`: the minimum date related to this event
               * `max_date`: the maximum date related to this event
               * `victim_county_brundage`: the (Brundage) county of the Victim
-              * `victim_allegedcrime_brundage`: the (Brundage) alleged crime of the Victim
+              
+    :rtype: a mapping dictionary of the resultSet using the macroevent 
+            id as the key.           
     '''
-    store = SparqlStore()
-    resultSet = store.query(sparql_query=get_metadata_query())
-    return resultSet
+    indexedResultSet = {}
+    if resultSet:
+        fields = resultSet[0].keys()
+        fields.remove('macro')        
+        for item in resultSet:
+            row_id = item['macro'].split('#r')[1]
+            del item['macro']
+            indexedResultSet[row_id]=item
+
+    return indexedResultSet
+    
+def update_filter_fields(add_fields=[], resultSetIndexed={}):
+    '''Update the core metadata with filter field data.
+    
+    :param add_fields: add extra fields to the basic metadata set.    
+
+    :param resultSetIndexed: a mapping dict of core metadata using the
+        macroevent id as the dict key.  
+    '''
+
+    # Add `victim_allegedcrime_brundage`, if present in add_fields list
+    if 'victim_allegedcrime_brundage' in add_fields:
+        q = SelectQuery(results=['macro', 'victim_allegedcrime_brundage'], distinct=True)
+        q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))         
+        q.append((Variable('victim'), ssxn.Alleged_crime_Brundage, \
+                Variable('victim_allegedcrime_brundage')))
+        store = SparqlStore()
+        ac_resultSet = store.query(sparql_query=unicode(q))
+        join_data_on_macroevent(resultSetIndexed, ac_resultSet)
+                
+def join_data_on_macroevent(resultSetIndexed={}, filterdict=[]):
+    '''Join the filter resultSet to the metadadta indexed dictionary  
+
+    :param resultSetIndexed: a mapping dict of core metadata using the
+        macroevent id as the dict key. 
+    :param filterdict: a list of dictionary with the following bindings:
+              * `macro`: the URI of this Macro Event
+              * filtername: the name of the filter 
+    '''
+    if resultSetIndexed and filterdict:
+        filtername = filterdict[0].keys()
+        filtername.remove('macro')
+        filtername = filtername[0]
+        for item in filterdict:
+            try:
+                row_id = item['macro'].split('#r')[1]
+                if filtername in resultSetIndexed[row_id]:
+                    if item[filtername] not in resultSetIndexed[row_id][filtername]:
+                        resultSetIndexed[row_id].append(item[filtername].encode('ascii'))
+                else:
+                    resultSetIndexed[row_id][filtername] = [item[filtername].encode('ascii')]
+            except KeyError, err:
+                logger.debug("Filter[%s] not defined for MacroEvent[%s]" % (filtername, err))
     
 def get_filters(filters):
     '''Get the queries to retrieve filters tags and frequency.
 
-    :rtype: a mapping list of the type returned by
-            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
+    :param filter: a mapping dict of the timemap filters.
             It has the following bindings:
-
               * `title`: the display name of the filter tag
               * `name`: the filter name
-              * `prefix`: the prefix to the slug value                          
-
-            The matches are ordered by `mindate`.
+              * `prefix`: the prefix to the slug value
+              
+    :rtype: an updated mapping dict of the timemap filters.
+            It has the following bindings:
+              * `title`: the display name of the filter tag
+              * `name`: the filter name
+              * `prefix`: the prefix to the slug value
+              * `tags`: a tuple as (filtername, slug, frequency)
     '''
 
     for filter in filters:       

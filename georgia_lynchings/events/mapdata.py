@@ -13,10 +13,12 @@ class Mapdata(object):
     #This allows methods to be marked as abstract
     __metaclass__ = ABCMeta
 
-    def get_json(self):
+    def get_json(self, add_fields=[]):
         '''Get json object for map display.
+        
+            :param add_fields: add extra fields to the core metadata.        
         '''
-        return self.format(get_metadata())
+        return self.format(get_metadata(add_fields))
         
     @abstractmethod
     def format(self, metadata):
