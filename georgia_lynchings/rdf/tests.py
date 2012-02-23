@@ -188,6 +188,10 @@ class SelectQueryTest(TestCase):
         q.append((Variable('a'), Variable('b'), Variable('c')), optional=True)
         self.assertEqual(unicode(q), 'SELECT ?s ?p ?o WHERE { ?s ?p ?o . OPTIONAL { ?a ?b ?c . } }')
 
+    def test_distinct_query(self):
+        q = SelectQuery(results=['s', 'p', 'o'], distinct=True)
+        q.append((Variable('s'), Variable('p'), Variable('o')))        
+        self.assertEqual(unicode(q), 'SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o . }')
 
 class ComplexObjectTest(TestCase):
     sample = Namespace('http://example.com/#')

@@ -36,12 +36,13 @@ class SelectQuery(object):
                     either as strings or :class:`rdflib.Variable` objects
     '''
 
-    def __init__(self, results=None):
+    def __init__(self, results=None, distinct=False):
         if results is None:
             results = []
         self.result_variables = [ _massage_into_variable(res)
                                   for res in results ]
         self.graph = GraphPattern()
+        self.distinct = distinct
 
     def __unicode__(self):
         return self.as_sparql()
@@ -60,8 +61,9 @@ class SelectQuery(object):
 
         result_variables = self._result_variables_as_sparql()
         graph_pattern = self.graph.as_sparql(pretty)
-        
-        return u'SELECT %s%sWHERE %s' % (
+        distinct_str = u'DISTINCT ' if self.distinct else u''        
+
+        return u'SELECT %s%s%sWHERE %s' % ( distinct_str,
             result_variables, pretty.line_break, graph_pattern)
 
     def _result_variables_as_sparql(self):
