@@ -545,7 +545,7 @@ class TimemapTest(TestCase):
             { 
                 'title': 'Alleged Crime',
                 'name': 'victim_allegedcrime_brundage',
-                'prefix': 'ac_',
+                'prefix': 'ac',
                 # example of tags tuple (display name, slug, frequency):
                 # 'tags': [
                 #   ('Argument', 'ac_argument', 4), 
@@ -647,9 +647,9 @@ class TimemapTest(TestCase):
         results = get_filters(self.filters)
         self.assertEqual(results[0]['name'],'victim_allegedcrime_brundage')
         self.assertEqual(results[0]['title'],'Alleged Crime')
-        self.assertEqual(results[0]['prefix'],'ac_')
+        self.assertEqual(results[0]['prefix'],'ac')
         self.assertEqual(results[0]['tags'][0][0],'Murder') 
-        self.assertEqual(results[0]['tags'][0][1],'ac_murder') 
+        self.assertEqual(results[0]['tags'][0][1],'ac-murder') 
         self.assertEqual(results[0]['tags'][0][2],'127')
         
     def test_indexOnMacroEvent(self):
@@ -661,11 +661,11 @@ class TimemapTest(TestCase):
      
     def test_join_data_on_macroevent(self):
         join_data_on_macroevent(self.indexed_metadata, self.ac_resultSet)
-        self.assertEqual(self.indexed_metadata['326']['victim_allegedcrime_brundage'],['gambling dispute'])
+        self.assertEqual(self.indexed_metadata['326']['victim_allegedcrime_brundage'],['Gambling Dispute'])
         join_data_on_macroevent(self.indexed_metadata, self.city_results)
-        self.assertIn('watkinsville', self.indexed_metadata['325']['city'])
-        self.assertIn('athens', self.indexed_metadata['325']['city']) 
-        self.assertIn('bishop', self.indexed_metadata['325']['city'])                                
+        self.assertIn('Watkinsville', self.indexed_metadata['325']['city'])
+        self.assertIn('Athens', self.indexed_metadata['325']['city']) 
+        self.assertIn('Bishop', self.indexed_metadata['325']['city'])                                
                         
 class MacroEvent_ItemTest(TestCase):
     
@@ -678,7 +678,7 @@ class MacroEvent_ItemTest(TestCase):
             { 
                 'title': 'Alleged Crime',
                 'name': 'victim_allegedcrime_brundage',
-                'prefix': 'ac_', 
+                'prefix': 'ac', 
             }
         ]
         # Query result for timemap macro event item
@@ -714,18 +714,17 @@ class MacroEvent_ItemTest(TestCase):
         #self.assertEqual(self.macroevent_item.jsonitem_filters['victim_allegedcrime_brundage'], ['Murder Accomplice'])
         
     def test_process_json(self):
-        expected = [{'start': '1917-09-19', 
-            'title': 'Oconee', 
-            'end': '1917-09-20', 
-            'options': {
-                'county': 'Clarke', 
-                'min_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')), 
-                'detail_link': '/events/12/details/', 
-                'tags': ['gambling dispute'], 
-                'title': rdflib.term.Literal(u'Oconee')
-            }, 
-            'point': {'lat': 33.951967, 'lon': -83.36602}
-        }]     
+        expected = [{
+            'end': '1917-09-20',
+            'options': {'county': 'Clarke',
+                      'detail_link': '/events/12/details/',
+                      'min_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                      'tags': [u'ac-gambling-dispute'],
+                      'title': rdflib.term.Literal(u'Oconee'),
+                      'victim_allegedcrime_brundage_filter': ['gambling dispute']},
+            'point': {'lat': 33.951967, 'lon': -83.36602},
+            'start': '1917-09-19',
+            'title': 'Oconee'}]     
         self.macroevent_item.init_item(self.queryresult)
         jsonResult = []
         self.macroevent_item.process_json(jsonResult)

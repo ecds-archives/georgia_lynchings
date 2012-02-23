@@ -30,10 +30,10 @@
         {% for filter in filters %}
             <div id="filtertitle">Filter by {{ filter.title }}:</div>
             <form>
-                <select id="tag_select">
+                <select id="{{ filter.dropdown_id }}">
                     <option value="">All tags</option>
                     {% for tag, slug, freq in filter.tags %}                  
-                        <option value="{{ tag }}">{{ tag }} ({{ freq }})</option>
+                        <option value="{{ slug }}">{{ tag }} ({{ freq }})</option>
                     {% endfor %}
                 </select>
             </form>

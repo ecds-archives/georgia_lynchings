@@ -6,6 +6,7 @@ from pprint import pprint
 import sys
 
 from django.core.urlresolvers import reverse
+from django.template.defaultfilters import slugify
 
 from georgia_lynchings import geo_coordinates
 from georgia_lynchings.events.mapdata import Mapdata 
@@ -74,6 +75,7 @@ class MacroEvent_Item(object):
         self.row_id = row_id
         
         # Setup the filters for this macro event item
+        self.filters = filters
         self.jsonitem_filters = {}
         for filter in filters:
             self.jsonitem_filters[filter['name']] = []
@@ -106,13 +108,28 @@ class MacroEvent_Item(object):
         
         :param queryresults: the results from the triplestore query.
         ''' 
-        tag_list = []        
+        
+        # List of all the slugified filter tags for macro event item        
+        tag_list = []
         for filter in self.jsonitem_filters.keys():
-            if filter in queryresults:              
-                self.jsonitem_filters[filter] = \
-                    list(set(self.jsonitem_filters[filter] + queryresults[filter]))
-                tag_list = list(set(tag_list + self.jsonitem_filters[filter]))               
-                self.jsonitem["options"]['tags']= tag_list 
+            
+            # The filter must be present for the infoTemplate to respond correctly.
+            self.jsonitem["options"][filter +"_filter"]=['n/a']   
+                     
+            if filter in queryresults:
+                # Create a list of slugified tags for this macro event item
+                slug_list = []
+                for filterdict in self.filters:
+                    if filterdict['name'] == filter:
+                        for tag in queryresults[filter]:
+                            slug_list = slug_list + [slugify(filterdict['prefix'] + " " + tag)]
+                
+                # List of slugified tags searched by the filter
+                tag_list = list(set(tag_list + slug_list))
+                self.jsonitem["options"]['tags']= tag_list
+                # List of display name tags shown in the pop up.
+                display_list = list(set(self.jsonitem_filters[filter] + queryresults[filter]))
+                self.jsonitem["options"][filter +"_filter"]= display_list
 
                 
     def process_json(self, jsonResult):

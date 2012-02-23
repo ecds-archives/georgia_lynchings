@@ -17,7 +17,7 @@ $(document).ready(function() {
                  // Data to be loaded in JSON from a URL
                  type: "json_string",
                  url: url,
-                 infoTemplate: "<div><b>{{title}}</b></div><div>Start Date: {{min_date}}</div><div>Location: {{county}} County</div><div>Tags: {{tags}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>"
+                 infoTemplate: "<div><b>{{title}}</b></div><div>Start Date: {{min_date}}</div><div>Location: {{county}} County</div><div>City: {{city_filter}}</div><div>Alleged Crime: {{victim_allegedcrime_brundage_filter}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>"
              }
 
            }],
@@ -45,11 +45,23 @@ $(document).ready(function() {
        tm.addFilter("timeline", hasSelectedTag); // hide timeline events on fail
 
        // onChange handler for pulldown menu
-       $('#tag_select').change(function() {
-           window.selectedTag = $(this).val();
-           // run filters
-           tm.filter('map');
-           tm.filter('timeline');
+       $('#ac_tag_select').change(function() {
+            var city_reset = document.getElementById("city_tag_select");
+            city_reset.value = "";            
+            window.selectedTag = $(this).val();
+            // run filters
+            tm.filter('map');
+            tm.filter('timeline');
        });
+       
+       // onChange handler for pulldown menu
+       $('#city_tag_select').change(function() {
+            var ac_reset = document.getElementById("ac_tag_select");
+            ac_reset.value = "";             
+            window.selectedTag = $(this).val();
+            // run filters
+            tm.filter('map');
+            tm.filter('timeline');
+       });       
 });
 }

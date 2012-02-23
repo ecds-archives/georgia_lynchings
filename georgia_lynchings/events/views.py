@@ -127,6 +127,7 @@ filters= [
         'title': 'Alleged Crime',
         'name': 'victim_allegedcrime_brundage',
         'prefix': 'ac',
+        'dropdown_id': 'ac_tag_select',        
         # example of tag tuple (display name, slug, frequency):
         # 'tags': [
         #   ('Argument', 'ac_argument', 4), 
@@ -137,7 +138,8 @@ filters= [
     { 
         'title': 'Cities',
         'name': 'city',
-        'prefix': 'city',        
+        'prefix': 'city',
+        'dropdown_id': 'city_tag_select',               
     }    
 ]
 

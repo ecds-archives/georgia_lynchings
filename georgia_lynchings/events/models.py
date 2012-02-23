@@ -2,6 +2,8 @@ from collections import defaultdict
 from rdflib import Variable
 from urllib import quote
 
+from django.template.defaultfilters import slugify
+
 from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.models import ComplexObject, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, \
@@ -536,9 +538,9 @@ def join_data_on_macroevent(resultSetIndexed={}, filterdict=[]):
                 row_id = item['macro'].split('#r')[1]
                 if filtername in resultSetIndexed[row_id]:
                     if item[filtername] not in resultSetIndexed[row_id][filtername]:
-                        resultSetIndexed[row_id][filtername].append(item[filtername].encode('ascii'))
+                        resultSetIndexed[row_id][filtername].append(item[filtername].encode('ascii').title())
                 else:
-                    resultSetIndexed[row_id][filtername] = [item[filtername].encode('ascii')]
+                    resultSetIndexed[row_id][filtername] = [item[filtername].encode('ascii').title()]
             except KeyError, err:
                 logger.debug("Filter[%s] not defined for MacroEvent[%s]" % (filtername, err))
     
@@ -568,7 +570,7 @@ def get_filters(filters):
         # Add tags and frequency as tuples to filter dict
         for item in resultSet:
             # Slugify the tag (lc, add prefix, replace spaces with underscore.
-            slug = filter['prefix'] + item[filter['name']].replace(' ','_').lower()
+            slug = slugify(filter['prefix'] + " " + item[filter['name']])
             tag_tuples.append((item[filter['name']],slug,item['frequency']))
 
         filter['tags'] = tag_tuples           
