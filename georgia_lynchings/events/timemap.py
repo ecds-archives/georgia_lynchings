@@ -42,6 +42,7 @@ class Timemap(Mapdata):
             macroevent_item.init_item(queryresults=value)
             # Add the macro event item to the final result.
             macroevent_item.process_json(jsonResult)
+
         return jsonResult
             
 class GeoCoordinates(object):
@@ -94,8 +95,9 @@ class MacroEvent_Item(object):
                             'min_date': queryresults.get('min_date'),
                             'county':  county,
                             'detail_link': reverse('events:details', kwargs={'row_id': self.row_id})}
-            # add filter tags
+            # add filter tags                        
             self.add_filter_tags(queryresults)
+                        
         except KeyError, err:                  
             logger.debug("MacroEvent[%s] county[%s] not defined in geo_coordinates.py" % (self.row_id, err))
 
@@ -104,13 +106,13 @@ class MacroEvent_Item(object):
         
         :param queryresults: the results from the triplestore query.
         ''' 
+        tag_list = []        
         for filter in self.jsonitem_filters.keys():
-            if filter in queryresults:
+            if filter in queryresults:              
                 self.jsonitem_filters[filter] = \
                     list(set(self.jsonitem_filters[filter] + queryresults[filter]))
-                tag_list = []                        
-                tag_list = "[" + ", ".join(set(self.jsonitem_filters[filter])) + "]"
-                self.jsonitem["options"]['tags']= tag_list.encode('ascii')                        
+                tag_list = list(set(tag_list + self.jsonitem_filters[filter]))               
+                self.jsonitem["options"]['tags']= tag_list 
 
                 
     def process_json(self, jsonResult):

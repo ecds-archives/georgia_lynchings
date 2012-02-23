@@ -10,7 +10,8 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from georgia_lynchings.events.models import MacroEvent, Event, \
-    SemanticTriplet, Victim, get_filters
+    SemanticTriplet, Victim, get_filters, indexOnMacroEvent, \
+    join_data_on_macroevent
 from georgia_lynchings.events.details import Details
 from georgia_lynchings.events.timemap import Timemap, GeoCoordinates, \
     MacroEvent_Item
@@ -555,43 +556,91 @@ class TimemapTest(TestCase):
         ]       
         self.tmapfilter = Timemap(self.filters) 
                  
-        self.metadata = {
+        self.indexed_metadata = {
+            u'325': {
+                u'label': rdflib.term.Literal(u'Macroevent 325 label'),
+                u'max_date': rdflib.term.Literal(u'1905-06-29', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'min_date': rdflib.term.Literal(u'1905-06-29', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'vcounty_brdg': rdflib.term.Literal(u'Oconee'),
+            },        
             u'326': {
                 u'label': rdflib.term.Literal(u'Oconee'),
-                  u'max_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
-                  u'min_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
-                  u'vcounty_brdg': rdflib.term.Literal(u'Clarke'),
-                  u'victim_allegedcrime_brundage': ['gambling dispute']},
+                u'max_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'min_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'vcounty_brdg': rdflib.term.Literal(u'Clarke'),
+            },
             u'327': {
-                u'label': rdflib.term.Literal(u'William Fluid & 12/25/1889 & Wayne   Pete Jackson & 12/25/1889 & Wayne   William Hopps & 12/25/1889 & Wayne'),
-              u'max_date': rdflib.term.Literal(u'1890-01-03', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
-              u'min_date': rdflib.term.Literal(u'1889-12-24', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
-              u'vcounty_brdg': rdflib.term.Literal(u'Wayne'),
-              u'victim_allegedcrime_brundage': ['Murder']}
+                u'label': rdflib.term.Literal(u'Macroevent 327 label'),
+                u'max_date': rdflib.term.Literal(u'1890-01-03', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'min_date': rdflib.term.Literal(u'1889-12-24', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'vcounty_brdg': rdflib.term.Literal(u'Wayne'),
             }
+        }
+            
+        self.core_metadata = [
+            {
+                u'label': rdflib.term.Literal(u'Macroevent 325 label'),
+                u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r325'),
+                u'max_date': rdflib.term.Literal(u'1905-06-29', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'min_date': rdflib.term.Literal(u'1905-06-29', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'vcounty_brdg': rdflib.term.Literal(u'Oconee')
+            },        
+            {
+                u'label': rdflib.term.Literal(u'Oconee'),
+                u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r326'),
+                u'max_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'min_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'vcounty_brdg': rdflib.term.Literal(u'Clarke')
+            },
+            {
+                u'label': rdflib.term.Literal(u'Macroevent 327 label'),
+                u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r327'),
+                u'max_date': rdflib.term.Literal(u'1890-01-03', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'min_date': rdflib.term.Literal(u'1889-12-24', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')),
+                u'vcounty_brdg': rdflib.term.Literal(u'Wayne')
+            }]
 
-        
         self.item = {'label': 'Debt Dispute', 
                 'row_id': '3',
                 'max_date': '1896-06-02',
                 'min_date': '1896-06-01', 
                 'county': 'Muscogee',
-                'victim_allegedcrime_brundage': ['Assault']}     
+                'victim_allegedcrime_brundage': ['Assault']}
+                
+        self.ac_resultSet = [
+            {u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r325'),
+            u'victim_allegedcrime_brundage': rdflib.term.Literal(u'Murder/Theft')},
+            {u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r326'),
+            u'victim_allegedcrime_brundage': rdflib.term.Literal(u'gambling dispute')},
+            {u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r327'),
+            u'victim_allegedcrime_brundage': rdflib.term.Literal(u'Murder')}
+        ]
+        
+        self.city_results =  [
+            {u'city': rdflib.term.Literal(u'watkinsville'),
+            u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r325')},
+            {u'city': rdflib.term.Literal(u'athens'),
+            u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r325')},
+            {u'city': rdflib.term.Literal(u'bishop'),
+            u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r325')},
+            {u'city': rdflib.term.Literal(u'athens'),
+            u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r326')},
+            {u'city': rdflib.term.Literal(u'jesup'),
+            u'macro': rdflib.term.URIRef('http://galyn.example.com/source_data_files/data_Complex.csv#r327')}]
         
     def test_init(self):
         self.assertEqual(self.tmap.filters, []) 
         self.assertEqual(self.tmapfilter.filters, self.filters)             
         
     def test_timemap_format(self):
-        result = self.tmap.format(self.metadata)
+        result = self.tmap.format(self.indexed_metadata)
         self.assertEqual('1917-09-19', result[0]['start'])
         self.assertNotIn('tags', result[0]['options'])
         self.assertEqual('Oconee', result[0]['title'])
         
     def test_timemap_format_filters(self):
-        result = self.tmapfilter.format(self.metadata)
+        result = self.tmapfilter.format(self.indexed_metadata)
         self.assertEqual('1917-09-19', result[0]['start'])
-        self.assertEqual('[gambling dispute]', result[0]['options']['tags'])
         self.assertEqual('Oconee', result[0]['title'])
 
     def test_get_filters(self):
@@ -603,6 +652,21 @@ class TimemapTest(TestCase):
         self.assertEqual(results[0]['tags'][0][1],'ac_murder') 
         self.assertEqual(results[0]['tags'][0][2],'127')
         
+    def test_indexOnMacroEvent(self):
+        results = indexOnMacroEvent(self.core_metadata)
+        self.assertEqual(results['326']['label'],'Oconee')
+        self.assertEqual(results['326']['min_date'],'1917-09-19')
+        self.assertEqual(results['326']['max_date'],'1917-09-19')     
+        self.assertEqual(results['326']['vcounty_brdg'],'Clarke')  
+     
+    def test_join_data_on_macroevent(self):
+        join_data_on_macroevent(self.indexed_metadata, self.ac_resultSet)
+        self.assertEqual(self.indexed_metadata['326']['victim_allegedcrime_brundage'],['gambling dispute'])
+        join_data_on_macroevent(self.indexed_metadata, self.city_results)
+        self.assertIn('watkinsville', self.indexed_metadata['325']['city'])
+        self.assertIn('athens', self.indexed_metadata['325']['city']) 
+        self.assertIn('bishop', self.indexed_metadata['325']['city'])                                
+                        
 class MacroEvent_ItemTest(TestCase):
     
     def setUp(self):
@@ -657,7 +721,7 @@ class MacroEvent_ItemTest(TestCase):
                 'county': 'Clarke', 
                 'min_date': rdflib.term.Literal(u'1917-09-19', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#date')), 
                 'detail_link': '/events/12/details/', 
-                'tags': '[gambling dispute]', 
+                'tags': ['gambling dispute'], 
                 'title': rdflib.term.Literal(u'Oconee')
             }, 
             'point': {'lat': 33.951967, 'lon': -83.36602}

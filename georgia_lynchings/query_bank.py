@@ -547,7 +547,7 @@ events['triplets']="""
 
 
 'Find filter count for alleged crime'
-filters['victim_allegedcrime_brundage']="""
+filters['victim_allegedcrime_brundage_freq']="""
 SELECT ?victim_allegedcrime_brundage (COUNT(?victim_allegedcrime_brundage) AS ?frequency)
 WHERE { 
 ?macro <http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Event> ?event .  
@@ -556,4 +556,136 @@ WHERE {
 }
 GROUP BY ?victim_allegedcrime_brundage
 ORDER BY DESC(?frequency)
+"""
+
+'Find the cities for all the macroevents.'
+filters['city']="""
+PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
+SELECT DISTINCT ?macro ?city
+WHERE {
+  # For all ?macro, find all of the
+  # Events for those macros, and all of the Triplets for those events.
+  # We'll be looking in these triplets for locations.
+
+  ?macro a scxn:Macro_Event.
+  ?macro sxcxcxn:Event ?event.
+  ?event sxcxcxn:Semantic_Triplet ?_1.
+
+  # Every Triplet has a Process
+  ?_1 sxcxcxn:Process ?_2.
+
+  # We need all of the places for that Process. There are four ways
+  # they might be expressed:
+  {
+    ?_2 sxcxcxn:Simple_process ?_3.
+    ?_3 sxcxcxn:Circumstances ?_4.
+    ?_4 sxcxcxn:Space ?_5.
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.
+    ?_6 sxcxcxn:Simple_process ?_3.
+    ?_3 sxcxcxn:Circumstances ?_4.
+    ?_4 sxcxcxn:Space ?_5.
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.
+    ?_6 sxcxcxn:Other_process ?_7.
+    ?_7 sxcxcxn:Simple_process ?_3.
+    ?_3 sxcxcxn:Circumstances ?_4.
+    ?_4 sxcxcxn:Space ?_5.
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.
+    ?_6 sxcxcxn:Other_process ?_7.
+    ?_7 sxcxcxn:Nominalization ?_8.
+    ?_8 sxcxcxn:Space ?_5.
+  }
+
+  # Regardless of which way we came, ?_5 is some sort of place. If
+  # we're going to get from there to location simplex data, this
+  # is how we get there:
+  {
+    ?_5 sxcxcxn:City ?_10.
+  }
+
+  # Grab the simplex data we're interested in, whichever are
+  # available (but note that "?" is equivalent to missing data)
+  OPTIONAL {
+    ?_10 ssxn:City_name ?city.
+    FILTER (?city != "?")
+  }
+
+  # And grab only those records that have at least one data point.
+  FILTER (BOUND(?city))
+}
+ORDER BY ?macro
+"""
+
+'Find the city and frequency list'
+filters['city_freq']="""
+PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+
+SELECT DISTINCT ?city (COUNT(?city) AS ?frequency)
+WHERE {
+  # For a pre-bound ?macro (or for all Macro Events), find all of the
+  # Events for those macros, and all of the Triplets for those events.
+  # We'll be looking in these triplets for locations.
+
+  ?macro a scxn:Macro_Event;
+         dcx:Identifier ?melabel;
+         sxcxcxn:Event ?event.
+  ?event dcx:Identifier ?evlabel;
+         sxcxcxn:Semantic_Triplet ?_1.
+
+  # Every Triplet has a Process
+  ?_1 sxcxcxn:Process ?_2.
+
+  # We need all of the places for that Process. There are four ways
+  # they might be expressed:
+  {
+    ?_2 sxcxcxn:Simple_process ?_3.
+    ?_3 sxcxcxn:Circumstances ?_4.
+    ?_4 sxcxcxn:Space ?_5.
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.
+    ?_6 sxcxcxn:Simple_process ?_3.
+    ?_3 sxcxcxn:Circumstances ?_4.
+    ?_4 sxcxcxn:Space ?_5.
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.
+    ?_6 sxcxcxn:Other_process ?_7.
+    ?_7 sxcxcxn:Simple_process ?_3.
+    ?_3 sxcxcxn:Circumstances ?_4.
+    ?_4 sxcxcxn:Space ?_5.
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.
+    ?_6 sxcxcxn:Other_process ?_7.
+    ?_7 sxcxcxn:Nominalization ?_8.
+    ?_8 sxcxcxn:Space ?_5.
+  }
+
+  # Regardless of which way we came, ?_5 is some sort of place. If
+  # we're going to get from there to location simplex data, this
+  # is how we get there:
+  {
+    ?_5 sxcxcxn:City ?_10.
+  }
+
+  # Grab the simplex data we're interested in, whichever are
+  # available (but note that "?" is equivalent to missing data)
+  OPTIONAL {
+    ?_10 ssxn:City_name ?city.
+    FILTER (?city != "?")
+  }
+
+  # And grab only those records that have at least one data point.
+  FILTER (BOUND(?city))
+}
+GROUP BY ?city
+ORDER BY DESC(?frequency)
+LIMIT 20
 """

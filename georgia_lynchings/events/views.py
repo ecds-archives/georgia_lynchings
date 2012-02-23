@@ -133,7 +133,12 @@ filters= [
         #   ('Debt Dispute', 'ac_debt_dispute', 7), 
         #   ('Kidnapping/Theft', 'ac_kidnapping/theft', 17)
         # ]        
-    }
+    },
+    { 
+        'title': 'Cities',
+        'name': 'city',
+        'prefix': 'city',        
+    }    
 ]
 
 def timemap(request):

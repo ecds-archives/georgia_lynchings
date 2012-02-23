@@ -510,9 +510,16 @@ def update_filter_fields(add_fields=[], resultSetIndexed={}):
         store = SparqlStore()
         ac_resultSet = store.query(sparql_query=unicode(q))
         join_data_on_macroevent(resultSetIndexed, ac_resultSet)
+
+    # Add `cities`, if present in add_fields list
+    if 'city' in add_fields:
+        query=query_bank.filters['city']    
+        ss=SparqlStore()
+        city_resultSet = ss.query(sparql_query=query)
+        join_data_on_macroevent(resultSetIndexed, city_resultSet)
                 
 def join_data_on_macroevent(resultSetIndexed={}, filterdict=[]):
-    '''Join the filter resultSet to the metadadta indexed dictionary  
+    '''Join the filter resultSet to the metadata indexed dictionary  
 
     :param resultSetIndexed: a mapping dict of core metadata using the
         macroevent id as the dict key. 
@@ -529,7 +536,7 @@ def join_data_on_macroevent(resultSetIndexed={}, filterdict=[]):
                 row_id = item['macro'].split('#r')[1]
                 if filtername in resultSetIndexed[row_id]:
                     if item[filtername] not in resultSetIndexed[row_id][filtername]:
-                        resultSetIndexed[row_id].append(item[filtername].encode('ascii'))
+                        resultSetIndexed[row_id][filtername].append(item[filtername].encode('ascii'))
                 else:
                     resultSetIndexed[row_id][filtername] = [item[filtername].encode('ascii')]
             except KeyError, err:
@@ -552,8 +559,8 @@ def get_filters(filters):
               * `tags`: a tuple as (filtername, slug, frequency)
     '''
 
-    for filter in filters:       
-        query=query_bank.filters[filter['name']]   
+    for filter in filters:
+        query=query_bank.filters[filter['name']+"_freq" ]  
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query)
 
