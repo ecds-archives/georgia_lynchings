@@ -14,6 +14,7 @@ from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
 from georgia_lynchings.rdf.management.commands import run_sparql_query
 from georgia_lynchings.rdf.models import ComplexObject, RdfPropertyField, \
         ReversedRdfPropertyField, ChainedRdfPropertyField
+from georgia_lynchings.rdf.queryset import QuerySet
 
 class SparqlStoreTest(TestCase):
     def setUp(self):
@@ -332,6 +333,27 @@ class ComplexObjectTest(TestCase):
         typed_data = self.thingies.typed_data
         self.assertIn('14', typed_data[0]) 
         
+
+class QuerySetTest(TestCase):
+    sample = Namespace('http://example.com/#')
+
+    def setUp(self):
+        # create ComplexObject subclasses in setUp() because if class
+        # construction fails then we want the test to error. if this were
+        # outside setUp, the whole module could fail to load in case of an
+        # error.
+
+        class SampleThingie(ComplexObject):
+            # a ComplexObject without an rdf_type
+            rdf_type = self.sample.Thingie
+        self.SampleThingie = SampleThingie
+        self.thingie = SampleThingie(42)
+
+    def test_all_objects_query(self):
+        qs = self.SampleThingie.objects.all()
+        self.assertEqual(unicode(qs.query), '''SELECT ?obj WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Thingie> . }''')
+    
+
 class NsTest(TestCase):
     def test_constructed_stmts_ns(self):
         expected = rdflib.term.URIRef('http://galyn.example.com/constructed_statements/index/events_by_date/#mindate')

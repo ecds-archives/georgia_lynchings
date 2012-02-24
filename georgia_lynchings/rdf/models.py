@@ -16,6 +16,7 @@ u'Coweta'
 import logging
 from rdflib import URIRef, Variable, BNode, RDF
 from georgia_lynchings.rdf.ns import dcx, scx, ssxn
+from georgia_lynchings.rdf.queryset import QuerySetDescriptor
 from georgia_lynchings.rdf.sparql import SelectQuery, GraphPattern, Union
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
@@ -281,6 +282,10 @@ class ComplexObject(object):
     '''
 
     __metaclass__ = ComplexObjectType
+
+    objects = QuerySetDescriptor()
+    '''A :class:`~georgia_lynchings.rdf.queryset.QuerySet` representing
+    objects of a referenced subclass.'''
 
     def __init__(self, id):
         if isinstance(id, URIRef):

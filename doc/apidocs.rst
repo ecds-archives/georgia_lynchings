@@ -38,3 +38,10 @@ The :mod:`~georgia_lynchings.rdf` app
 
 .. automodule:: georgia_lynchings.rdf.models
    :members:
+
+:mod:`georgia_lynchings.rdf.queryset`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: georgia_lynchings.rdf.queryset
+   :members:
+
