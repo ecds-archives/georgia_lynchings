@@ -133,6 +133,7 @@ class ReversedRdfPropertyField(RdfPropertyField):
                     result_type=forward_class, multiple=True)
             setattr(self.result_type, self.reverse_field_name,
                     reverse_property)
+            self.result_type._fields[self.reverse_field_name] = reverse_property
 
 
 class ChainedRdfPropertyField(RdfPropertyField):
@@ -237,6 +238,7 @@ class ComplexObjectType(type):
 
     def __new__(cls, name, bases, attrs):
         forward_attrs = {}
+        fields = {}
 
         # no translation for rdf_type: this represents the rdf:type of
         # instances of this class
@@ -250,7 +252,11 @@ class ComplexObjectType(type):
             if isinstance(val, URIRef):
                 # then translate it to an RdfPropertyField
                 val = RdfPropertyField(val)
+            if isinstance(val, RdfPropertyField):
+                fields[attr] = val
             forward_attrs[attr] = val
+
+        forward_attrs['_fields'] = fields
 
         # create the class
         super_new = super(ComplexObjectType, cls).__new__
