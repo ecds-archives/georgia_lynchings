@@ -343,16 +343,31 @@ class QuerySetTest(TestCase):
         # outside setUp, the whole module could fail to load in case of an
         # error.
 
+        class SampleWidget(ComplexObject):
+            rdf_type = self.sample.Widget
+        self.SampleWidget = SampleWidget
+        self.widget = SampleWidget(13)
+
         class SampleThingie(ComplexObject):
-            # a ComplexObject without an rdf_type
             rdf_type = self.sample.Thingie
+            widgets = RdfPropertyField(self.sample.has_widget,
+                                       result_type=SampleWidget,
+                                       multiple=True)
         self.SampleThingie = SampleThingie
         self.thingie = SampleThingie(42)
 
     def test_all_objects_query(self):
         qs = self.SampleThingie.objects.all()
-        self.assertEqual(unicode(qs.query), '''SELECT ?obj WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Thingie> . }''')
-    
+        self.assertEqual(unicode(qs.query), 'SELECT ?obj WHERE { ' +
+                                              '?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Thingie> . ' +
+                                            '}')
+
+    def test_unbound_subobjects_query(self):
+        qs = self.SampleThingie.objects.widgets.all()
+        self.assertEqual(unicode(qs.query), 'SELECT ?result WHERE { ' +
+                                              '?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Thingie> . ' +
+                                              '?obj <http://example.com/#has_widget> ?result . ' +
+                                            '}')
 
 class NsTest(TestCase):
     def test_constructed_stmts_ns(self):
