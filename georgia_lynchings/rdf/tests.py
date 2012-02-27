@@ -12,9 +12,9 @@ from georgia_lynchings.rdf.ns import ix_ebd, scxn, sxcxcxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
 from georgia_lynchings.rdf.management.commands import run_sparql_query
-from georgia_lynchings.rdf.models import ComplexObject, RdfPropertyField, \
+from georgia_lynchings.rdf.fields import RdfPropertyField, \
         ReversedRdfPropertyField, ChainedRdfPropertyField
-from georgia_lynchings.rdf.queryset import QuerySet
+from georgia_lynchings.rdf.models import ComplexObject
 
 class SparqlStoreTest(TestCase):
     def setUp(self):
@@ -211,13 +211,13 @@ class ComplexObjectTest(TestCase):
         self.SampleThingie = SampleThingie
         self.thingie = SampleThingie(42)
         
-        class SampleMutlipleThing(ComplexObject):
+        class SampleMultipleThing(ComplexObject):
             # a ComplexObject without an rdf_type
             data = self.sample.data
             typed_data = RdfPropertyField(self.sample.typed_data,
                                           multiple=True)
-        self.SampleMutlipleThing = SampleMutlipleThing
-        self.thingies = SampleMutlipleThing(42)        
+        self.SampleMultipleThing = SampleMultipleThing
+        self.thingies = SampleMultipleThing(42)        
 
         class SampleWidget(ComplexObject):
             # a ComplexObject with an rdf_type
@@ -228,7 +228,7 @@ class ComplexObjectTest(TestCase):
         self.SampleWidget = SampleWidget
         self.widget = SampleWidget(13)
 
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
     def test_sparql_generation_without_type_no_match(self, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = []
@@ -243,7 +243,7 @@ class ComplexObjectTest(TestCase):
             {'obj': self.thingie.uri.n3()})
         self.assertEqual(data, None)
 
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
     def test_sparql_generation_without_type_with_match(self, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = [{'result': Literal('stuff')}]
@@ -258,7 +258,7 @@ class ComplexObjectTest(TestCase):
             {'obj': self.thingie.uri.n3()})
         self.assertEqual(data, 'stuff')
 
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
     def test_sparql_generation_with_type_no_match(self, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = []
@@ -273,7 +273,7 @@ class ComplexObjectTest(TestCase):
             {'obj': self.widget.uri.n3()})
         self.assertEqual(value, None)
 
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
     def test_sparql_generation_with_type_with_match(self, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = [{'result': Literal('stuff')}]
@@ -288,7 +288,7 @@ class ComplexObjectTest(TestCase):
             {'obj': self.widget.uri.n3()})
         self.assertEqual(value, 'stuff')
 
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
     def test_reverse_sparql_generation(self, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = []
@@ -300,8 +300,8 @@ class ComplexObjectTest(TestCase):
             u'SELECT ?result WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Widget> . ' + 
             u'?result <http://example.com/#value> ?obj . }')
 
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
-    @patch('georgia_lynchings.rdf.models.BNode')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.BNode')
     def test_chained_sparql_generation(self, MockBNode, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = []
@@ -318,7 +318,7 @@ class ComplexObjectTest(TestCase):
             u'_:FAKEID <http://example.com/#value> ?result . ' +
             u'}')
 
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
     def test_typed_property(self, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = [{'result': '14'}]
@@ -326,7 +326,7 @@ class ComplexObjectTest(TestCase):
         typed_data = self.thingie.typed_data
         self.assertEqual(typed_data, 14)
         
-    @patch('georgia_lynchings.rdf.models.SparqlStore')
+    @patch('georgia_lynchings.rdf.fields.SparqlStore')
     def test_property_multiple_results(self, MockStore):
         mock_query = MockStore.return_value.query
         mock_query.return_value = [{'result': ['14']},{'result': ['41']}]       

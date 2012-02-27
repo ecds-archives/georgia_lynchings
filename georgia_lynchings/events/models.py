@@ -5,9 +5,9 @@ from urllib import quote
 from django.template.defaultfilters import slugify
 
 from georgia_lynchings import query_bank
-from georgia_lynchings.rdf.models import ComplexObject, \
-    ReversedRdfPropertyField, ChainedRdfPropertyField, \
-    RdfPropertyField, UnionRdfPropertyField
+from georgia_lynchings.rdf.fields import ReversedRdfPropertyField, \
+    ChainedRdfPropertyField, UnionRdfPropertyField
+from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
