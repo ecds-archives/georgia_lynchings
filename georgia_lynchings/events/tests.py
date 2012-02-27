@@ -10,12 +10,13 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from georgia_lynchings.events.models import MacroEvent, Event, \
-    SemanticTriplet, Victim, get_filters, indexOnMacroEvent, \
-    join_data_on_macroevent
+    SemanticTriplet, Participant, Participant_S, Participant_O, Victim, \
+    get_filters, indexOnMacroEvent, join_data_on_macroevent
 from georgia_lynchings.events.details import Details
 from georgia_lynchings.events.timemap import Timemap, GeoCoordinates, \
     MacroEvent_Item
 from georgia_lynchings.rdf.ns import dcx
+from georgia_lynchings.rdf.queryset import QuerySet
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class EventsAppTest(TestCase):
 
         self.EVENT_ID = '552'
         self.TRIPLET_ID = '571'
+        self.PARTICIPANT_ID = '584'
         
         self.VICTIM_E_COOPER_ID = '135239'   # Eli Cooper
         self.VICTIM_JH_PINKNEY_ID = '135165' # John Henry Pinkney
@@ -63,6 +65,11 @@ class MacroEventTest(EventsAppTest):
 
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
         self.assertEqual('Coweta', macro.label)
+
+    def test_objects(self):
+        self.assertTrue(isinstance(MacroEvent.objects.all(), QuerySet))
+        self.assertEqual(MacroEvent.objects.events.all().result_class, Event)
+        self.assertEqual(MacroEvent.objects.events.triplets.participants.all().result_class, Participant)
 
     def test_get_cities(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
@@ -361,11 +368,18 @@ class SemanticTripletTest(EventsAppTest):
         triplet = SemanticTriplet(self.TRIPLET_ID)
 
         # participants
+        self.assertEqual(triplet.participant_s.id, '572')
+        self.assertTrue(isinstance(triplet.participant_s, Participant))
+        self.assertTrue(isinstance(triplet.participant_s, Participant_S))
+
+        self.assertEqual(triplet.participant_o.id, '584')
+        self.assertTrue(isinstance(triplet.participant_o, Participant))
+        self.assertTrue(isinstance(triplet.participant_o, Participant_O))
+
         self.assertEqual(len(triplet.participants), 2)
-        self.assertTrue(unicode(triplet.participants[0]).endswith('#r572'))
-        self.assertTrue(unicode(triplet.participants[1]).endswith('#r584'))
-        # note participants does not currently have a type, though
-        # ultimately it probably should.
+        self.assertEqual(triplet.participants[0].id, '572')
+        self.assertEqual(triplet.participants[1].id, '584')
+        self.assertTrue(isinstance(triplet.participants[0], Participant))
 
         # event
         self.assertTrue(isinstance(triplet.event, Event))
@@ -386,6 +400,20 @@ class SemanticTripletTest(EventsAppTest):
         self.assertTrue(idata['complex_type'].endswith('Semantic_Triplet'))
         self.assertTrue(idata['label'].startswith('party (male unknown armed)'))
         self.assertTrue(idata['macro_event_uri'].endswith('#r1'))
+
+
+class ParticipantTest(EventsAppTest):
+    def test_data_properties(self):
+        participant = Participant(self.PARTICIPANT_ID)
+
+        self.assertEqual(participant.actor_name, 'colored')
+        self.assertEqual(participant.last_name, 'Walker')
+        self.assertEqual(participant.gender, 'male')
+
+    def test_related_object_properties(self):
+        participant = Participant(self.PARTICIPANT_ID)
+        self.assertEqual(participant.triplet.id, '571')
+        
         
 class VictimTest(EventsAppTest):
     # some fields on Victim are unused but listed for later reference. for

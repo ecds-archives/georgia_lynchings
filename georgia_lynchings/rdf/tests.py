@@ -314,8 +314,8 @@ class ComplexObjectTest(TestCase):
         args, kwargs = mock_query.call_args
         self.assertEqual(kwargs['sparql_query'],
             u'SELECT ?result WHERE { ?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Widget> . ' + 
-            u'?obj <http://example.com/#value> _:FAKEID . ' +
-            u'_:FAKEID <http://example.com/#value> ?result . ' +
+            u'?obj <http://example.com/#value> ?FAKEID . ' +
+            u'?FAKEID <http://example.com/#value> ?result . ' +
             u'}')
 
     @patch('georgia_lynchings.rdf.fields.SparqlStore')

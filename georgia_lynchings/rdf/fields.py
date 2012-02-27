@@ -110,8 +110,13 @@ class ReversedRdfPropertyField(RdfPropertyField):
 
     def add_reverse_property(self, forward_class):
         if self.result_type and self.reverse_field_name:
-            reverse_property = RdfPropertyField(self.prop,
-                    result_type=forward_class, multiple=True)
+            if hasattr(self.prop, 'add_to_query'):
+                reverse_property = self.prop
+            else:
+                reverse_property = RdfPropertyField(self.prop,
+                        result_type=forward_class, multiple=True)
+            if reverse_property.result_type is None:
+                reverse_property.result_type = forward_class
             setattr(self.result_type, self.reverse_field_name,
                     reverse_property)
             self.result_type._fields[self.reverse_field_name] = reverse_property
@@ -154,7 +159,12 @@ class ChainedRdfPropertyField(RdfPropertyField):
         # subject of the following one.
         link_source = source
         for prop in self.props[:-1]:
-            link_target = BNode()
+            # use a bnode here just to generate a random label for a
+            # variable. we used to use a plain bnode for link_target, but
+            # those break with chained union properties since bnodes don't
+            # connect across the union's subgraph patterns.
+            var_name = str(BNode())
+            link_target = Variable(var_name)
             prop.add_to_query(q, link_source, link_target)
             # prepare for the next link
             link_source = link_target

@@ -5,8 +5,8 @@ from urllib import quote
 from django.template.defaultfilters import slugify
 
 from georgia_lynchings import query_bank
-from georgia_lynchings.rdf.fields import ReversedRdfPropertyField, \
-    ChainedRdfPropertyField, UnionRdfPropertyField
+from georgia_lynchings.rdf.fields import RdfPropertyField, \
+    ReversedRdfPropertyField, ChainedRdfPropertyField, UnionRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
 from georgia_lynchings.rdf.sparql import SelectQuery
@@ -610,12 +610,8 @@ class SemanticTriplet(ComplexObject):
     'the URI of the RDF Class describing semantic triplet objects'
 
     # complex fields potentially attached to a Semantic Triplet
-    participant_s = sxcxcxn.Participant_S
-    'the subject of the statement'
     process = sxcxcxn.Process
     'the verb of the statement'
-    participant_o = sxcxcxn.Participant_O
-    'the object of the statement'
     alternative = sxcxcxn.Alternative_triplet
     'an alternate and potentially conflicting rendition of this triplet'
 
@@ -626,7 +622,6 @@ class SemanticTriplet(ComplexObject):
     'does the statement use passive voice? (typically specified only if true)'
 
     # reverse and aggregate properties
-    participants = UnionRdfPropertyField(participant_s, participant_o)
     event = ReversedRdfPropertyField(sxcxcxn.Semantic_Triplet,
                                      result_type=Event, 
                                      reverse_field_name='triplets')
@@ -640,6 +635,42 @@ class SemanticTriplet(ComplexObject):
             data['macro_event_uri'] = macro_event.uri
 
         return data
+
+
+class Participant(ComplexObject):
+    triplet = ReversedRdfPropertyField(UnionRdfPropertyField(sxcxcxn.Participant_S,
+                                                             sxcxcxn.Participant_O),
+                                       result_type=SemanticTriplet,
+                                       reverse_field_name='participants')
+
+    actor_name = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
+                                         ssxn.Name_of_individual_actor)
+    last_name = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
+                                        sxcxcxn.Personal_characteristics,
+                                        sxcxcxn.First_name_and_last_name,
+                                        ssxn.Last_name)
+    qualitative_age = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
+                                              sxcxcxn.Personal_characteristics,
+                                              sxcxcxn.Age,
+                                              ssxn.Qualitative_age)
+    race = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
+                                   sxcxcxn.Personal_characteristics,
+                                   ssxn.Race)
+    gender = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
+                                     sxcxcxn.Personal_characteristics,
+                                     ssxn.Gender)
+
+class Participant_S(Participant):
+    rdf_type = scxn.Participant_S
+    triplet_with_subject = ReversedRdfPropertyField(RdfPropertyField(sxcxcxn.Participant_S),
+                                                    result_type=SemanticTriplet,
+                                                    reverse_field_name='participant_s')
+
+class Participant_O(Participant):
+    rdf_type = scxn.Participant_O
+    triplet_with_object = ReversedRdfPropertyField(RdfPropertyField(sxcxcxn.Participant_O),
+                                                   result_type=SemanticTriplet,
+                                                   reverse_field_name='participant_o')
 
 
 class Victim(ComplexObject):
