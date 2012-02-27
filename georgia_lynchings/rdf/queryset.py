@@ -16,11 +16,16 @@ class QuerySet(object):
                        subtype that serves as the root of the query. Queries
                        built from this query set will generally begin by
                        finding objects of this type.
+    :param root_obj: The :class:`~georgia_lynchings.rdf.models.ComplexObject`
+                     instance (optional )that serves as the root of the
+                     query.
     '''
 
-    def __init__(self, root_class):
+    def __init__(self, root_class, root_obj=None):
         self.root_class = root_class
         'The class that querying starts from'
+        self.root_obj = root_obj
+        'The object that querying starts from'
         self.result_class = root_class
         'The class of the objects that the query will return'
         self.field_chain = []
@@ -38,7 +43,7 @@ class QuerySet(object):
         safe copy/edit/return semantics without side effects in, e.g.,
         :meth:`__getattr__`.
         '''
-        new_qs = QuerySet(self.root_class)
+        new_qs = QuerySet(self.root_class, self.root_obj)
         new_qs.result_class = self.result_class
         new_qs.field_chain = list(self.field_chain)
         # never copy cache values
@@ -135,8 +140,13 @@ class QuerySet(object):
         '''Execute the SPARQL query for this query set, wrapping the results
         in appropriate :class:`~georgia_lynchings.rdf.models.ComplexObject`
         instances.'''
+        var_bindings = {}
+        if self.root_obj:
+            var_bindings['obj'] = self.root_obj.uri.n3()
+
         store = SparqlStore()
-        result_bindings = store.query(sparql_query=unicode(self.query))
+        result_bindings = store.query(sparql_query=unicode(self.query),
+                initial_bindings=var_bindings)
         result_var = self._result_variable_name()
         return [self.result_class(b[result_var])
                 for b in result_bindings]
@@ -156,4 +166,4 @@ class QuerySetDescriptor(object):
     # ultimately this should grow into something like a django.db.Manager.
     # for now it's just a descriptor for easily creating QuerySet objects.
     def __get__(self, obj, cls):
-        return QuerySet(root_class=cls)
+        return QuerySet(root_class=cls, root_obj=obj)

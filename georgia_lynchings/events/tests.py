@@ -71,6 +71,13 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(MacroEvent.objects.events.all().result_class, Event)
         self.assertEqual(MacroEvent.objects.events.triplets.participants.all().result_class, Participant)
 
+        macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
+        participants = list(macro.objects.events.triplets.participants)
+        part_ids = set(int(part.id) for part in participants)
+        self.assertEqual(part_ids, set((4542, 4558, 4567, 4586, 4592, 4607,
+                4613, 4625, 4628, 4639, 4641, 4655, 4670, 14789, 14803,
+                14808, 14962, 14974, 14976, 14986)))
+
     def test_get_cities(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)
         expected, got = [u'palmetto'], macro.get_cities() 
