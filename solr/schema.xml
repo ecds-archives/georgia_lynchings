@@ -126,6 +126,7 @@ types and options, see:
   <copyField source="participant_actor_name" dest="participant_name"/>
   <copyField source="city" dest="location"/>
   <copyField source="victim_county_brundage" dest="location"/>
+  <copyField source="participant_residence" dest="location"/>
 
   <!-- MacroEvent fields that are probably also interesting as facets -->
   <copyField source="city" dest="city_facet"/>
