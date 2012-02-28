@@ -406,7 +406,8 @@ SELECT ?victim_allegedcrime_brundage (COUNT(?victim_allegedcrime_brundage) AS ?f
 WHERE { 
 ?macro <http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Event> ?event .  
 ?macro <http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Victim> ?victim . 
-?victim <http://galyn.example.com/source_data_files/setup_Simplex.csv#name-Alleged_crime_Brundage> ?victim_allegedcrime_brundage . 
+?victim <http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Victim_Brundage> ?victim_Brundage . 
+?victim_Brundage <http://galyn.example.com/source_data_files/setup_Simplex.csv#name-Alleged_crime_Brundage> ?victim_allegedcrime_brundage . 
 }
 GROUP BY ?victim_allegedcrime_brundage
 ORDER BY DESC(?frequency)
