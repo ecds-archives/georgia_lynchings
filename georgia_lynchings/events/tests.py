@@ -17,6 +17,7 @@ from georgia_lynchings.events.timemap import Timemap, GeoCoordinates, \
     MacroEvent_Item
 from georgia_lynchings.rdf.ns import dcx
 from georgia_lynchings.rdf.queryset import QuerySet
+from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,21 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(part_ids, set((4542, 4558, 4567, 4586, 4592, 4607,
                 4613, 4625, 4628, 4639, 4641, 4655, 4670, 14789, 14803,
                 14808, 14962, 14974, 14976, 14986)))
+
+        with patch.object(SparqlStore, 'query') as mock_query:
+            mock_query.return_value=[
+                {'result': 'http://example.com/#r1', 'gender': 'male'},
+                {'result': 'http://example.com/#r2', 'gender': 'female'},
+                {'result': 'http://example.com/#r3', 'gender': 'other'},
+                {'result': 'http://example.com/#r4'},
+            ]
+
+            # if we specify .fields() and then access only those fields, the
+            # values are prefetched by the initial query, and no additional
+            # queries are necessary.
+            participants = list(macro.objects.events.triplets.participants.fields('gender'))
+            genders = [p.gender for p in participants]
+            self.assertEqual(len(mock_query.call_args_list), 1)
 
     def test_get_cities(self):
         macro = MacroEvent(self.SAM_HOSE_MACRO_ID)

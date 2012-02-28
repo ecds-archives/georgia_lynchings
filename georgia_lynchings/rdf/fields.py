@@ -32,11 +32,16 @@ class RdfPropertyField(object):
         self.result_type = result_type
         self.multiple = multiple
         self.reverse_field_name = reverse_field_name
+        self.name = None # typically overridden in ComplexObjectType.__new__
 
     def __get__(self, obj, owner):
         # per convention, return self when evaluated on the class
         if obj is None:
             return self
+
+        # see if this value was acached at object creation
+        if self.name and self.name in obj.extra_properties:
+            return obj.extra_properties[self.name]
             
         # generate a sparql query for the data we want
         q = SelectQuery(results=['result'])
@@ -117,6 +122,8 @@ class ReversedRdfPropertyField(RdfPropertyField):
                         result_type=forward_class, multiple=True)
             if reverse_property.result_type is None:
                 reverse_property.result_type = forward_class
+            if reverse_property.name is None:
+                reverse_property.name = self.reverse_field_name
             setattr(self.result_type, self.reverse_field_name,
                     reverse_property)
             self.result_type._fields[self.reverse_field_name] = reverse_property
@@ -183,11 +190,11 @@ class UnionRdfPropertyField(RdfPropertyField):
     :class:`RdfPropertyField` or any subclass or compatible type.
     '''
 
-    def __init__(self, *props):
+    def __init__(self, *props, **kwargs):
         props = [self._massage_property(prop) for prop in props]
 
         super_init = super(UnionRdfPropertyField, self).__init__
-        super_init(prop=None, multiple=True)
+        super_init(prop=None, multiple=True, **kwargs)
 
         self.props = props
         # TODO: is it possible to support result_type and

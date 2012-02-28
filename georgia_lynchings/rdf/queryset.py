@@ -1,7 +1,10 @@
+import logging
 from rdflib import Variable, RDF
 from georgia_lynchings.rdf.fields import ChainedRdfPropertyField
-from georgia_lynchings.rdf.sparql import SelectQuery
+from georgia_lynchings.rdf.sparql import SelectQuery, GraphPattern
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
+
+logger = logging.getLogger(__name__)
 
 class QuerySet(object):
     '''An abstraction of a triplestore query focusing on
@@ -31,6 +34,8 @@ class QuerySet(object):
         self.field_chain = []
         '''A chain of :class:`~georgia_lynchings.rdf.fields.RdfPropertyField`
         objects to follow to get from root_class to result_class'''
+        self.extra_fields = {}
+        'Extra fields to prefetch from result objects in the query'
 
         self.query_cache = None
         'A cache for the SPARQL query represented by this QuerySet'
@@ -46,6 +51,7 @@ class QuerySet(object):
         new_qs = QuerySet(self.root_class, self.root_obj)
         new_qs.result_class = self.result_class
         new_qs.field_chain = list(self.field_chain)
+        new_qs.extra_fields = self.extra_fields.copy()
         # never copy cache values
         return new_qs
         
@@ -91,6 +97,25 @@ class QuerySet(object):
         # with django models.
         return self
 
+    def fields(self, *fields):
+        '''Pre-fetch the named fields (from among fields defined on the
+        current result type) when executing this query so that they do not
+        need to be queried later for each object.'''
+        new_qs = self._copy()
+        new_qs.extra_fields = dict((field, self._find_field(field))
+                                   for field in fields)
+        return new_qs
+
+    def _find_field(self, field_name):
+        if field_name not in self.result_class._fields:
+            raise AttributeError("'%s' object has no RDF property '%s'" %
+                                 (self.result_class.__name__, attr))
+        field = self.result_class._fields[field_name]
+        if field.multiple:
+            raise AttributeError("QuerySet.fields() does not currently support multiple field '%s.%s'" % 
+                                 (self.result_class.__name__, field_name))
+        return field
+
     def _get_query(self):
         if self.query_cache is None:
             self.query_cache = self._make_query()
@@ -103,9 +128,11 @@ class QuerySet(object):
         '''Generate the SPARQL query used to fetch instances for this query
         set.'''
         result_var = self._result_variable_name()
-        q = SelectQuery(results=[result_var])
+        property_vars = self.extra_fields.keys()
+        q = SelectQuery(results=[result_var] + property_vars)
         self._add_rdf_type_part_to_query(q)
         self._add_result_part_to_query(q)
+        self._add_extra_field_part_to_query(q)
         return q
 
     def _add_rdf_type_part_to_query(self, q):
@@ -136,6 +163,16 @@ class QuerySet(object):
         
         result_field.add_to_query(q, Variable('obj'), Variable('result'))
 
+    def _add_extra_field_part_to_query(self, q):
+        '''Add OPTIONAL query graph patterns to a SPARQL SELECT query
+        to pre-fetch extra fields as part of this query.
+        '''
+        result_name = self._result_variable_name()
+        for field_name, field in self.extra_fields.items():
+            field_graph = GraphPattern(optional=True)
+            field.add_to_query(field_graph, Variable(result_name), Variable(field_name))
+            q.append(field_graph)
+
     def _execute(self):
         '''Execute the SPARQL query for this query set, wrapping the results
         in appropriate :class:`~georgia_lynchings.rdf.models.ComplexObject`
@@ -145,11 +182,25 @@ class QuerySet(object):
             var_bindings['obj'] = self.root_obj.uri.n3()
 
         store = SparqlStore()
-        result_bindings = store.query(sparql_query=unicode(self.query),
+        q_str = unicode(self.query)
+        logger.debug('Executing query: `%s`; bindings: `%r`' % 
+                     (q_str, var_bindings))
+        result_bindings = store.query(sparql_query=q_str,
                 initial_bindings=var_bindings)
-        result_var = self._result_variable_name()
-        return [self.result_class(b[result_var])
+        return [self._wrap_result_bindings(b)
                 for b in result_bindings]
+
+    def _wrap_result_bindings(self, bindings):
+        props = {}
+        for field_name, field in self.extra_fields.items():
+            binding = bindings.get(field_name, None)
+            if binding:
+                binding = field.wrap_result(binding)
+            props[field_name] = binding
+
+        result_var = self._result_variable_name()
+        return self.result_class(bindings[result_var],
+                                 extra_properties=props)
 
     def _result_variable_name(self):
         '''Determine whether the result is in the query binding ?result or

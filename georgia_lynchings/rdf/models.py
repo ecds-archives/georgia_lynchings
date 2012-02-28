@@ -43,12 +43,15 @@ class ComplexObjectType(type):
             forward_attrs['rdf_type'] = rdf_type
 
         for attr, val in attrs.items():
-            # if it's a bare URIRef
+            # if it's a bare URIRef then translate it to an RdfPropertyField
             if isinstance(val, URIRef):
-                # then translate it to an RdfPropertyField
                 val = RdfPropertyField(val)
+            # if it's an RdfPropertyField then name it and stash it for
+            # _fields
             if isinstance(val, RdfPropertyField):
+                val.name = attr
                 fields[attr] = val
+
             forward_attrs[attr] = val
 
         forward_attrs['_fields'] = fields
@@ -81,7 +84,10 @@ class ComplexObject(object):
     '''A :class:`~georgia_lynchings.rdf.queryset.QuerySet` representing
     objects of a referenced subclass.'''
 
-    def __init__(self, id):
+    def __init__(self, id, extra_properties=None):
+        if extra_properties is None:
+            extra_properties = {}
+
         if isinstance(id, URIRef):
             self.uri = id
             if unicode(id).startswith(unicode(dcx) + 'r'):
@@ -91,6 +97,9 @@ class ComplexObject(object):
         else:
             self.id = id
             self.uri = dcx['r' + str(id)]
+
+        # store properties already cached from earlier queries
+        self.extra_properties = extra_properties
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.uri)

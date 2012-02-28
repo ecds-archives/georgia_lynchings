@@ -345,6 +345,7 @@ class QuerySetTest(TestCase):
 
         class SampleWidget(ComplexObject):
             rdf_type = self.sample.Widget
+            example_val = self.sample.val
         self.SampleWidget = SampleWidget
         self.widget = SampleWidget(13)
 
@@ -367,6 +368,16 @@ class QuerySetTest(TestCase):
         self.assertEqual(unicode(qs.query), 'SELECT ?result WHERE { ' +
                                               '?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Thingie> . ' +
                                               '?obj <http://example.com/#has_widget> ?result . ' +
+                                            '}')
+
+    def test_fields_query(self):
+        qs = self.thingie.objects.widgets.fields('example_val')
+        self.assertEqual(unicode(qs.query), 'SELECT ?result ?example_val WHERE { ' +
+                                              '?obj <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/#Thingie> . ' +
+                                              '?obj <http://example.com/#has_widget> ?result . ' +
+                                              'OPTIONAL { ' +
+                                                '?result <http://example.com/#val> ?example_val . ' +
+                                              '} ' +
                                             '}')
 
 class NsTest(TestCase):
