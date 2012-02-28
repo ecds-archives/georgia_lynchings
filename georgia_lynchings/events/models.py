@@ -81,13 +81,14 @@ class MacroEvent(ComplexObject):
         data['triplet_label'] = [row['trlabel'] for row in self.get_triplets()]
 
         participants = self.objects.events.triplets.participants.fields(
-                'actor_name', 'last_name', 'qualitative_age', 'race', 'gender')
+                'actor_name', 'last_name', 'qualitative_age', 'race', 'gender', 'residence')
         data['participant_uri'] = [part.uri for part in participants]
         data['participant_last_name'] = [part.last_name for part in participants if part.last_name]
         data['participant_qualitative_age'] = [part.qualitative_age for part in participants if part.qualitative_age]
         data['participant_race'] = [part.race for part in participants if part.race]
         data['participant_gender'] = [part.gender for part in participants if part.gender]
         data['participant_actor_name'] = [part.actor_name for part in participants if part.actor_name]
+        data['participant_residence'] = [part.residence for part in participants if part.residence]
 
         return data
 
@@ -585,6 +586,10 @@ class Participant(ComplexObject):
     gender = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
                                      sxcxcxn.Personal_characteristics,
                                      ssxn.Gender)
+    residence = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
+                                        sxcxcxn.Personal_characteristics,
+                                        sxcxcxn.Residence, dcx.Identifier)
+    
 
 class Participant_S(Participant):
     rdf_type = scxn.Participant_S

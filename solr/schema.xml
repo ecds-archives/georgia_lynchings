@@ -62,6 +62,7 @@ types and options, see:
     <field name="participant_race" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_gender" type="text" indexed="true" stored="true" multiValued="true"/>
     <field name="participant_actor_name" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="participant_residence" type="text" indexed="true" stored="true" multiValued="true"/>
     <!-- participant names/roles; populated by copyField below -->
     <field name="participant_name" type="text" indexed="true" stored="true" multiValued="true"/>
     <!-- location names; populated by copyField below -->

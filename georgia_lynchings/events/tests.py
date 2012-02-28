@@ -317,6 +317,11 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(len(crisp_data['participant_actor_name']), 3)
         self.assertEqual(crisp_data['participant_actor_name'][0], 'sheriff')
 
+        pulaski = MacroEvent(self.PULASKI_MACRO_ID)
+        pulaski_data = pulaski.index_data()
+
+        self.assertEqual(len(pulaski_data['participant_residence']), 2)
+
 
 class EventTest(EventsAppTest):
     # some fields on Event are unused but listed for later reference. for
