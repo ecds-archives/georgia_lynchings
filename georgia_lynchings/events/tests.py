@@ -281,56 +281,6 @@ class MacroEventTest(EventsAppTest):
         expected, got = {}, macro.get_triplets_by_event() 
         self.assertEqual(expected, got, 'Expected %s for nonexistant triplet macro id, got %s' % (expected, got)) 
                                
-    def test_parto(self):
-        macro = MacroEvent(self.RANDOLPH_MACRO_ID)
-        resultSet = macro.get_statement_object_data()
-        # Test macro event
-        expected, got = 'Randolph', resultSet[7]['melabel']
-        self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
-        # Test name_of_indivd_actor
-        expected, got = 'mother', resultSet[7]['name_of_indivd_actor']
-        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
-        # Test qualitative age
-        expected, got = 'elderly', resultSet[7]['qualitative_age']
-        self.assertEqual(expected, got, 'Expected %s qualitative_age, got %s' % (expected, got))
-        # Test gender
-        expected, got = 'female', resultSet[7]['gender']
-        self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
-        # Test lname
-        expected, got = 'taylor', resultSet[0]['lname']
-        self.assertEqual(expected, got, 'Expected %s lname, got %s' % (expected, got))
-        # Test race
-        expected, got = 'white', resultSet[0]['race']
-        self.assertEqual(expected, got, 'Expected %s race, got %s' % (expected, got))
-        # Test name_of_indivd_actor
-        expected, got = 'sheriff', resultSet[0]['name_of_indivd_actor']
-        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))
-        
-    def test_parts(self):
-        macro = MacroEvent(self.CRISP_MACRO_ID)
-        resultSet = macro.get_statement_subject_data()
-        # Test macro event
-        expected, got = 'Crisp', resultSet[7]['melabel']
-        self.assertEqual(expected, got, 'Expected %s macro event, got %s' % (expected, got))        
-        # Test name_of_indivd_actor
-        expected, got = 'sheriff', resultSet[5]['name_of_indivd_actor']
-        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))         
-        # Test qualitative age
-        expected, got = 'young', resultSet[7]['qualitative_age']
-        self.assertEqual(expected, got, 'Expected %s qualitative_age, got %s' % (expected, got))
-        # Test gender
-        expected, got = 'male', resultSet[7]['gender']
-        self.assertEqual(expected, got, 'Expected %s gender, got %s' % (expected, got)) 
-        # Test lname
-        expected, got = 'simmons', resultSet[7]['lname']
-        self.assertEqual(expected, got, 'Expected %s lname, got %s' % (expected, got))
-        # Test race
-        expected, got = 'white', resultSet[7]['race']
-        self.assertEqual(expected, got, 'Expected %s race, got %s' % (expected, got))
-        # Test name_of_indivd_actor
-        expected, got = 'coroner', resultSet[6]['name_of_indivd_actor']
-        self.assertEqual(expected, got, 'Expected %s name_of_indivd_actor, got %s' % (expected, got))                                             
-
     def test_index_data(self):
         hose = MacroEvent(self.SAM_HOSE_MACRO_ID)
         hose_data = hose.index_data()
@@ -347,14 +297,14 @@ class MacroEventTest(EventsAppTest):
 
         self.assertEqual(len(hose_data['triplet_label']), 10)
 
-        self.assertEqual(len(hose_data['participant_uri']), 5)
-        self.assertEqual(hose_data['participant_uri'][0], dcx.r4586)
-        self.assertEqual(len(hose_data['participant_last_name']), 5)
-        self.assertEqual(hose_data['participant_last_name'][0], 'cranford')
+        self.assertEqual(len(hose_data['participant_uri']), 20)
+        self.assertEqual(hose_data['participant_uri'][0], dcx.r4542)
+        self.assertEqual(len(hose_data['participant_last_name']), 7)
+        self.assertEqual(hose_data['participant_last_name'][0], 'hose')
         self.assertEqual(len(hose_data['participant_qualitative_age']), 0)
         self.assertEqual(len(hose_data['participant_race']), 1)
         self.assertEqual(hose_data['participant_race'][0], 'white')
-        self.assertEqual(len(hose_data['participant_gender']), 7)
+        self.assertEqual(len(hose_data['participant_gender']), 9)
         self.assertEqual(hose_data['participant_gender'][0], 'male')
         self.assertEqual(len(hose_data['participant_actor_name']), 0)
 
@@ -365,7 +315,7 @@ class MacroEventTest(EventsAppTest):
         self.assertEqual(len(crisp_data['participant_qualitative_age']), 1)
         self.assertEqual(crisp_data['participant_qualitative_age'][0], 'young')
         self.assertEqual(len(crisp_data['participant_actor_name']), 3)
-        self.assertEqual(crisp_data['participant_actor_name'][0], 'accomplice')
+        self.assertEqual(crisp_data['participant_actor_name'][0], 'sheriff')
 
 
 class EventTest(EventsAppTest):

@@ -80,30 +80,14 @@ class MacroEvent(ComplexObject):
 
         data['triplet_label'] = [row['trlabel'] for row in self.get_triplets()]
 
-        data['participant_uri'] = []
-        data['participant_last_name'] = []
-        data['participant_qualitative_age'] = []
-        data['participant_race'] = []
-        data['participant_gender'] = []
-        data['participant_actor_name'] = []
-
-        participant_rows = self.get_statement_object_data() + \
-                           self.get_statement_subject_data()
-        for participant_row in participant_rows:
-            if 'parto' in participant_row:
-                data['participant_uri'].append(participant_row['parto'])
-            if 'parts' in participant_row:
-                data['participant_uri'].append(participant_row['parts'])
-            if 'lname' in participant_row:
-                data['participant_last_name'].append(participant_row['lname'])
-            if 'qualitative_age' in participant_row:
-                data['participant_qualitative_age'].append(participant_row['qualitative_age'])
-            if 'race' in participant_row:
-                data['participant_race'].append(participant_row['race'])
-            if 'gender' in participant_row:
-                data['participant_gender'].append(participant_row['gender'])
-            if 'name_of_indivd_actor' in participant_row:
-                data['participant_actor_name'].append(participant_row['name_of_indivd_actor'])
+        participants = self.objects.events.triplets.participants.fields(
+                'actor_name', 'last_name', 'qualitative_age', 'race', 'gender')
+        data['participant_uri'] = [part.uri for part in participants]
+        data['participant_last_name'] = [part.last_name for part in participants if part.last_name]
+        data['participant_qualitative_age'] = [part.qualitative_age for part in participants if part.qualitative_age]
+        data['participant_race'] = [part.race for part in participants if part.race]
+        data['participant_gender'] = [part.gender for part in participants if part.gender]
+        data['participant_actor_name'] = [part.actor_name for part in participants if part.actor_name]
 
         return data
 
@@ -268,65 +252,7 @@ class MacroEvent(ComplexObject):
         for triplet in triplets:
             events[triplet['evlabel']].append(triplet['trlabel'])
         return events
-        
-    # TODO this will likely be replaced by get_statement_data
-    def get_statement_object_data(self):
-        '''Get data about the particpant-O (sentence object) of statements
-        related to this macro event.
 
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:
-                  * `lname`: lname of this actor 
-                  * `qualitative_age`: qualitative_age of this actor                                   
-                  * `race`: race of this actor 
-                  * `gender`: gender of this actor 
-                  * `name_of_indivd_actor`: Name of Individual Actor
-                  * `actor`: actor of this participant-O 
-                  * `parto`: participant-O of this triplet                                                                                         
-                  * `triplets`: the semantic triplets related to this event               
-                  * `event`: the uri of the event associated with this article                  
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `evlabel`: the event label
-                  * `macro`: the macro event ID
-        '''
-
-        query=query_bank.events['parto']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                                       
-        # return a dictionary of the resultSet
-        return resultSet
-
-    # TODO this will likely be replaced by get_statement_data
-    def get_statement_subject_data(self):
-        '''Get data about the particpant-S (sentence subject) of statements
-        related to this macro event.
-
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:
-                  * `lname`: lname of this actor 
-                  * `qualitative_age`: qualitative_age of this actor                                   
-                  * `race`: race of this actor 
-                  * `gender`: gender of this actor 
-                  * `name_of_indivd_actor`: Name of Individual Actor
-                  * `actor`: actor of this participant-S 
-                  * `parts`: participant-S of this triplet                                                                                         
-                  * `triplets`: the semantic triplets related to this event               
-                  * `event`: the uri of the event associated with this article                  
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `evlabel`: the event label
-                  * `macro`: the macro event ID
-        '''
-
-        query=query_bank.events['parts']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                                       
-        # return a dictionary of the resultSet
-        return resultSet
-        
     # Get unique participant (of type subject or object) data
     def get_statement_data(self, stmt_type):
         '''Get unique data about the particpant (sentence object or subject) 
