@@ -80,6 +80,8 @@ class MacroEvent(ComplexObject):
 
         data['triplet_label'] = [row['trlabel'] for row in self.get_triplets()]
 
+        # for self, get all its participants, and prepopulate several fields as
+        # part of the query. use these to populate participant index_data
         participants = self.objects.events.triplets.participants.fields(
                 'actor_name', 'last_name', 'qualitative_age', 'race', 'gender', 'residence')
         data['participant_uri'] = [part.uri for part in participants]
