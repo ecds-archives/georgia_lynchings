@@ -511,11 +511,34 @@ class ViewsTest(EventsAppTest):
 
     @patch('sunburnt.SolrInterface', new_callable=MagicMock)
     def test_advanced_search_url(self, mock_solr_interface):
-        search_url = reverse('events:advanced_search')
+        mocksolr = MagicMock()
+        mock_solr_interface.return_value = mocksolr
+        mocksolr.query.return_value = mocksolr
+        mocksolr.filter.return_value = mocksolr
 
-        # for now just verify that we can get the advanced search page
+        search_url = reverse('events:advanced_search')
+        # first verify that we can get the advanced search page
         response = self.client.get(search_url)
         self.assertEqual(200, response.status_code)
+
+        # now query for stuff
+        query_args = {
+            'participant': 'p',
+            'victims': 'v',
+            'locations': 'l',
+            'all_text': 't',
+            # would like to check alleged_crime here, but it gets its values
+            # from solr, so mocking solr makes that harder.
+        }
+        response = self.client.get(search_url, query_args)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.context['results'],
+                         mocksolr.execute.return_value)
+        mocksolr.query.assert_any_call(participant_name=query_args['participant'])
+        mocksolr.query.assert_any_call(victim_name_brundage=query_args['victims'])
+        mocksolr.query.assert_any_call(location=query_args['locations'])
+        mocksolr.query.assert_any_call(text=query_args['all_text'])
+        mocksolr.filter.assert_any_call(complex_type=MacroEvent.rdf_type)
 
     @patch('sunburnt.SolrInterface')
     def test_map_json(self, mock_solr_interface):

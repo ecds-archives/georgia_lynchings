@@ -114,9 +114,28 @@ def search(request):
 
 
 def advanced_search(request):
-    form = AdvancedSearchForm()
+    results = None
+    form = AdvancedSearchForm(request.GET)
+    form_fields = set(form.fields.keys())
+    request_fields = set(k for (k, v) in request.GET.items() if v)
+    # if the form is valid and at least one field is specified:
+    if form.is_valid() and form_fields.intersection(request_fields):
+        q = solr = sunburnt.SolrInterface(settings.SOLR_INDEX_URL)
+        if form.cleaned_data['participant']:
+            q = q.query(participant_name=form.cleaned_data['participant'])
+        if form.cleaned_data['victims']:
+            q = q.query(victim_name_brundage=form.cleaned_data['victims'])
+        if form.cleaned_data['locations']:
+            q = q.query(location=form.cleaned_data['locations'])
+        if form.cleaned_data['alleged_crime']:
+            q = q.query(victim_allegedcrime_brundage=form.cleaned_data['alleged_crime'])
+        if form.cleaned_data['all_text']:
+            q = q.query(text=form.cleaned_data['all_text'])
+        q = q.filter(complex_type=MacroEvent.rdf_type)
+        results = q.execute()
+
     return render(request, 'events/advanced_search.html',
-                  {'form': form})
+                  {'form': form, 'results': results})
 
 
 #These views and variables are for Map display

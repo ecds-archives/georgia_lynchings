@@ -9,8 +9,25 @@
     <form action="" method="get">
       <table id="advanced-search">
         {{ form.as_table }}
-        <tr><td></td><td><input type="submit" value="Search"></td>
+        <tr><td></td><td><input type="submit" value="Search"></td></tr>
       </table>
     </form>
+
+    {% if results %}
+      <h1>Results</h1>
+
+      <ul>
+        {% for result in results %}
+          <li class="match">
+            {# TODO: fill this out with useful results #}
+            <a href="{% url events:details result.row_id %}">Case of
+              {% for name in result.victim_name_brundage %}
+                <span>{{ name }}</span>{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </a>
+          </li>
+        {% endfor %} {# result #}
+      </ul>
+    {% endif %} {# results #}
   </div>
 {% endblock %}

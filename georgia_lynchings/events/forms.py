@@ -22,9 +22,9 @@ def _choices_for_facet(field_name):
     return choices
 
 class AdvancedSearchForm(forms.Form):
-    participant = forms.CharField()
-    victims = forms.CharField()
-    locations = forms.CharField()
-    alleged_crime = forms.ChoiceField(
+    participant = forms.CharField(required=False)
+    victims = forms.CharField(required=False)
+    locations = forms.CharField(required=False)
+    alleged_crime = forms.ChoiceField(required=False, 
             choices=_choices_for_facet('victim_allegedcrime_brundage_facet'))
-    all_text = forms.CharField()
+    all_text = forms.CharField(required=False)
