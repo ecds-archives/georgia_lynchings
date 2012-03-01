@@ -497,6 +497,17 @@ def get_filters(filters):
         query=query_bank.filters[filter['name']+"_freq" ]  
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query)
+        
+        # processing for calculating city frequency.
+        if filter['name']=='city':
+            freqDict = {}
+            for item in resultSet:
+                cityname = item[filter['name']].encode('ascii')
+                freqDict[cityname] = freqDict.get(cityname, 0) + 1
+            rs = sorted(freqDict.items(), key=lambda (key,value): value, reverse=True)
+            resultSet = []
+            for city,freq in rs[:20]:
+                resultSet.append({'frequency':freq, 'city':city})
 
         tag_tuples = []
         # Add tags and frequency as tuples to filter dict
