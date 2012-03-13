@@ -3,8 +3,8 @@ from django.conf.urls.defaults import patterns, include, url
 from georgia_lynchings.events.views import home
 
 # Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 
 urlpatterns = patterns('',
     #url(r'^articles/', 'georgia_lynchings.articles.views.newspaper_articles', name="newspaper_articles"),
@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    # url(r'^admin/', include(admin.site.urls)),   
+    url(r'^admin/', include(admin.site.urls)),
 ) 
 
 # Production will serve media files through apache (see DEPLOYNOTES).
