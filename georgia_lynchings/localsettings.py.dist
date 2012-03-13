@@ -57,6 +57,11 @@ SITE_ID = 1
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = ''
 
+# Used in article models to se the upload path for article PDFs.  This is
+# relative to the MEDIA_ROOT setting of the app.  For more information see
+# https://docs.djangoproject.com/en/dev/topics/http/file-uploads/
+ARTICLE_UPLOAD_DIR = 'articles' # i.e. 'articles'
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = ''
 
