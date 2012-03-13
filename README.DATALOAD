@@ -7,27 +7,20 @@ Install the application
 Get original access mdb file from Dropbox
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Obtain a copy of the latest mdb file.
+Obtain a copy of the latest mdb file.  NOTE mdbtools only works with Access 2003 at this time.
 
 
 Remove the password lock and decode the mdb file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Optionally, copy the original file to a new file.
-    Use a machine that has Microsoft Office Access 2007+
-    Do not click on the mdb file to open it.
-    Open the Microsoft Office Access application first, not the mdb file.
-    Click on the "Office button" icon in the upper left corner, select "Open"
-    Browse to the copy of the mdb file.
-    Once the file is highlighted the "Open" dropdown button will be enabled.
-    Click on the Open dropdown arrow and select "Open Exclusive"
-    Select tab "Database Tools"
-    # Remove the password
-    Select "Unset Database Password" located in the Database Tools group.
-    Enter the password.
-    # Decode the data
-    "Database Tools" -> Encode/Decode Database (in the Database Tools group) 
-    # Save the unlocked, decoded data file.
+#. Download the latest copy of the PC-ACE database.
+#. Start a NEW Blank Database in MS Access 2007 or 2003.
+#. From ‘External Data’ select the Access option to import the database
+   tables.
+#. If asked for the password enter it.
+#. Select all tables in the import view import them.
+#. Save the new database in MS Access 2002-2003 format with a distinct
+   descriptive name.
 
 .. Note::
   setup_Complex table data for Grammar Rule gets truncated.

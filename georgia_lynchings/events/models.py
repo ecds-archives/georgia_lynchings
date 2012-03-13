@@ -337,16 +337,17 @@ def get_victim_query():
     '''
     q = SelectQuery(results=['macro', 'victim', 'vname_brdg', \
         'vlydate_brdg', 'vcounty_brdg', 'victim_allegedcrime_brundage'])
-    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))         
-    q.append((Variable('victim'), ssxn.Date_of_lynching_Brundage, \
+    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))
+    q.append((Variable('victim'), sxcxcxn.Victim_Brundage, Variable('victim_Brundage')))   
+    q.append((Variable('victim_Brundage'), ssxn.Date_of_lynching_Brundage, \
         Variable('vlydate_brdg')), optional=True)
-    q.append((Variable('victim'), ssxn.County_of_lynching_Brundage, \
+    q.append((Variable('victim_Brundage'), ssxn.County_of_lynching_Brundage, \
         Variable('vcounty_brdg')), optional=True)
-    q.append((Variable('victim'), ssxn.Alleged_crime_Brundage, \
+    q.append((Variable('victim_Brundage'), ssxn.Alleged_crime_Brundage, \
         Variable('victim_allegedcrime_brundage')), optional=True)
-    q.append((Variable('victim'), ssxn.Name_of_victim_Brundage, \
+    q.append((Variable('victim_Brundage'), ssxn.Name_of_victim_Brundage, \
         Variable('vname_brdg')), optional=True)
-    q.append((Variable('victim'), ssxn.Race_Brundage, \
+    q.append((Variable('victim_Brundage'), ssxn.Race_Brundage, \
         Variable('vrace_brdg')), optional=True)
 
     return unicode(q)  
@@ -363,8 +364,9 @@ def get_metadata_query():
     q.append((Variable('macro'), dcx.Identifier, Variable('label')))  
     q.append((Variable('event'), ix_ebd.mindate, Variable('min_date')))
     q.append((Variable('event'), ix_ebd.maxdate, Variable('max_date')))
-    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim'))) 
-    q.append((Variable('victim'), ssxn.County_of_lynching_Brundage, \
+    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))
+    q.append((Variable('victim'), sxcxcxn.Victim_Brundage, Variable('victim_Brundage')))     
+    q.append((Variable('victim_Brundage'), ssxn.County_of_lynching_Brundage, \
             Variable('vcounty_brdg')))
     return unicode(q)
     
@@ -435,9 +437,10 @@ def update_filter_fields(add_fields=[], resultSetIndexed={}):
     # Add `victim_allegedcrime_brundage`, if present in add_fields list
     if 'victim_allegedcrime_brundage' in add_fields:
         q = SelectQuery(results=['macro', 'victim_allegedcrime_brundage'], distinct=True)
-        q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))         
-        q.append((Variable('victim'), ssxn.Alleged_crime_Brundage, \
-                Variable('victim_allegedcrime_brundage')))
+        q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))
+        q.append((Variable('victim'), sxcxcxn.Victim_Brundage, Variable('victim_Brundage')))  
+        q.append((Variable('victim_Brundage'), ssxn.Alleged_crime_Brundage, \
+                Variable('victim_allegedcrime_brundage')))              
         store = SparqlStore()
         ac_resultSet = store.query(sparql_query=unicode(q))
         join_data_on_macroevent(resultSetIndexed, ac_resultSet)
@@ -553,6 +556,17 @@ ORDER BY ?macro
         query=query_bank.filters[filter['name']+"_freq" ]  
         ss=SparqlStore()
         resultSet = ss.query(sparql_query=query)
+        
+        # processing for calculating city frequency.
+        if filter['name']=='city':
+            freqDict = {}
+            for item in resultSet:
+                cityname = item[filter['name']].encode('ascii')
+                freqDict[cityname] = freqDict.get(cityname, 0) + 1
+            rs = sorted(freqDict.items(), key=lambda (key,value): value, reverse=True)
+            resultSet = []
+            for city,freq in rs[:20]:
+                resultSet.append({'frequency':freq, 'city':city})
 
         tag_tuples = []
         # Add tags and frequency as tuples to filter dict
@@ -680,19 +694,26 @@ class Victim(ComplexObject):
     
     # simplex fields potentially attached to a Victim
     # Victim has a name (Brundage)
-    victim_name = ssxn.Name_of_victim_Brundage
+    #victim_name = ssxn.Name_of_victim_Brundage
+    
+    victim_name = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                        ssxn.Name_of_victim_Brundage)    
 
     # Victim has a county of lynching (Brundage)
-    victim_county_of_lynching = ssxn.County_of_lynching_Brundage
-        
+    victim_county_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                        ssxn.County_of_lynching_Brundage) 
+                                                
     # Victim has an alleged crime (Brundage)        
-    victim_alleged_crime = ssxn.Alleged_crime_Brundage
+    victim_alleged_crime = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                        ssxn.Alleged_crime_Brundage)    
     
     # Victim has a date of lynchings (Brundage)    
-    victim_date_of_lynching = ssxn.Date_of_lynching_Brundage
+    victim_date_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                        ssxn.Date_of_lynching_Brundage)     
     
     # Victim has a race (Brundage)    
-    victim_race = ssxn.Race_Brundage
+    victim_race = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                        ssxn.Race_Brundage)       
                     
     # reverse and aggregate properties
     macro_event = ReversedRdfPropertyField(sxcxcxn.Victim,

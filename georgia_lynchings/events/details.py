@@ -45,8 +45,12 @@ class Details:
         if not eventsResultSet and results is None:
             return None         
 
-        # Load all the events for this macro event
-        results = dict(results.items() + self.get_me_events(eventsResultSet).items())
+        # Load all the events for this macro event, 
+        # include victim information when available
+        if not results:
+            results = self.get_me_events(eventsResultSet)
+        else:
+            results = dict(results.items() + self.get_me_events(eventsResultSet).items())
 
         # Collect semantic triplets for each event.
         self.update_me_triplets(results) 
