@@ -1,15 +1,6 @@
-{% extends "base.html" %}
+{% extends "page_base.html" %}
 
-{% block title %}Lynchings in Georgia (1875-1930){% endblock %}
-
-{% comment %}
-  Temporarily skip sitewide shared banner. We're in the middle of a
-  redesign. For now we're wrapping everything on this page inside a
-  #container element, which isn't compatible with the rest of the sitewide
-  design. As the new design develops, this page should be refactored to come
-  back in line with it.
-{% endcomment %}
-{% block banner %}{% endblock %}
+{% block head-title %}Lynchings in Georgia (1875-1930){% block head-subtitle %}{% endblock %}{% endblock %}
 
 {% block style %}
   {{ block.super }}
