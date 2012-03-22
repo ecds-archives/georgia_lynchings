@@ -1,11 +1,13 @@
-{% extends "base.html" %}
+{% extends "page_base.html" %}
 
-{% block title %}Articles: {{ title }}{% endblock %}
+{% block head-title %}Articles: {{ title }}{% endblock %}
 
-{% block content %}
+{% block content-title %}Articles for Macro Event: {{ title }}{% endblock %}
+
+{% block content-body %}
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
-  <h1 class="main">Articles for Macro Event: {{ title }}</h1> 
+
   {% if resultSet %}
   <table summary="Articles for a Macro Event {{ results.melabel }}" id="gen">      
   <tr><th>Event</th><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></tr>

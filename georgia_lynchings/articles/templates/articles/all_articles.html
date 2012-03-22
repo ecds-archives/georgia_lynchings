@@ -1,11 +1,12 @@
-{% extends "base.html" %}
+{% extends "page_base.html" %}
 
-{% block title %}Articles: {{ title }}{% endblock %}
+{% block head-title %}Articles: {{ title }}{% endblock %}
 
-{% block content %}
-  <h1 class="main">{{ title }} for Georgia Lynchings</h1>
+{% block content-title %}{{ title }} for Georgia Lynchings{% endblock %}
+
+{% block content-body %}
   <table summary="Articles for a Macro Event ({{ row_id }}): {{ title }}" border=1 cellpadding=10px>
-  <tr><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></th>
+  <tr><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></th></tr>
   {% for result in resultSet %}
       <tr>
       <td>{{ result.papername }}</td>
