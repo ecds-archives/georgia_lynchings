@@ -44,6 +44,8 @@
 			<nav>
 				<ul>
 					<li><a href="{% url home %}">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Show Me</a></li>
                     {% block navlinks %}{% endblock %}
 				</ul>
 			</nav>
@@ -52,6 +54,7 @@
 	<div id="main-container">
 		<div id="main" class="wrapper clearfix">
 			{% block messages %}{% endblock %}
+            {% block aside %}{% endblock %}
 			<article>
                 {% block content-header %}
 				<header>
@@ -69,7 +72,7 @@
 				{% block content-footer %}{% endblock %}
 			</article>
 
-            {% block aside %}{% endblock %}
+
 			
 		</div> <!-- #main -->
 	</div> <!-- #main-container -->
