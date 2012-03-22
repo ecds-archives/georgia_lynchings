@@ -3,6 +3,10 @@ from urllib import quote
 from django.db import models
 
 from georgia_lynchings.localsettings import ARTICLE_UPLOAD_DIR
+from georgia_lynchings.rdf.fields import ChainedRdfPropertyField, \
+        ReversedRdfPropertyField, RdfPropertyField
+from georgia_lynchings.rdf.models import RdfObject, ComplexObject
+from georgia_lynchings.rdf.ns import dd, dxcxd, ssxn
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from georgia_lynchings import query_bank
 import logging
@@ -79,6 +83,51 @@ class Article(models.Model):
     def __unicode__(self):
         return u"%s" % (self.title)
 
+
+class PcAceDocument(RdfObject):
+    """
+    A PDF document in PC-ACE, with metadata in the RDF triplestore.
+    """
+
+    rdf_type = dd.Row
+    'the URI of the RDF Class describing document objects'
+
+    id = dd.ID
+    'the numeric id used in PC-ACE for the document'
+
+    newspaper_name = ssxn.Newspaper_name
+    'the name of the newspaper the document comes from'
+    newspaper_date = ssxn.Newspaper_date
+    'the date of the newspaper the document comes from'
+    page_number = ssxn.Page_number
+    'the page number of the document'
+
+    _pdf_path = ssxn.documentPath
+    '''the relative path to the document. assumes windows path conventions and
+       a predefined directory structure'''
+
+    documented = ChainedRdfPropertyField(
+            ReversedRdfPropertyField(dxcxd.Document),
+            RdfPropertyField(dxcxd.Complex,
+                result_type=ComplexObject, multiple=True),
+            reverse_field_name='documents',
+        )
+    '''the list of :class:`~georgia_lynchings.rdf.models.ComplexObject`
+    objects associated with this document. In practice, this property is
+    more useful in reverse: It creates a ``documents`` property on
+    :class:`~georgia_lynchings.rdf.models.ComplexObject` that lists all of
+    the :class:`PcAceDocument` objects associated with that object.'''
+
+    @property
+    def pdf_filename(self):
+        'the document filename, stripped of OS and directory structure'
+        fpath = self._pdf_path
+        if fpath:
+            path, bslash, fname = fpath.rpartition('\\')
+            return fname
+
+
+# DEPRECATED: Use PcAceDocument.objects.all() to get all articles
 def all_articles():
     '''Get all articles associated with this macro event, along with the
     particular events that the articles are attached to.
