@@ -9,18 +9,20 @@
 
 {% block content-body %}
     <!-- floaters handle vertical centering. see index.css -->
-        <a href="{% url events:macro_events %}">macro events</a><br/>
+        <h2>Prototype displays (development only)</h2>
+        <ul>
+        <li><a href="{% url events:macro_events %}">macro events</a></li>
 
-        <a href="{% url events:timemap %}">Timemap</a>
+        <li><a href="{% url events:timemap %}">Timemap</a></li>
 
-       <a href="{% url articles:newspaper_articles %}">articles</a>
+       <li><a href="{% url articles:newspaper_articles %}">articles</a></li>
 
-        <form action="{% url events:search %}" method="get">
+       <li><form action="{% url events:search %}" method="get">
           {{ search_form.q }}
           <input type="submit" value="search">
-        </form>
-        <a href="{% url events:advanced_search %}">advanced search</a>
-
+        </form></li>
+        <li><a href="{% url events:advanced_search %}">advanced search</a></li>
+        </ul>
 {% endblock %}
 
 {% block aside %}
