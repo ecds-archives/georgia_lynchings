@@ -2,7 +2,7 @@
    Author: Jonathan Verrecchia - vereki.com/initializr/responsive-template
    ========================================================================== */
 
-body{ font:14px/24px Helvetica, Helvetica Neue, Arial; }
+body{ font:14px/24px Georgia, Helvetica, Helvetica Neue, Arial; }
 
 .wrapper{
 	width:95%;
@@ -18,11 +18,11 @@ body{ font:14px/24px Helvetica, Helvetica Neue, Arial; }
 #main aside      { border-top:    20px solid #508e52; }
 
 #header-container{
-    background:#090a0c url('images/blacktexturedbg.jpg') top left repeat-x;
+    background: #090a0c url('images/blacktexturedbg.jpg') top left repeat-x;
 }
 #footer-container,
 #main aside{
-	background:#090a0c;
+	background: #22242b;
 }
 
 #title{ color:white; }
@@ -78,7 +78,8 @@ nav a:hover{
 
 #footer-container footer{
 	color:white;
-	padding:20px 0;
+    background: #090a0c;
+	padding: 10px 10px;
 }
 
 /* ===============
@@ -91,14 +92,6 @@ nav a:hover{
 /* ===== Primary Styles ========================================================
    Author:
    ========================================================================== */
-
-
-
-
-
-
-
-
 
 
 

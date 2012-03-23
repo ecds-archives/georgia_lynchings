@@ -79,9 +79,10 @@
 
     {% block footer %}
 	<div id="footer-container">
-		<footer class="wrapper">
+		<footer class="wrapper clearfix">
+                <img src="{{ STATIC_URL }}images/elibraries_white_xprnt.png" height="125" width="110" border="0" align="left" alt="Emory Library Logo" />
 			{% block footer-content %}
-            <p id="copyright">Copyright &copy; Emory University Libraries 2011 - All rights Reserved</p>
+            <p id="copyright">Copyright &copy; Digital Scholarship Commons of Emory University Libraries 2011 - All rights Reserved</p>
             {% if SW_VERSION %}
             <div class="sw-version">v{{ SW_VERSION }}</div>
             {% endif %}
