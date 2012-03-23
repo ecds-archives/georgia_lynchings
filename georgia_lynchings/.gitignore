@@ -1,0 +1,29 @@
+# Files to ignore by default in Git #
+#####################################
+*.pyc
+*.db
+*.jar
+*.gz
+*.tar
+*.zip
+*.db
+*.dll
+
+# DB and other log files #
+##########################
+*.log
+*.db
+*.sqlite
+*.sql
+*.csv
+*.txt
+
+# Specific Files to ignore #
+############################
+localsettings.py
+Thumbs.db
+Icon?
+.DS_Store?
+ehthumbs.db
+.idea
+collectedmedia
