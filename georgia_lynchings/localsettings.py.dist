@@ -23,6 +23,17 @@ DATABASES = {
     }
 }
 
+# Orverrides the default entries from settings.py to account for the SUB_URL
+MEDIA_URL = '%s/media' % SUB_URL
+STATIC_URL = '%s/static/' % SUB_URL
+ADMIN_MEDIA_PREFIX = '%s/static/admin/' % SUB_URL
+
+# Some default login and logout URL information.
+# Uncomment and configure properly if you include login
+# LOGIN_URL = '%s/accounts/login/' % SUB_URL
+# LOGIN_REDIRECT_URL = '%s/' % SUB_URL
+# LOGOUT_URL = '%s/accounts/logout/' % SUB_URL'
+
 # Access URL for the Sesame triplestore - used by SPARQL queries
 SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
 TEST_SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
