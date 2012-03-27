@@ -22,6 +22,8 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
+# Set this if deploying under a subdirectory.
+SUB_URL = '/galyn' # i.e. '/galyn'
 
 # Orverrides the default entries from settings.py to account for the SUB_URL
 MEDIA_URL = '%s/media' % SUB_URL
