@@ -91,7 +91,7 @@ class RdfPropertyField(object):
 
     def add_reverse_property(self, forward_class):
         if self.result_type and self.reverse_field_name:
-            reverse_property = ReversedRdfPropertyField(self.prop,
+            reverse_property = ReversedRdfPropertyField(self,
                     result_type=forward_class, multiple=True)
             setattr(self.result_type, self.reverse_field_name,
                     reverse_property)
@@ -136,14 +136,15 @@ class ChainedRdfPropertyField(RdfPropertyField):
     result.
     '''
 
-    def __init__(self, *props):
+    def __init__(self, *props, **kwargs):
         props = [self._massage_property(prop) for prop in props]
         # this is multiple if any of its constituent props is multiple
         multiple = any(prop.multiple for prop in props)
         result_type = props[-1].result_type
 
         super_init = super(ChainedRdfPropertyField, self).__init__
-        super_init(prop=None, multiple=multiple, result_type=result_type)
+        super_init(prop=None, multiple=multiple, result_type=result_type,
+                   **kwargs)
 
         self.props = props
         # TODO: support reverse_field_name

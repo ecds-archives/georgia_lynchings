@@ -378,13 +378,16 @@ class Converter_data_xref_Simplex_Simplex_Document(Converter):
         print >>outf, '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .'
     
     def encode_xrefID(self, val):
-        return 'sxsxd:r' + val
+        if val:
+            return 'sxsxd:r' + val
 
     def encode_Simplex(self, val):
-        return 'dsx:r' + val
+        if val:
+            return 'dsx:r' + val
 
     def encode_Document(self, val):
-        return 'dd:r' + val
+        if val:
+            return 'dd:r' + val
 
     def encode_Order(self, val):
         return self._encode_as_integer(val)

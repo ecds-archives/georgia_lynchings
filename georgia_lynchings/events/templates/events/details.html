@@ -1,10 +1,11 @@
-{% extends "base.html" %}
+{% extends "page_base.html" %}
 
-{% block title %}Details: {{ title }}{% endblock %}
+{% block head-title %}Details: {{ title }}{% endblock %}
 
-{% block content %}
+{% block content-title %}Details for Macro Event: {{ results.melabel }}{% endblock %}
+
+{% block content-body %}
 {% if results %}
-    <h1 class="main">Details for Macro Event: {{ results.melabel }}</h1> 
     <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
         {% if results.melabel %}<tr><th>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>{% endif %}
         {% if results.mindate %}<tr><th>Min Date:</th><td>{{ results.mindate }}</td></tr>{% endif %}

@@ -26,7 +26,7 @@ __all__ = [ 'ComplexObject' ]
 
 logger = logging.getLogger(__name__)
 
-class ComplexObjectType(type):
+class RdfObjectType(type):
     '''Metaclass for :class:`ComplexObject`. Translate bare RDF attributes
     on the class into :class:`RdfPropertyField` instances.
     '''
@@ -57,7 +57,7 @@ class ComplexObjectType(type):
         forward_attrs['_fields'] = fields
 
         # create the class
-        super_new = super(ComplexObjectType, cls).__new__
+        super_new = super(RdfObjectType, cls).__new__
         new_class = super_new(cls, name, bases, forward_attrs)
 
         for attr, val in forward_attrs.items():
@@ -67,7 +67,44 @@ class ComplexObjectType(type):
         return new_class
 
 
-class ComplexObject(object):
+class RdfObject(object):
+    '''A parent class for objects whose data is stored in the project
+    triplestore.
+
+    :param uri: the URI of the object
+    '''
+
+    __metaclass__ = RdfObjectType
+
+    objects = QuerySetDescriptor()
+    '''A :class:`~georgia_lynchings.rdf.queryset.QuerySet` representing
+    objects of a referenced subclass.'''
+
+    def __init__(self, uri, extra_properties=None):
+        if extra_properties is None:
+            extra_properties = {}
+        self.extra_properties = extra_properties
+        self.uri = uri
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.uri)
+
+    # DEPRECATED: use cls.objects.all()
+    @classmethod
+    def all_instances(cls):
+        rdf_type = getattr(cls, 'rdf_type', dcx.Row)
+        q = SelectQuery(results=['obj'])
+        q.append((Variable('obj'), RDF.type, rdf_type))
+
+        store = SparqlStore()
+        bindings = store.query(sparql_query=unicode(q))
+        return [cls(b['obj']) for b in bindings]
+
+    def index_data(self):
+        return { 'uri': self.uri }
+
+
+class ComplexObject(RdfObject):
     '''A parent class for complex objects in the project. Complex objects
     are a concept imported from the source data: They're data structures
     with lots of other project data and structures attached. In our RDF
@@ -78,34 +115,21 @@ class ComplexObject(object):
     :param id: the numeric identifier of the object in the source data
     '''
 
-    __metaclass__ = ComplexObjectType
-
-    objects = QuerySetDescriptor()
-    '''A :class:`~georgia_lynchings.rdf.queryset.QuerySet` representing
-    objects of a referenced subclass.'''
-
-    def __init__(self, id, extra_properties=None):
-        if extra_properties is None:
-            extra_properties = {}
-
+    def __init__(self, id, *args, **kwargs):
         if isinstance(id, URIRef):
-            self.uri = id
+            uri = id
             if unicode(id).startswith(unicode(dcx) + 'r'):
                 self.id = unicode(id)[len(unicode(dcx))+1:]
             else:
                 self.id = None
         else:
-            self.id = id
-            self.uri = dcx['r' + str(id)]
+            uri = dcx['r' + str(id)]
 
-        # store properties already cached from earlier queries
-        self.extra_properties = extra_properties
-
-    def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, self.uri)
+        super(ComplexObject, self).__init__(uri, *args, **kwargs)
 
     label = dcx.Identifier
     'a human-readable label for this object'
+
     # Classes use the Name-URI for their rdf_type. So indexing that here
     # (instead of, for instance, just dcx.ComplexType) allows us to search
     # for thing by MyClass.rdf_type.
@@ -118,16 +142,6 @@ class ComplexObject(object):
     verified_details = ssxn.verifiedIO
     '''has the coded data for this object been manually reviewed for
     detail accuracy?'''
-
-    @classmethod
-    def all_instances(cls):
-        rdf_type = getattr(cls, 'rdf_type', dcx.Row)
-        q = SelectQuery(results=['obj'])
-        q.append((Variable('obj'), RDF.type, rdf_type))
-
-        store = SparqlStore()
-        bindings = store.query(sparql_query=unicode(q))
-        return [cls(b['obj']) for b in bindings]
 
     def index_data(self):
         data = { 'uri': self.uri }

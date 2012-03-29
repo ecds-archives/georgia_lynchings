@@ -22,6 +22,19 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
+# Set this if deploying under a subdirectory.
+SUB_URL = '/galyn' # i.e. '/galyn'
+
+# Orverrides the default entries from settings.py to account for the SUB_URL
+MEDIA_URL = '%s/media/' % SUB_URL
+STATIC_URL = '%s/static/' % SUB_URL
+ADMIN_MEDIA_PREFIX = '%s/static/admin/' % SUB_URL
+
+# Some default login and logout URL information.
+# Uncomment and configure properly if you include login
+# LOGIN_URL = '%s/accounts/login/' % SUB_URL
+# LOGIN_REDIRECT_URL = '%s/' % SUB_URL
+# LOGOUT_URL = '%s/accounts/logout/' % SUB_URL'
 
 # Access URL for the Sesame triplestore - used by SPARQL queries
 SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
@@ -56,6 +69,11 @@ SITE_ID = 1
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = ''
+
+# Used in article models to se the upload path for article PDFs.  This is
+# relative to the MEDIA_ROOT setting of the app.  For more information see
+# https://docs.djangoproject.com/en/dev/topics/http/file-uploads/
+ARTICLE_UPLOAD_DIR = 'files' # i.e. 'files'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = ''

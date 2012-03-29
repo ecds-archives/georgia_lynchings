@@ -1,3 +1,4 @@
+*.pdf
 *.pyc
 georgia_lynchings/localsettings.py
 build
@@ -7,3 +8,4 @@ doc/_build/
 georgia_lynchings/test-results
 sitemedia
 static/documents
+media/articles/*.pdf
