@@ -74,18 +74,16 @@ class Command(NoArgsCommand):
         # can. Simulate should stop at the last possible moment to catch as
         # many errors as possible. In particular, this should verify that
         # the file is readable.
-        article = Article()
-        article.identifier = doc.uri
-        if newspaper_name:
-            article.publisher = newspaper_name
-        if newspaper_date:
-            article.date = newspaper_date
-        if page_number:
-            article.coverage = page_number
+        try: # Can't use get_or_create because that autosaves on creation.
+            article = Article.objects.get(identifier=doc.uri)
+            created = False
+        except Article.DoesNotExist:
+            article = Article()
+            created = True
 
         input_file = None
         try:
-            if filename:
+            if filename and not article.file:
                 try:
                     filepath = os.path.join(self.article_path, filename)
                     input_file = open(filepath)
@@ -95,6 +93,15 @@ class Command(NoArgsCommand):
                         print 'Failed to import document %s: failed to read file "%s"' % \
                                 (doc.uri.n3(), filepath)
                     return
+
+            if created:
+                article.identifier = doc.uri
+                if newspaper_name:
+                    article.publisher = newspaper_name
+                if newspaper_date:
+                    article.date = newspaper_date
+                if page_number:
+                    article.coverage = page_number
 
             if not self.simulate:
                 article.save()

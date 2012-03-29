@@ -13,6 +13,6 @@ class ArticleAdmin(admin.ModelAdmin):
                        'source', 'language'),
         }),
     )
-    list_display = ('id', 'title', 'publisher', 'date') # id used since all others are not required
-    list_filter = ('date',)
+    list_display = ('id', 'title', 'publisher', 'date', 'file') # id used since all others are not required
+    #list_filter = ('publisher')
 admin.site.register(Article, ArticleAdmin)
