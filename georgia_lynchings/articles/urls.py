@@ -6,6 +6,6 @@ Patterns:
 '''
   
 urlpatterns = patterns('georgia_lynchings.articles.views',
-    url(r'', 'newspaper_articles', name="newspaper_articles"),     # all articles    
+    url(r'^$', 'newspaper_articles', name="newspaper_articles"),     # all articles
 )
 

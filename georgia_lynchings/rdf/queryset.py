@@ -81,10 +81,11 @@ class QuerySet(object):
         property bar, then `this_qs.bar` is a new QuerySet that returns
         bars.
         '''
-        if attr not in self.result_class._fields:
+        field = getattr(self.result_class, attr, None)
+        if field is None:
             raise AttributeError("'%s' object has no RDF property '%s'" %
                                  (self.result_class.__name__, attr))
-        field = self.result_class._fields[attr]
+
         new_qs = self._copy()
         new_qs.result_class = field.result_type
         new_qs.field_chain.append(field)

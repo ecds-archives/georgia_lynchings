@@ -1,9 +1,11 @@
-{% extends "base.html" %}
+{% extends "page_base.html" %}
 {% load static %}
 
-{% block title %}Search results: {{ term }}{% endblock %}
+{% block head-title %}Search results: {{ term }}{% endblock %}
 
-{% block content %}
+{% block content-title %}Search Results{% endblock %}
+
+{% block content-body %}
   {% get_static_prefix as STATIC_PREFIX %}
   <div class="main">search results for: 
     <form action="{% url events:search %}" method="get">

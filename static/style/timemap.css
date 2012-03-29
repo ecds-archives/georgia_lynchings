@@ -57,5 +57,6 @@ div.custominfostyle {
 }
 
 div#timelinecontainer{ height: 150px; }
-div#mapcontainer{ height: 300px; }
+div#mapcontainer{ height: 250px; }
+div.mapdisplay { height: 450px;}
 

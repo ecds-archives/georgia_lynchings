@@ -1,11 +1,10 @@
-{% extends "base.html" %}
+{% extends "page_base.html" %}
 
-{% block title %}Advanced search{% endblock %}
+{% block head-title %}Advanced search{% endblock %}
 
-{% block content %}
+{% block content-title %}Search{% endblock %}
+{% block content-body %}
   <div class="main">
-    <h1>Search</h1>
-
     <form action="" method="get">
       <table id="advanced-search">
         {{ form.as_table }}
