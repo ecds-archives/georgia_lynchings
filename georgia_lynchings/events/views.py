@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
+from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
 
 from georgia_lynchings.events.details import Details   
@@ -170,28 +171,114 @@ def timemap(request):
     return render(request, 'events/timemap.html', \
         {'filters' : get_filters(filters)})
 
+# FIXME: rename this method once refactoring is complete and its purpose
+# becomes clearer. probably change the url as well.
 def map_json(request):
-    '''
-    Renders json data from :class:`~georgia_lynchings.events.timemap.Timemap` for map display
-    '''
+    # FIXME: this currently takes a ridiculously long time because
+    # _macro_event_timemap_data() makes several separate calls for each of
+    # the hundreds of individual macro events. we can speed this up by
+    # preloading these fields in _get_macro_events_for_timemap() and then
+    # refactoring the relevant model methods to use that info.
+    macro_events = _get_macro_events_for_timemap()
+    macro_data = [ _macro_event_timemap_data(me) for me in macro_events ]
+    # FIXME: several events have no start or end date associated with them.
+    # ideally, we should find a way to associate dates with these items.
+    # lacking that, we should consider how we can include them in the data
+    # set, since right now they're entirely invisible in the timemap.
+    json_literal = [d for d in macro_data
+                    if d.get('start', None) and
+                       d.get('end', None) and
+                       d.get('point', None)]
+    return HttpResponse(json.dumps(json_literal, indent=4),
+                        mimetype='application/json')
 
-    map_data = Timemap(filters)
-    add_fields = get_additional_fields()
-    # Get the json for core metadata plus any additional fields for the timemap filter
-    json_str = json.dumps(map_data.get_json(add_fields=add_fields), indent=4)    
-    response = HttpResponse(json_str, mimetype='application/json')
+def _get_macro_events_for_timemap():
+# FIXME: make field lookups possible to significantly speed later lookups:
+# return MacroEvent.objects \
+#        .fields('label', 'events__start_date', 'events__end_date', 
+#                'events__triplets__city', 'victims__victim_county_of_lynching'
+#                'victims__victim_alleged_crime') \
+#        .all()
+# FIXME: or even, better, the properties actually used in this view so that
+# the view doesn't need to know model implementation details:
+#    return MacroEvent.objects \
+#        .fields('label', '_tmp_start', '_tmp_end', '_tmp_coords',
+#                '_tmp_cities', '_tmp_county', '_tmp_alleged_crimes') \
+#        .all()
+    return MacroEvent.objects.all()
 
-    return response
+def _macro_event_timemap_data(mac):
+    '''Get the timemap json data for a single
+    :class:`~georgia_lynchings.events.models.MacroEvent`.'''
+    # TODO: revisit json actually needed by timemap
+
+    # base data available (we think) for all macro events:
+    data = {
+        'title': mac.label,
+        'options': {
+            'city_filter': [c.title() for c in mac._tmp_cities()],
+            'county': mac._tmp_county(),
+            'detail_link': mac.get_absolute_url(),
+            'min_date': mac._tmp_start(),
+            'tags': _macro_event_tags(mac),
+            'title': mac.label,
+            'victim_allegedcrime_brundage_filter': mac._tmp_alleged_crimes(),
+        },
+    }
+
+    # add fields that might not actually be available for some macro events:
+
+    start_date = mac._tmp_start()
+    if start_date:
+        data['start'] = start_date
+
+    end_date = mac._tmp_start()
+    if end_date:
+        data['end'] = end_date
+
+    coords = mac._tmp_coords()
+    if coords:
+        data['point'] = { 'lat':coords['latitude'],
+                          'lon':coords['longitude']}
+
+    return data
     
-def get_additional_fields():
-    '''
-    Create a list of names for the timemap filter fields.
-    
-    :rtype: a list of filter names    
-    '''    
-        
-    # Get a list of filter names
-    fields = []
-    for filter in filters:
-        fields.append(filter['name'])
-    return fields    
+def _macro_event_tags(mac):
+    'Get the timemap tags used for filtering a macro event.'
+    # TODO: revisit filtering
+
+    cities = mac._tmp_cities()
+    city_tags = [slugify('city ' + c) for c in cities]
+
+    alleged_crimes = mac._tmp_alleged_crimes()
+    alleged_crime_tags = [slugify('ac ' + c) for c in alleged_crimes]
+
+    return city_tags + alleged_crime_tags
+
+# XXX old implementation. leaving around for temporary reference while
+# reimplementing this feature using models
+#def map_json(request):
+#    '''
+#    Renders json data from :class:`~georgia_lynchings.events.timemap.Timemap` for map display
+#    '''
+#
+#    map_data = Timemap(filters)
+#    add_fields = get_additional_fields()
+#    # Get the json for core metadata plus any additional fields for the timemap filter
+#    json_str = json.dumps(map_data.get_json(add_fields=add_fields), indent=4)    
+#    response = HttpResponse(json_str, mimetype='application/json')
+#
+#    return response
+#
+#def get_additional_fields():
+#    '''
+#    Create a list of names for the timemap filter fields.
+#    
+#    :rtype: a list of filter names    
+#    '''    
+#        
+#    # Get a list of filter names
+#    fields = []
+#    for filter in filters:
+#        fields.append(filter['name'])
+#    return fields    

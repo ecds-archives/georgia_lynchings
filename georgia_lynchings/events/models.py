@@ -2,9 +2,10 @@ from collections import defaultdict
 from rdflib import Variable
 from urllib import quote
 
+from django.db.models import permalink
 from django.template.defaultfilters import slugify
 
-from georgia_lynchings import query_bank
+from georgia_lynchings import geo_coordinates, query_bank
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, UnionRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
@@ -25,6 +26,10 @@ class MacroEvent(ComplexObject):
 
     rdf_type = scxn.Macro_Event
     'the URI of the RDF Class describing macro event objects'     
+
+    @permalink
+    def get_absolute_url(self):
+        return ('events:details', [str(self.id)])
 
     # NOTE: Fields for complex subobjects are defined on the subobjects
     # themselves to simplify syntax. For example, see Event.macro_event,
@@ -93,6 +98,48 @@ class MacroEvent(ComplexObject):
         data['participant_residence'] = [part.residence for part in participants if part.residence]
 
         return data
+
+    # FIXME: temporary methods to support timemap generation. these need to
+    # change: some of them belong in the view; others should turn into nicer
+    # properties on the model. at the very least they all need less
+    # offensive names before this code hits mainline development.
+
+    def _tmp_start(self):
+        # FIXME: index this on the macro event, not events
+        events = list(self.objects.events.fields('start_date').all())
+        dates = [ ev.start_date for ev in events if ev.start_date ]
+        if dates:
+            return min(dates)
+
+    def _tmp_end(self):
+        # FIXME: index this on the macro event, not events
+        events = list(self.objects.events.fields('end_date').all())
+        dates = [ ev.end_date for ev in events if ev.end_date ]
+        if dates:
+            return max(dates)
+
+    def _tmp_coords(self):
+        # FIXME: this is an odd format to return coordinates.
+        county = self._tmp_county()
+        return geo_coordinates.countymap.get(county, None)
+
+    def _tmp_cities(self):
+        triplets = self.objects.events.triplets.fields('city').all()
+        return set([tr.city for tr in triplets if tr.city])
+
+    def _tmp_county(self):
+        # FIXME: this is broken: it only returns the county for the last
+        # victim. this error is inherited from an earlier version of this
+        # code. it needs to be fixed.
+        victims = self.objects.victims.fields('victim_county_of_lynching').all()
+        return victims[-1].victim_county_of_lynching
+
+    def _tmp_alleged_crimes(self):
+        victims = self.objects.victims.fields('victim_alleged_crime').all()
+        return [v.victim_alleged_crime for v in victims
+                if v.victim_alleged_crime]
+
+    # FIXME: end of temporary support methods (see above)
 
     # methods for wrapping a MacroEvent around a URI and querying utility
     # data about it. For now these methods have hard-coded SPARQL, but we
@@ -537,6 +584,19 @@ class Event(ComplexObject):
     event_type = ssxn.Type_of_event
     'a word or short phrase describing the type of event'
 
+    # FIXME: Do we actually need these index properties? The one piece of
+    # code that uses the Python properties (MacroEvent._tmp_start() and
+    # MacroEvent._tmp_end()) has a note to move to indexing by MacroEvent
+    # instead of Event. Other explicit queries use the RDF properties, but
+    # it's not entirely clear whether those queries are in active use or are
+    # stale.
+    #
+    # derived fields indexed during data load in top-level setup-queries
+    start_date = ix_ebd.mindate
+    'the earliest date associated with this event'
+    end_date = ix_ebd.maxdate
+    'the latest date associated with this event'
+
     # reverse and aggregate properties
     macro_event = ReversedRdfPropertyField(sxcxcxn.Event,
                                            result_type=MacroEvent,
@@ -563,6 +623,41 @@ class SemanticTriplet(ComplexObject):
     'conjunction or subordinating phrase linking this triplet to the next'
     is_passive = ssxn.Passive_no_agent
     'does the statement use passive voice? (typically specified only if true)'
+
+    # FIXME: this property is ridiculously complicated. we need to either
+    # break it up, index it in setup-queries, or eliminate it as unnecessary
+    city = ChainedRdfPropertyField(process, 
+               UnionRdfPropertyField(
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Simple_process,
+                       sxcxcxn.Circumstances,
+                       sxcxcxn.Space
+                   ),
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Complex_process,
+                       sxcxcxn.Simple_process,
+                       sxcxcxn.Circumstances,
+                       sxcxcxn.Space
+                   ),
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Complex_process,
+                       sxcxcxn.Other_process,
+                       sxcxcxn.Simple_process,
+                       sxcxcxn.Circumstances,
+                       sxcxcxn.Space
+                   ),
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Complex_process,
+                       sxcxcxn.Other_process,
+                       sxcxcxn.Nominalization,
+                       sxcxcxn.Space
+                   ),
+                   multiple=False
+               ),
+               sxcxcxn.City,
+               ssxn.City_name
+           )
+    'the city this triplet happened in'
 
     # reverse and aggregate properties
     event = ReversedRdfPropertyField(sxcxcxn.Semantic_Triplet,
