@@ -1,8 +1,9 @@
 from urllib import quote
 
 from django.db import models
+from django.core.urlresolvers import reverse
 
-from georgia_lynchings.localsettings import ARTICLE_UPLOAD_DIR
+from georgia_lynchings.localsettings import ARTICLE_UPLOAD_DIR, MEDIA_URL
 from georgia_lynchings.rdf.fields import ChainedRdfPropertyField, \
         ReversedRdfPropertyField, RdfPropertyField
 from georgia_lynchings.rdf.models import RdfObject, ComplexObject
@@ -82,7 +83,6 @@ class Article(models.Model):
 
     def __unicode__(self):
         return u"%s" % (self.title)
-
 
 class PcAceDocument(RdfObject):
     """

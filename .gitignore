@@ -1,3 +1,4 @@
+*.pdf
 *.pyc
 georgia_lynchings/localsettings.py
 build
