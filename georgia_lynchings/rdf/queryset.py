@@ -108,10 +108,10 @@ class QuerySet(object):
         return new_qs
 
     def _find_field(self, field_name):
-        if field_name not in self.result_class._fields:
+        field = getattr(self.result_class, field_name, None)
+        if field is None:
             raise AttributeError("'%s' object has no RDF property '%s'" %
-                                 (self.result_class.__name__, attr))
-        field = self.result_class._fields[field_name]
+                                 (self.result_class.__name__, field_name))
         if field.multiple:
             raise AttributeError("QuerySet.fields() does not currently support multiple field '%s.%s'" % 
                                  (self.result_class.__name__, field_name))
