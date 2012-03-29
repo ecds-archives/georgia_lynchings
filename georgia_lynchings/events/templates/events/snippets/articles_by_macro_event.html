@@ -1,0 +1,18 @@
+{% if article_data %}
+  <table id="part">
+  <tr><th>Event</th><th>Paper Name</th><th>Paper Date</th><th>Article<br/>Page</th><th>Download</th></tr>
+  {% for result in article_data %}
+      <tr>
+      <td>{% if result.evlabel %}{{ result.evlabel }}{% else %}n/a{% endif %}</td>
+      <td>{% if result.papername %}{{ result.papername }}{% else %}n/a{% endif %}</td>
+      <td>{% if result.paperdate %}{{ result.paperdate }}{% else %}n/a{% endif %}</td>
+      <td>{% if result.articlepage %}{{ result.articlepage }}{% else %}n/a{% endif %}</td>
+      <td>{% if result.docpath %}
+          <a href="{{ STATIC_URL }}../{{ result.docpath_link }}">
+          <img src="{{ STATIC_URL }}/images/pdf-icon.jpg"/></a>{% else %}n/a{% endif %}</td>
+      </tr>
+  {% endfor %}
+  </table>
+  {% endif %}
+
+<!-- <table border="1" id='part'> <tr><td>xx</td></tr> </table> -->

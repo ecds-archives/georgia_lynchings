@@ -1,0 +1,51 @@
+PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
+PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
+PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
+PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
+SELECT ?macro ?melabel ?event ?evlabel (MIN(?evdate) as ?mindate)
+WHERE {
+  ?macro a scxn:Macro_Event;
+         dcx:Identifier ?melabel;
+         sxcxcxn:Event ?event.         
+  ?event dcx:Identifier ?evlabel;
+         sxcxcxn:Semantic_Triplet ?_1.            
+  ?_1 sxcxcxn:Process ?_2.               
+  {
+    ?_2 sxcxcxn:Simple_process ?_3. 
+    ?_3 sxcxcxn:Circumstances ?_4. 
+    ?_4 sxcxcxn:Time ?_5. 
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.    
+    ?_6 sxcxcxn:Simple_process ?_7. 
+    ?_7 sxcxcxn:Circumstances ?_8. 
+    ?_8 sxcxcxn:Time ?_5. 
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.    
+    ?_6 sxcxcxn:Other_process ?_9. 
+    ?_9 sxcxcxn:Simple_process ?_7.    
+    ?_7 sxcxcxn:Circumstances ?_8. 
+    ?_8 sxcxcxn:Time ?_5. 
+  } UNION {
+    ?_2 sxcxcxn:Complex_process ?_6.    
+    ?_6 sxcxcxn:Other_process ?_9. 
+    ?_9 sxcxcxn:Nominalization ?_10. 
+    ?_10 sxcxcxn:Time ?_5. 
+  }
+
+  ?_5 sxcxcxn:Date ?_11.  
+
+  {
+    ?_11 sxcxcxn:Definite_date ?_12.     
+    ?_12 ssxn:Definite_date ?evdate      
+  } UNION {
+    ?_11 sxcxcxn:Indefinite_date ?_13.     
+    ?_13 sxcxcxn:Reference_yardstick ?_14.      
+    ?_14 ssxn:Definite_date ?evdate      
+  } UNION {
+    ?_11 sxcxcxn:Indefinite_date ?_13.     
+    ?_13 sxcxcxn:Reference_yardstick ?_14.      
+    ?_14 ssxn:Newspaper_date ?evdate 
+  }
+}
+GROUP BY ?macro ?melabel ?event ?evlabel
+ORDER BY ?mindate

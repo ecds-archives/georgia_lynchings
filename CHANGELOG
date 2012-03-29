@@ -1,0 +1,22 @@
+
+Release 0.1.x - Initial Prototype
+---------------------------------
+First working system prototype. Users can access RDF content
+of the Georgia Lynchings data.
+
+**Internal prototype: Not for production release**
+
+* An admin can extract data from access and pc-ace structure, so that data is available to port into mysql or triplestore. 
+* Admin can query rdf data from the triplestore, so that research data is available to the app.
+    Select all events ordered by time.
+    Select all events ordered by location.
+    Select all articles for an event.
+    Select events that involve a specific person.
+* A user can visit a project website for investigating research content.
+* A user can visit a webpage to view all events ordered by time.
+* A user can visit a webpage to view all events ordered by location. 
+* A user can visit a webpage to view all articles related to an event. 
+* A user can visit a webpage to view all events related by a particular person. Find all actions that Sam Hoses did.
+* A user can open a newspaper article link supplied in a query result set in order to verify original source. 
+* User can access a Staging instance of web app.
+* Added documentation section for Timemap in README

@@ -1,0 +1,78 @@
+README.DATALOAD
+===============
+
+Install the application
+-----------------------
+
+Get original access mdb file from Dropbox
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Obtain a copy of the latest mdb file.  NOTE mdbtools only works with Access 2003 at this time.
+
+
+Remove the password lock and decode the mdb file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. Download the latest copy of the PC-ACE database.
+#. Start a NEW Blank Database in MS Access 2007 or 2003.
+#. From ‘External Data’ select the Access option to import the database
+   tables.
+#. If asked for the password enter it.
+#. Select all tables in the import view import them.
+#. Save the new database in MS Access 2002-2003 format with a distinct
+   descriptive name.
+
+.. Note::
+  setup_Complex table data for Grammar Rule gets truncated.
+  To get a full version of setup_Complex, (right click) export this table to text format from access.
+  If you want to load this version of the setup_Complex file, you will not be able to use the one step 
+  fabric load_triples task. See the README.SCRIPTS for an alternative way to load this file.
+
+Use the one step fabric load_triples task
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  # On ubuntu packages mdbtools and curl are required.
+  $ sudo apt-get install mdbtools curl
+  
+  # Run the fabric load_triples task
+  # Usage: fab load_triples:<mdb_path>,<sesame_repo>[,keep_files=True]
+  $ fab load_triples:<mdb_path>,<sesame_repo>[,keep_files=True]
+  
+.. Note::
+  This process requires a tomcat setting of approximately:
+  JAVA_OPTS="-Xmx1024M -Xms512M"
+  Possibly, once the data is loaded, this setting could be reduced to:
+  JAVA_OPTS="-Xmx512M -Xms512M"
+  
+  The fabric load triples task takes 20+ minutes to complete.
+  
+Manual Data Load Instructions to overcome format issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+  
+  # In MS Access, remove password and decode the mdb file.
+  # In MS Access, export csv data_xref_Simplex_Simplex_Document table
+  # Move mdb and data_xref_Simplex_Simplex_Document.csv to ubuntu/linux
+  # Extract the csv from the decoded mdb file:
+  $ mdb2csv.sh <mdb_path> <csv_dir>
+
+  # Replace access exported csv data_xref_Simplex_Simplex_Document.csv 
+   with mdb2csv csv file (add heading line), check filename syntax.
+
+  # Remove unwanted csv files:
+    - all Comment tables not needed; 
+    - all u*.csv not needed
+    
+  # Note location of csv files
+
+  # Convert csv files to ttl
+  $ python csv2rdf.py <csv_dir>/*.csv
+
+  # Add rdf namespaces, upload ttl, and add inferred stmts to sesame repository:
+     Example repository url: 
+     http://wilson.library.emory.edu:8180/openrdf-sesame/repositories/galyn-2012-01-27-b
+     
+  $ ./add-rdf-namespaces.sh -r <sesame_repo_url>
+  $ ./upload-ttl.sh -r <sesame_repo_url>/statements <ttl_dir>/d*.ttl
+  $ ./upload-ttl.sh -r <sesame_repo_url>/statements <ttl_dir>/ttl/s*.ttl
+  $ ./add-inferred-statements.sh <sesame_repo_url>/statements
+

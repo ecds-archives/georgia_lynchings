@@ -1,0 +1,39 @@
+#container {
+  margin: 0px auto;
+  width: 700px;
+}
+
+#header {
+  margin: 0px 10px 0px;
+}
+
+.pane {
+  height: 250px;
+  width: 330px;
+  margin: 10px;
+  background: #fff4e5;
+}
+
+/* vertical center magic from:
+ * http://blog.themeforest.net/tutorials/vertical-centering-with-css/
+ */
+.pane .floater {
+  float: left;
+  height: 50%;
+  margin-bottom: -1em;
+}
+.pane .panecontent {
+  clear: both;
+  height: 50%;
+  position: relative;
+  text-align: center;
+}
+
+#topleft { float:left }
+#topright { float:right }
+#bottomleft { float:left; clear:both }
+#bottomright { float:right }
+#bottomright .floater { margin-bottom: -1.5em; }
+
+/* drag bottom of #container down to contain floating panes */
+#insidefooter { clear:both }

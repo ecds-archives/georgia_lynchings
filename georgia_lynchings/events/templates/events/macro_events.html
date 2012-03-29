@@ -1,0 +1,17 @@
+{% extends "page_base.html" %}
+
+{% block head-title %}Georiga Lynchings Macro Events{% endblock %}
+
+{% block content-title %}Georiga Lynchings {{ title }}{% endblock %}
+
+{% block content-body %}
+  <table summary="Date Range for a Macro Events" id="left">
+  <tr><th>Macro Event</th><th>Articles</th></th></tr>
+  {% for result in results %}
+    <tr>          
+      <td><a href={{ result.details_link }}>{{ result.melabel }}</a></td>
+      <td><a href={{ result.articles_link }}>{{ result.articleTotal }}</a></td>      
+    </tr>
+  {% endfor %}
+  </table>
+{% endblock %}

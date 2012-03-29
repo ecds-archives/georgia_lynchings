@@ -1,0 +1,37 @@
+README.SCRIPTS
+==============
+
+Scripts
+-------
+mdb2csv.sh
+csv2rdf.py
+(csv2mysql.py) 
+upload-ttl.sh
+add-rdf-statements.sh
+add-inferred-statements.sh
+
+Convert Access MDB file to CSV files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To convert the access MDB file into CSV, use the mdb2csv.sh script.
+Password must be removed from the mdb file prior to running this script.
+mdbtools package required:: "sudo apt-get install mdbtools"
+
+Usage:: mdb2csv.sh <path to access mdb file> <output directory>
+
+Convert CSV files to RDF
+^^^^^^^^^^^^^^^^^^^^^^^^
+To convert the access MDB file into CSV, use the mdb2csv.sh script.
+Password must be removed from the mdb file prior to running this script.
+mdbtools package required:: "sudo apt-get install mdbtools"
+
+Usage:: convert_mdb_to_csv.sh <path to access mdb file> <output directory>
+
+
+
+
+
+
+
+
+
+

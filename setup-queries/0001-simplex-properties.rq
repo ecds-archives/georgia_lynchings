@@ -1,0 +1,131 @@
+BASE <http://galyn.example.com/>
+PREFIX dsx: <source_data_files/data_Simplex.csv#>
+PREFIX dsxd: <source_data_files/data_SimplexDate.csv#>
+PREFIX dsxn: <source_data_files/data_SimplexNumber.csv#>
+PREFIX dsxt: <source_data_files/data_SimplexText.csv#>
+PREFIX dxsxcx: <source_data_files/data_xref_Simplex-Complex.csv#>
+PREFIX dxsxsxd: <source_data_files/data_xref_Simplex-Simplex-Document.csv#>
+PREFIX ssx: <source_data_files/setup_Simplex.csv#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# data_Simplex tuples map complex objects to simplex data through simplex
+# types. Semantically, though, they're used as statements. Interpret these
+# as subject, object, and predicate of a new statement. The simplex data is
+# found in data_SimplexDate, data_SimplexText, data_SimplexNumber, or
+# directly in data_Simplex according to the simplex type.
+
+# Text simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/text> {
+    ?subj ?ssx ?val .
+    ?subj ?ssxn ?val .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 1 ;
+       ssx:Name-URI ?ssxn .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxt dsxt:ID ?ref ;
+        dsxt:Value ?val .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
+} ;
+
+# Number simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/number> {
+    ?subj ?ssx ?val .
+    ?subj ?ssxn ?val .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 2 ;
+       ssx:Name-URI ?ssxn .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxn dsxn:ID ?ref ;
+        dsxn:Value ?val .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
+} ;
+
+# Date-only simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/date> {
+    ?subj ?ssx ?date .
+    ?subj ?ssxn ?date .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 3 ;
+       ssx:Name-URI ?ssxn .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxd dsxd:ID ?ref ;
+        dsxd:Value ?val .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
+  BIND(STRDT(SUBSTR(str(?val), 1, 10), xsd:date) AS ?date) .
+} ;
+
+# Boolean simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/boolean> {
+    ?subj ?ssx ?canonbool .
+    ?subj ?ssxn ?canonbool .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 4 ;
+       ssx:Name-URI ?ssxn .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?val .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
+  BIND(STRDT(?val, xsd:boolean) AS ?litbool) .
+  BIND(IF(?litbool, "true"^^xsd:boolean, "false"^^xsd:boolean) AS ?canonbool) .
+} ;
+
+# Datetime simplex statements
+INSERT {
+  GRAPH <http://galyn.example.com/constructed_statements/simplex/datetime> {
+    ?subj ?ssx ?val .
+    ?subj ?ssxn ?val .
+  }
+}
+WHERE {
+  ?ssx ssx:ValueType 5 ;
+       ssx:Name-URI ?ssxn .
+  ?dsx dsx:SimplexType ?ssx ;
+       dsx:refValue ?ref .
+  ?dsxd dsxd:ID ?ref ;
+        dsxd:Value ?val .
+  {
+    ?dxsxcx dxsxcx:Simplex ?dsx ;
+            dxsxcx:Complex ?subj .
+  } UNION {
+    ?dxsxsxd dxsxsxd:Simplex ?dsx ;
+             dxsxsxd:Document ?subj .
+  }
+}

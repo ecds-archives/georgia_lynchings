@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block subpagetitle %}{{ block.super }}- Internal Error{% endblock %}
+
+{% block content-title %}Internal Error{% endblock %}
+
+{% block content %}
+<p>
+   There was an error processing your request.  Someone should probably be beaten
+   or at least told about it.
+</p>
+<p>
+    Please send an email to <a href="mailto:libsys-dev@listserv.cc.emory.edu">
+    libsys-dev@listserv.cc.emory.edu</a> describing what you were doing when
+    you got this error.
+</p>
+{% endblock %}
