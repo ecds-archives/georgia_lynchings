@@ -10,7 +10,9 @@ urlpatterns = patterns('',
     #url(r'^articles/', 'georgia_lynchings.articles.views.newspaper_articles', name="newspaper_articles"),
     url(r'^articles/', include('georgia_lynchings.articles.urls', namespace="articles")),    
     url(r'^events/', include('georgia_lynchings.events.urls', namespace="events")),
-    url(r'^$', 'georgia_lynchings.events.views.home', name="home"), 
+    url(r'^page/', include('georgia_lynchings.simplepages.urls', namespace="simplepages")),
+    url(r'^$', 'georgia_lynchings.events.views.home', name="home"),
+
     
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
