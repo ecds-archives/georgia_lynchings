@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    {% block style %}
+      {# extend (or override) this block for page-specific style #}
+      <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/galyn.css">
+    {% endblock %}
+    <link rel="shortcut icon" href="{{ STATIC_URL }}images/favicon.ico" type="image/x-icon" />
+    <title>{% block title %}{% endblock %}</title>
+    {% block page-head %}
+    {% comment %}Put Extra Header information here.{% endcomment %}
+    {% endblock %}
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    jQuery(document).ready(function() {
+      jQuery(".toggle_hide").hide();
+      //toggle the componenet with class msg_body
+      jQuery(".more").click(function()
+      {
+        jQuery(this).next(".toggle_hide").slideToggle(500);
+      });
+    });
+    </script>
+
+
+</head>
+<body id="{% block body_id %}{% endblock %}">
+  {% block banner %}<div class="emorybanner"/>{% endblock %}
+
+  {% block content %}{% endblock %}
+
+  {% block footer %}
+    <div id="footer">
+      <p id="copyright">Copyright &copy; Emory University Libraries 2011 - All rights Reserved</p>
+      {% if SW_VERSION %}
+        <div class="sw-version">v{{ SW_VERSION }}</div>
+      {% endif %}
+    </div>
+  {% endblock %}
+
+  {% block script_footer %}{% endblock %}
+</body>
+</html>
