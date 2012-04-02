@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 from rdflib import Variable, RDF
 from georgia_lynchings.rdf.fields import ChainedRdfPropertyField
@@ -37,8 +38,12 @@ class QuerySet(object):
         self.extra_fields = {}
         'Extra fields to prefetch from result objects in the query'
 
-        self.query_cache = None
-        'A cache for the SPARQL query represented by this QuerySet'
+        self.base_query_cache = None
+        '''A cache for the SPARQL query represented by the objects in this
+        QuerySet'''
+        self.supplemental_query_cache = None
+        '''A cache for additional SPARQL queries needed to supplement fields
+        on the objects in this QuerySet'''
         self.results_cache = None
         'A cache for the results returned by this QuerySet'
 
@@ -103,8 +108,9 @@ class QuerySet(object):
         current result type) when executing this query so that they do not
         need to be queried later for each object.'''
         new_qs = self._copy()
-        new_qs.extra_fields = dict((field, self._find_field(field))
-                                   for field in fields)
+        new_fields = dict((field, self._find_field(field))
+                          for field in fields)
+        new_qs.extra_fields.update(new_fields)
         return new_qs
 
     def _find_field(self, field_name):
@@ -112,28 +118,56 @@ class QuerySet(object):
         if field is None:
             raise AttributeError("'%s' object has no RDF property '%s'" %
                                  (self.result_class.__name__, field_name))
-        if field.multiple:
-            raise AttributeError("QuerySet.fields() does not currently support multiple field '%s.%s'" % 
-                                 (self.result_class.__name__, field_name))
         return field
 
-    def _get_query(self):
-        if self.query_cache is None:
-            self.query_cache = self._make_query()
-        return self.query_cache
-    query = property(_get_query)
+    def _get_base_query(self):
+        if self.base_query_cache is None:
+            self.base_query_cache = self._make_base_query()
+        return self.base_query_cache
+    base_query = property(_get_base_query)
     '''The :class:`~georgia_lynchings.rdf.sparql.SelectQuery` used to fetch
     instances for this query set.'''
 
-    def _make_query(self):
+    def _make_base_query(self):
         '''Generate the SPARQL query used to fetch instances for this query
         set.'''
         result_var = self._result_variable_name()
-        property_vars = self.extra_fields.keys()
-        q = SelectQuery(results=[result_var] + property_vars)
+        basic_property_vars = [name for name, field
+                               in self.extra_fields.items()
+                               if not field.multiple]
+        q = SelectQuery(results=[result_var] + basic_property_vars)
         self._add_rdf_type_part_to_query(q)
         self._add_result_part_to_query(q)
-        self._add_extra_field_part_to_query(q)
+        self._add_extra_field_parts_to_base_query(q)
+        return q
+
+    def _get_supplemental_queries(self):
+        if self.supplemental_query_cache is None:
+            self.supplemental_query_cache = self._make_supplemental_queries()
+        return self.supplemental_query_cache
+    supplemental_queries = property(_get_supplemental_queries)
+    '''A list of :class:`~georgia_lynchings.rdf.sparql.SelectQuery` objects
+    used for additional fields in this query set.'''
+
+    def _make_supplemental_queries(self):
+        '''Generate SPARQL queries needed to fetch additional property
+        values for the instances in this query set. Currently this creates
+        one additional supplemental query for each prepopulated multi-valued
+        field.'''
+        multiple_fields = dict((name, field) for name, field
+                               in self.extra_fields.items()
+                               if field.multiple)
+        return [self._make_supplemental_multiple_query(name, field)
+                for name, field in multiple_fields.items()]
+
+    def _make_supplemental_multiple_query(self, name, field):
+        '''Generate a supplemental SPARQL query to fetch additional property
+        values for a single multi-valued field for all returned objects.'''
+        result_var = self._result_variable_name()
+        q = SelectQuery(results=[result_var, name])
+        self._add_rdf_type_part_to_query(q)
+        self._add_result_part_to_query(q)
+        self._add_one_field_part_to_query(q, name, field, optional=False)
         return q
 
     def _add_rdf_type_part_to_query(self, q):
@@ -164,44 +198,96 @@ class QuerySet(object):
         
         result_field.add_to_query(q, Variable('obj'), Variable('result'))
 
-    def _add_extra_field_part_to_query(self, q):
+    def _add_extra_field_parts_to_base_query(self, q):
         '''Add OPTIONAL query graph patterns to a SPARQL SELECT query
-        to pre-fetch extra fields as part of this query.
+        to pre-fetch extra single-valued fields as part of this query.
         '''
-        result_name = self._result_variable_name()
         for field_name, field in self.extra_fields.items():
-            field_graph = GraphPattern(optional=True)
-            field.add_to_query(field_graph, Variable(result_name), Variable(field_name))
-            q.append(field_graph)
+            if not field.multiple: # multi-valued fields handled in suppl. queries
+                self._add_one_field_part_to_query(q, field_name, field,
+                                                  optional=True)
+
+    def _add_one_field_part_to_query(self, q, field_name, field, optional):
+        '''Add graph patterns to a query to navigate through a single field.'''
+        result_name = self._result_variable_name()
+        field_graph = GraphPattern(optional=optional)
+        field.add_to_query(field_graph, Variable(result_name), Variable(field_name))
+        q.append(field_graph)
 
     def _execute(self):
-        '''Execute the SPARQL query for this query set, wrapping the results
+        '''Execute the SPARQL queries for this query set, wrapping the results
         in appropriate :class:`~georgia_lynchings.rdf.models.ComplexObject`
         instances.'''
         var_bindings = {}
         if self.root_obj:
             var_bindings['obj'] = self.root_obj.uri.n3()
 
-        store = SparqlStore()
-        q_str = unicode(self.query)
+        base_bindings = self._execute_single_query(self.base_query, var_bindings)
+        supplemental_bindings = [self._execute_single_query(q, var_bindings)
+                                 for q in self.supplemental_queries]
+        collated_bindings = self._collate_bindings(supplemental_bindings)
+
+        return [self._wrap_result_bindings(b, collated_bindings)
+                for b in base_bindings]
+
+    def _execute_single_query(self, q, var_bindings):
+        '''Execute a single SPARQL query and return the results. Provided as
+        a convenient logging hook.'''
+        q_str = unicode(q)
         logger.debug('Executing query: `%s`; bindings: `%r`' % 
                      (q_str, var_bindings))
-        result_bindings = store.query(sparql_query=q_str,
+        store = SparqlStore()
+        bindings = store.query(sparql_query=q_str,
                 initial_bindings=var_bindings)
-        return [self._wrap_result_bindings(b)
-                for b in result_bindings]
+        return bindings
 
-    def _wrap_result_bindings(self, bindings):
+    def _collate_bindings(self, supplemental_bindings):
+        '''Collect all of the supplemental query results into one big
+        dict, keyed on object ids. The dict values are multi-value bindings
+        for the object. In particular, each is a dict keyed on field name,
+        The values of these sub-dicts are lists of bindings for that
+        object in that property.'''
+        obj_name = self._result_variable_name()
+        # use defaultdict instead of regular dict to make lookup cleaner
+        results = defaultdict(lambda: defaultdict(list))
+        for rows in supplemental_bindings: # results of each query
+            for row in rows:                # each row
+                result_id = row[obj_name]    # the item this row supplements
+                result_fields = results[result_id] # the fields for that item
+                for name, val in row.items():  # each binding in that row
+                    if name != result_id:       # skip the item id itself
+                        result_fields[name].append(val)
+        # whew. now results should contain all of the values from all of
+        # the supplemental bindings.
+        return results
+
+    def _wrap_result_bindings(self, bindings, collated_bindings):
+        '''Wrap a single row of result bindings from the base query in an
+        object of the appropriate result type for the query. Supplement
+        multi-valued field values with the results of the supplemental
+        queries, as collated by :meth:`_collate_bindings`.'''
+
+        # grab the particular part of the supplemental bindings that apply
+        # to this particular object.
+        result_var = self._result_variable_name()
+        result_id = bindings[result_var]
+        supplemental_bindings = collated_bindings.get(result_id, {})
+
+        # wrap the raw bindings in Python types appropriate to the fields
+        # they represent.
         props = {}
         for field_name, field in self.extra_fields.items():
-            binding = bindings.get(field_name, None)
-            if binding:
-                binding = field.wrap_result(binding)
-            props[field_name] = binding
+            if field.multiple:
+                raw_binding = supplemental_bindings[field_name]
+                binding = [field.wrap_result(b) for b in raw_binding]
+                props[field_name] = binding
+            else:
+                binding = bindings.get(field_name, None)
+                if binding:
+                    binding = field.wrap_result(binding)
+                props[field_name] = binding
 
-        result_var = self._result_variable_name()
-        return self.result_class(bindings[result_var],
-                                 extra_properties=props)
+        return self.result_class(result_id, extra_properties=props)
 
     def _result_variable_name(self):
         '''Determine whether the result is in the query binding ?result or
