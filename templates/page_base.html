@@ -44,7 +44,7 @@
 			<nav>
 				<ul>
 					<li><a href="{% url home %}">Home</a></li>
-                    <li><a href="#">About</a></li>
+                    <li><a href="{% url simplepages:view slug='about' %}">About</a></li>
                     <li><a href="#">Show Me</a></li>
                     {% block navlinks %}{% endblock %}
 				</ul>
