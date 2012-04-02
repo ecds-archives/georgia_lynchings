@@ -205,7 +205,7 @@ def _get_macro_events_for_timemap():
 #        .fields('label', '_tmp_start', '_tmp_end', '_tmp_coords',
 #                '_tmp_cities', '_tmp_county', '_tmp_alleged_crimes') \
 #        .all()
-    return MacroEvent.objects.all()
+    return MacroEvent.objects.fields('label').all()
 
 def _macro_event_timemap_data(mac):
     '''Get the timemap json data for a single
