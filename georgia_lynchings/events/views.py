@@ -232,7 +232,7 @@ def _macro_event_timemap_data(mac):
     if start_date:
         data['start'] = start_date
 
-    end_date = mac._tmp_start()
+    end_date = mac._tmp_end()
     if end_date:
         data['end'] = end_date
 
