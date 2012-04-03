@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 XML_NS = 'http://www.w3.org/XML/1998/namespace'
 
+def _massage_into_binding(var):
+    return '$' + (var[1:] if var.startswith('?') else var)
+
 class SparqlStoreException(Exception):
     def __init__(self, value):
         self.value = value
@@ -85,7 +88,7 @@ class SparqlStore:
             request_method = 'GET'
 
         # add sesame initial query bindings
-        binding_params = dict(('$' + key, val)
+        binding_params = dict((_massage_into_binding(key), val)
                                for key, val in initial_bindings.items())
         params.update(binding_params)
             

@@ -193,19 +193,18 @@ def map_json(request):
                         mimetype='application/json')
 
 def _get_macro_events_for_timemap():
-# FIXME: make field lookups possible to significantly speed later lookups:
-# return MacroEvent.objects \
-#        .fields('label', 'events__start_date', 'events__end_date', 
-#                'events__triplets__city', 'victims__victim_county_of_lynching'
-#                'victims__victim_alleged_crime') \
-#        .all()
-# FIXME: or even, better, the properties actually used in this view so that
+    return MacroEvent.objects \
+           .fields('label', 'events__start_date', 'events__end_date', 
+                   'events__triplets__city',
+                   'victims__victim_county_of_lynching',
+                   'victims__victim_alleged_crime') \
+           .all()
+# FIXME: or even better, the properties actually used in this view so that
 # the view doesn't need to know model implementation details:
 #    return MacroEvent.objects \
 #        .fields('label', '_tmp_start', '_tmp_end', '_tmp_coords',
 #                '_tmp_cities', '_tmp_county', '_tmp_alleged_crimes') \
 #        .all()
-    return MacroEvent.objects.fields('label').all()
 
 def _macro_event_timemap_data(mac):
     '''Get the timemap json data for a single
