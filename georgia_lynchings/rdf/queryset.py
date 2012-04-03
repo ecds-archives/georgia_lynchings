@@ -224,7 +224,11 @@ class QuerySet(object):
     def _make_supplemental_multiple_query(self, name, field_path):
         '''Generate a supplemental SPARQL query to fetch additional property
         values for a single multi-valued field for all returned objects.'''
-        q = SelectQuery(results=[self.RESULT_VAR, name])
+        # get the extra properties that we'll be returning from this query
+        props = self._get_direct_properties(name)
+
+        # make the query
+        q = SelectQuery(results=[self.RESULT_VAR, name] + props.keys())
         self._add_result_part_to_query(q)
 
         # Loop through the field path adding each field to the query in
@@ -244,7 +248,6 @@ class QuerySet(object):
 
         # and add to the query all of the single-value properties that are
         # directly accessible from this query's multi-value property.
-        props = self._get_direct_properties(name)
         self._add_properties_to_query(q, props, name)
         return q
 
