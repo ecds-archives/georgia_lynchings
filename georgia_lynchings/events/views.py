@@ -168,11 +168,6 @@ def timemap(request):
 # FIXME: rename this method once refactoring is complete and its purpose
 # becomes clearer. probably change the url as well.
 def map_json(request):
-    # FIXME: this currently takes a ridiculously long time because
-    # _macro_event_timemap_data() makes several separate calls for each of
-    # the hundreds of individual macro events. we can speed this up by
-    # preloading these fields in _get_macro_events_for_timemap() and then
-    # refactoring the relevant model methods to use that info.
     macro_events = _get_macro_events_for_timemap()
     macro_data = [ _macro_event_timemap_data(me) for me in macro_events ]
     # FIXME: several events have no start or end date associated with them.
@@ -242,31 +237,3 @@ def _macro_event_tags(mac):
     alleged_crime_tags = [slugify('ac ' + c) for c in alleged_crimes]
 
     return alleged_crime_tags
-
-# XXX old implementation. leaving around for temporary reference while
-# reimplementing this feature using models
-#def map_json(request):
-#    '''
-#    Renders json data from :class:`~georgia_lynchings.events.timemap.Timemap` for map display
-#    '''
-#
-#    map_data = Timemap(filters)
-#    add_fields = get_additional_fields()
-#    # Get the json for core metadata plus any additional fields for the timemap filter
-#    json_str = json.dumps(map_data.get_json(add_fields=add_fields), indent=4)    
-#    response = HttpResponse(json_str, mimetype='application/json')
-#
-#    return response
-#
-#def get_additional_fields():
-#    '''
-#    Create a list of names for the timemap filter fields.
-#    
-#    :rtype: a list of filter names    
-#    '''    
-#        
-#    # Get a list of filter names
-#    fields = []
-#    for filter in filters:
-#        fields.append(filter['name'])
-#    return fields    
