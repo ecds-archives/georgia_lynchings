@@ -155,12 +155,6 @@ filters= [
         #   ('Kidnapping/Theft', 'ac_kidnapping/theft', 17)
         # ]        
     },
-    { 
-        'title': 'Cities',
-        'name': 'city',
-        'prefix': 'city',
-        'dropdown_id': 'city_tag_select',               
-    }    
 ]
 
 def timemap(request):
