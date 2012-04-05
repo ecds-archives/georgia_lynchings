@@ -157,12 +157,12 @@ filters= [
 ]
 
 def timemap(request):
+    # TODO: filter info is heavily dependent on the data itself. move filter
+    # generation either to the client js, or tie it somehow to timemap_data().
     return render(request, 'events/timemap.html', \
         {'filters' : get_filters(filters)})
 
-# FIXME: rename this method once refactoring is complete and its purpose
-# becomes clearer. probably change the url as well.
-def map_json(request):
+def timemap_data(request):
     macro_events = _get_macro_events_for_timemap()
     macro_data = [ _macro_event_timemap_data(me) for me in macro_events ]
     # FIXME: several events have no start or end date associated with them.
