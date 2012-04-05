@@ -106,15 +106,13 @@ class MacroEvent(ComplexObject):
 
     def _tmp_start(self):
         # FIXME: index this on the macro event, not events
-        events = list(self.objects.events.fields('start_date').all())
-        dates = [ ev.start_date for ev in events if ev.start_date ]
+        dates = [ ev.start_date for ev in self.events if ev.start_date ]
         if dates:
             return min(dates)
 
     def _tmp_end(self):
         # FIXME: index this on the macro event, not events
-        events = list(self.objects.events.fields('end_date').all())
-        dates = [ ev.end_date for ev in events if ev.end_date ]
+        dates = [ ev.end_date for ev in self.events if ev.end_date ]
         if dates:
             return max(dates)
 
@@ -124,19 +122,16 @@ class MacroEvent(ComplexObject):
         return geo_coordinates.countymap.get(county, None)
 
     def _tmp_cities(self):
-        triplets = self.objects.events.triplets.fields('city').all()
-        return set([tr.city for tr in triplets if tr.city])
+        return set([tr.city for ev in self.events for tr in ev.triplets if tr.city])
 
     def _tmp_county(self):
         # FIXME: this is broken: it only returns the county for the last
         # victim. this error is inherited from an earlier version of this
         # code. it needs to be fixed.
-        victims = self.objects.victims.fields('victim_county_of_lynching').all()
-        return victims[-1].victim_county_of_lynching
+        return self.victims[-1].victim_county_of_lynching
 
     def _tmp_alleged_crimes(self):
-        victims = self.objects.victims.fields('victim_alleged_crime').all()
-        return [v.victim_alleged_crime for v in victims
+        return [v.victim_alleged_crime for v in self.victims
                 if v.victim_alleged_crime]
 
     # FIXME: end of temporary support methods (see above)

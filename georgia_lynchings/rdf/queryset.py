@@ -7,12 +7,6 @@ from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
 logger = logging.getLogger(__name__)
 
-def _massage_into_variable_name(var):
-    '''Take a string that could be a variable name or a
-    :class:`~rdflib.Variable` object, and convert it to a basic string
-    variable name.'''
-    return var[1:] if var.startswith('?') else var
-
 class QuerySet(object):
     '''An abstraction of a triplestore query focusing on
     :class:`~georgia_lynchings.rdf.models.ComplexObject` instances. Where
@@ -47,12 +41,6 @@ class QuerySet(object):
         self.extra_fields = {}
         'Extra fields to prefetch from result objects in the query'
 
-        self.base_query_cache = None
-        '''A cache for the SPARQL query represented by the objects in this
-        QuerySet'''
-        self.supplemental_query_cache = None
-        '''A cache for additional SPARQL queries needed to supplement fields
-        on the objects in this QuerySet'''
         self.results_cache = None
         'A cache for the results returned by this QuerySet'
 
@@ -171,22 +159,6 @@ class QuerySet(object):
             path_prefix_parts = this_field_path
             relative_class = field.result_type
 
-    def _get_base_query(self):
-        if self.base_query_cache is None:
-            self.base_query_cache = self._make_base_query()
-        return self.base_query_cache
-    base_query = property(_get_base_query)
-    '''The :class:`~georgia_lynchings.rdf.sparql.SelectQuery` used to fetch
-    instances for this query set.'''
-
-    def _get_supplemental_queries(self):
-        if self.supplemental_query_cache is None:
-            self.supplemental_query_cache = self._make_supplemental_queries()
-        return self.supplemental_query_cache
-    supplemental_queries = property(_get_supplemental_queries)
-    '''A list of :class:`~georgia_lynchings.rdf.sparql.SelectQuery` objects
-    used for additional fields in this query set.'''
-
     ORIGIN_VAR = Variable('obj') # a query variable for the self.root_obj
     RESULT_VAR = Variable('result') # a query variable for result objects
 
@@ -198,67 +170,98 @@ class QuerySet(object):
         '''
         return self.ORIGIN_VAR if self.field_chain else self.RESULT_VAR
 
-    # high-level query-making functions
+    # query execution and interpretation
 
-    def _make_base_query(self):
-        '''Construct the base SPARQL query used for the list of objects
-        returned and all direct properties (i.e., chains of single-value
-        properties) accessible directly from the result objects.'''
-        props = self._get_direct_properties()
-        q = SelectQuery(results=[self.RESULT_VAR] + props.keys())
+    def _execute(self):
+        '''Execute the SPARQL queries for this query set, wrapping the results
+        in appropriate :class:`~georgia_lynchings.rdf.models.ComplexObject`
+        instances.'''
+        query_plan = self._plan_queries()
+        queries = self._get_queries(query_plan)
+        raw_results = self._execute_queries(queries)
+        grouped_results = self._group_results(raw_results, query_plan)
+        return self._map_results(grouped_results)
+
+    # get and execute queries
+
+    # {'pre__target': ['pre__target__extra1', 'pre_target__extra2']}
+    def _plan_queries(self):
+        '''Group the requested fields according to which ones can be queried
+        together. The queries are named after a target field, and all
+        properties sharing a target field can be queried together.'''
+        queries = defaultdict(list)
+        queries[''] = [] # make sure queries[''] (the default query) is always around
+        for field_name in self.extra_fields.keys():
+            query = self._query_target_for_field(field_name)
+            base_query = queries[query] # reference to force existence
+            if query != field_name:
+                base_query.append(field_name)
+        return queries
+
+    def _query_target_for_field(self, name):
+        '''A multi-valued field requires its own query. Any single-valued
+        field can be queried along with its nearest multi-valued
+        ancestor.'''
+        while name:
+            field_path = self.extra_fields[name]
+            field = field_path[-1]
+            if field.multiple:
+                return name
+            name, _, drop = name.rpartition('__')
+        return ''
+
+    def _get_queries(self, query_plan):
+        '''Get the set of actual queries that fetches the planned fields.'''
+        queries = {}
+        # this doesn't need to be sorted, but it makes logs easier to follow
+        # when queries happen in predictable order
+        for target_field in sorted(query_plan.keys()):
+            extra_fields = query_plan[target_field]
+            result = self._query_for_fields(target_field, extra_fields)
+            queries[target_field] = result
+        return queries
+
+    # expose the queries as a list for convenient debugging
+    def _get_queries_as_list(self):
+        query_plan = self._plan_queries()
+        queries = self._get_queries(query_plan)
+        return [queries[name] for name in sorted(queries.keys())]
+    queries = property(_get_queries_as_list)
+    '''A list of the :class:`~georgia_lynchings.rdf.sparql.SelectQuery`
+    objects used to fetch the data for this QuerySet'''
+
+    def _query_for_fields(self, target_field, extra_fields):
+        '''Get a single :class:`~georgia_lynchings.rdf.sparql.SelectQuery`
+        to return the specified ``target_field``, binding optional
+        ``extra_fields`` along the way if they're present. Arguments are
+        assumed to be possible and come from a sensible query plan as
+        produced by :meth:`_plan_queries`.
+        '''
+        target_query_fields = self._query_fields_for_target(target_field)
+        q = SelectQuery(results=[self.RESULT_VAR] + target_query_fields + extra_fields)
         self._add_result_part_to_query(q)
-        self._add_properties_to_query(q, props)
+        self._add_target_to_query(q, target_query_fields)
+        self._add_extra_fields_to_query(q, extra_fields, target_field)
         return q
 
-    def _make_supplemental_queries(self):
-        '''Generate SPARQL queries needed to fetch additional property
-        values for the instances in this query set.'''
-        # Currently this creates one additional supplemental query for each
-        # prepopulated multi-valued field. Like the base query, each
-        # supplemental query also selects all single-value field paths
-        # accessible directly below its primary multi-valued field.
-        props = self._get_multiple_properties()
-        return [self._make_supplemental_multiple_query(name, field_path)
-                for name, field_path in props.items()]
+    def _query_fields_for_target(self, target_field):
+        '''Return the field and all of its ancestors::
 
-    def _make_supplemental_multiple_query(self, name, field_path):
-        '''Generate a supplemental SPARQL query to fetch additional property
-        values for a single multi-valued field for all returned objects.'''
-        # get the extra properties that we'll be returning from this query
-        props = self._get_direct_properties(name)
-
-        # make the query
-        q = SelectQuery(results=[self.RESULT_VAR, name] + props.keys())
-        self._add_result_part_to_query(q)
-
-        # Loop through the field path adding each field to the query in
-        # turn. Note that each field is returned using its field name
-        # (joined by double underscores) so that we can attach them to
-        # actual objects when we get all our results together.
-        base_var = self.RESULT_VAR
-        field_path_parts = []
-        field_name_parts = name.split('__')
-        for name_part, field in zip(field_name_parts, field_path):
-            field_path_parts = field_path_parts + [name_part]
-            field_name = '__'.join(field_path_parts)
-            field_var = Variable(field_name)
-            field.add_to_query(q, base_var, field_var)
-
-            base_var = field_var
-
-        # and add to the query all of the single-value properties that are
-        # directly accessible from this query's multi-value property.
-        self._add_properties_to_query(q, props, name)
-        return q
-
-    # adding stuff to base and supplemental queries
+            >>> self._query_fields_for_target('a__b__c__d')
+            ['a', 'a__b', 'a__b__c', 'a__b__c__d']
+        '''
+        if not target_field:
+            return []
+        target_parts = target_field.split('__')
+        return ['__'.join(target_parts[:i+1])
+                for i in range(len(target_parts))]
 
     def _add_result_part_to_query(self, q):
         '''Add query graph patterns to a SPARQL SELECT query representing
         the path bits in self.field_chain. This effectively navigates us
         from ``?obj`` (``self.root_obj``) to an appropriate ``?result``
-        inside the query.
-        '''
+        inside the query. The result represents the primary result object
+        returned by the QuerySet.'''
         # First limit the query by the type of the root object. If
         # self.root_obj is set then this makes sure it's of the appropriate
         # type. If it's not then it starts the query with all objects of
@@ -282,104 +285,62 @@ class QuerySet(object):
         
         result_field.add_to_query(q, self.ORIGIN_VAR, self.RESULT_VAR)
 
-    # finding and adding property chains for particular queries
+    def _add_target_to_query(self, q, target_fields):
+        '''Add query graph patterns to a SPARQL SELECT query representing
+        navigation from the result as calculated by
+        :meth:`_add_result_part_to_query` to a target field along a query
+        path as returned by :meth:`_query_fields_for_target`. This finds the
+        multi-valued propert value that serves as the target for this
+        particular SelectQuery.'''
+        last_field_var = self.RESULT_VAR
+        for field_name in target_fields:
+            field_path = self.extra_fields[field_name]
+            field = field_path[-1]
+            field_var = Variable(field_name)
+            field.add_to_query(q, last_field_var, field_var)
+            last_field_var = field_var
 
-    def _get_direct_properties(self, prefix=''):
-        '''Collect the properties from ``self.extra_fields`` that we can
-        query alongside the `prefix` variable. If `prefix` is the empty
-        string (the default), then collect the properties that we can query
-        from the base query. This consists of all single-value fields and
-        field chains under that prefix.'''
+    def _add_extra_fields_to_query(self, q, extra_fields, target_field):
+        '''Add optional query graph patterns to a SPARQL SELECT query
+        representing navigation from a target field across requested extra
+        fields. This finds the single-valued property values associated with
+        this query.'''
+        prop_graphs = {target_field: q}
 
-        # if the caller requests prefix foo, then all its subortinate
-        # properties start with foo__. if the caller requests '' then all
-        # its subordinate properties start with '', which means check each
-        # of the properties for direct accessibility
-        if prefix:
-            prefix_length = len(prefix.split('__'))
-            prefix = prefix + '__'
-        else:
-            prefix_length = 0
+        for field_name in sorted(extra_fields):
+            base_name, _, simple_field_name = field_name.rpartition('__')
+            base_graph = prop_graphs[base_name]
+            base_var = Variable(base_name) if base_name else self.RESULT_VAR
 
-        # return a subset of extra_fields. a field is accessible if it
-        # begins with the requested prefix. it is *directly* accessible if
-        # each of the fields after that prefix is single-valued. note that
-        # multi-valued fields are handled by supplemental queries.
-        return dict((name, field_path)
-                    for name, field_path in self.extra_fields.items()
-                    if name.startswith(prefix) and
-                       all(not f.multiple for f in field_path[prefix_length:]))
-
-    def _get_multiple_properties(self):
-        '''Collect multi-valued properties from ``self.extra_fields``. Each
-        of these requires a separate supplemental query to fetch.'''
-        return dict((name, field_path)
-                    for name, field_path in self.extra_fields.items()
-                    if field_path[-1].multiple)
-
-    def _add_properties_to_query(self, q, props, prefix=None):
-        '''Add an optional graph pattern for each of the properties in
-        `props`. This makes the query also pull each of the directly
-        accessible properties (identified in _get_direct_properties) along
-        with its primary results.'''
-
-        # collect subgraphs so that we can add to them for subordinate
-        # properties. for example, if we request ``foo__bar``, then we
-        # always request ``foo`` first (as guaranteed by  _add_extra_field).
-        # when this function adds ``foo`` to the graph, it stores it in
-        # prop_graphs so that when we request ``foo__bar``, we can nest the
-        # ``bar`` part inside of the ``foo`` part.
-        prop_graphs = {}
-        # if there's a prefix, then this is a supplemental query, and
-        # everything under that prefix goes in the main query.
-        if prefix:
-            prop_graphs[prefix] = q
-
-        # sorted to guarantee that the ``foo`` graph is generated before the
-        # ``foo__bar`` graph so that we can nest ``foo__bar`` inside
-        # ``foo``.
-        prop_names = sorted(props.keys())
-        for name in prop_names:
-            # if this is a chain, get the graph that it nests inside
-            base_graph = q
-            base_name, _, simple_field_name = name.rpartition('__')
-            if base_name:
-                base_graph = prop_graphs[base_name]
-                base_var = Variable(base_name)
-            else:
-                base_var = self.RESULT_VAR
-
-            # and put it into an optional graph...
-            field_path = props[name]
-            simple_field = field_path[-1]
+            field_var = Variable(field_name)
+            field_path = self.extra_fields[field_name]
+            field = field_path[-1]
             field_graph = GraphPattern(optional=True)
-            simple_field.add_to_query(field_graph, base_var, Variable(name))
-            # ... inside the parent field graph
+            field.add_to_query(field_graph, base_var, field_var)
+
             base_graph.append(field_graph)
-            prop_graphs[name] = field_graph
+            prop_graphs[field_name] = field_graph
 
-    # query execution and interpretation
-
-    def _execute(self):
-        '''Execute the SPARQL queries for this query set, wrapping the results
-        in appropriate :class:`~georgia_lynchings.rdf.models.ComplexObject`
-        instances.'''
+    def _execute_queries(self, queries):
+        '''Execute a set of SPARQL SELECT queries as returned by
+        :meth:`_get_queries`.'''
+        # if this QuerySet starts from a root object, then bind that once
+        # for all of the queries.
         var_bindings = {}
         if self.root_obj:
             root = self._root_variable_name()
             var_bindings[root] = self.root_obj.uri.n3()
 
-        base_bindings = self._execute_single_query(self.base_query, var_bindings)
-        supplemental_bindings = [self._execute_single_query(q, var_bindings)
-                                 for q in self.supplemental_queries]
-        collated_bindings = self._collate_bindings(supplemental_bindings)
-
-        return [self._wrap_result_bindings(b, collated_bindings)
-                for b in base_bindings]
+        results = {}
+        # this doesn't need to be sorted, but it makes logs easier to follow
+        # when queries happen in predictable order
+        for query_target in sorted(queries.keys()):
+            q = queries[query_target]
+            results[query_target] = self._execute_single_query(q, var_bindings)
+        return results
 
     def _execute_single_query(self, q, var_bindings):
-        '''Execute a single SPARQL query and return the results. Provided as
-        a convenient logging hook.'''
+        '''Execute a single SPARQL query and return the results.'''
         q_str = unicode(q)
         logger.debug('Executing query: `%s`; bindings: `%r`' % 
                      (q_str, var_bindings))
@@ -388,56 +349,166 @@ class QuerySet(object):
                 initial_bindings=var_bindings)
         return bindings
 
-    def _collate_bindings(self, supplemental_bindings):
-        '''Collect all of the supplemental query results into one big
-        dict, keyed on object ids. The dict values are multi-value bindings
-        for the object. In particular, each is a dict keyed on field name,
-        The values of these sub-dicts are lists of bindings for that
-        object in that property.'''
-        res_name = _massage_into_variable_name(self.RESULT_VAR)
-        # use defaultdict instead of regular dict to make lookup cleaner
-        results = defaultdict(lambda: defaultdict(list))
-        for rows in supplemental_bindings: # results of each query
-            for row in rows:                # each row
-                result_id = row[res_name]    # the item this row supplements
-                result_fields = results[result_id] # the fields for that item
-                for name, val in row.items():  # each binding in that row
-                    if name != result_id:       # skip the item id itself
-                        result_fields[name].append(val)
-        # whew. now results should contain all of the values from all of
-        # the supplemental bindings.
+    # group results
+
+    # {('pre', res, pre): {'pre__target': [t1, t2]}, ('pre__target', res, pre, t1): {'pre__target__extra1': e1}}
+    def _group_results(self, raw_results, query_plan):
+        '''Each query's bindings represent properties on an object buried
+        somewhere inside the actual result set. Using the ``query_plan`` for
+        guidance about how the queries were organized, group all of the
+        bindings into a big dictionary. The dictionary key represents a
+        particular object found through a particular field path in the
+        result set. Each object and subobject in the result set has a key in
+        this dictionary. This method deals with the raw bindings from the
+        results, grouping them according to the particular subobject they
+        belong to.'''
+        results = {}
+        for query_target, extra_fields in query_plan.items():
+            query_results = raw_results[query_target]
+            self._group_single_results(results, query_target, extra_fields, query_results)
         return results
 
-    def _wrap_result_bindings(self, bindings, collated_bindings):
-        '''Wrap a single row of result bindings from the base query in an
-        object of the appropriate result type for the query. Supplement
-        multi-valued field values with the results of the supplemental
-        queries, as collated by :meth:`_collate_bindings`.'''
+    def _group_single_results(self, results, query_target, extra_fields, query_results):
+        '''Group all of the results from a single SPARQL query.'''
+        for result in query_results:
+            self._group_single_result(results, query_target, extra_fields, result)
 
-        # grab the particular part of the supplemental bindings that apply
-        # to this particular object.
-        result_name = _massage_into_variable_name(self.RESULT_VAR)
-        result_id = bindings[result_name]
-        supplemental_bindings = collated_bindings.get(result_id, {})
+    def _group_single_result(self, results, query_target, extra_fields, result):
+        '''Group a single set of bindings (row) from a query. Each row
+        represents a single object in a multi-valued query, plus all of the
+        single-valued field data directly accesible from that object. Add
+        that object's id to the object list property that requested it, and
+        add any nested single-valued property data directly accessible from
+        the object itself.'''
+        target_var = query_target or str(self.RESULT_VAR)
+        result_type, context_objs = self._get_result_key(query_target, result)
+        if result_type not in results:
+            results[result_type] = {}
+        results_for_type = results[result_type]
+        if context_objs not in results_for_type:
+            results_for_type[context_objs] = {}
+        results_for_objs = results_for_type[context_objs]
+        if target_var not in results_for_objs:
+            results_for_objs[target_var] = []
+        results_for_objs[target_var].append(result[target_var])
 
-        # wrap the raw bindings in Python types appropriate to the fields
-        # they represent.
-        props = {}
-        for field_name, field_path in self.extra_fields.items():
-            if len(field_path) > 1: # FIXME: handle longer field_path
-                continue
-            field = field_path[0]
-            if field.multiple:
-                raw_binding = supplemental_bindings[field_name]
-                binding = [field.wrap_result(b) for b in raw_binding]
-                props[field_name] = binding
+        for field in extra_fields:
+            result_type, context_objs = self._get_result_key(field, result)
+            if result_type not in results:
+                results[result_type] = {}
+            results_for_type = results[result_type]
+            if context_objs not in results_for_type:
+                results_for_type[context_objs] = {}
+            results_for_objs = results_for_type[context_objs]
+            results_for_objs[field] = result.get(field, None)
+
+    def _get_result_key(self, field, result):
+        '''Get the key that will be used for this object data inside the
+        collected results. ``field`` is the field path used to access this
+        value. ``result`` is the current bindings set (row) from the query.
+        The key consists of the field path of the parent object and the ids
+        of the nodes in that field path.'''
+        # as a special case, top-level objects (the primary results of this
+        # QuerySet) get an empty field. we use this to get these object in
+        # mapping.
+        if not field:
+            return ('', ())
+
+        field_parts = self._query_fields_for_target(field)
+        prefixes = field_parts[:-1]
+        last_prefix = prefixes[-1] if prefixes else ''
+
+        append_field_names = [str(self.RESULT_VAR)] + prefixes
+        return last_prefix, tuple(result[field] for field in append_field_names)
+
+    # map results
+
+    def _map_results(self, grouped_results):
+        '''Recursively wrap the grouped raw data from ``grouped_results``
+        (as returned by :meth:`_group_results` into Python data types
+        defined in their respective fields.'''
+        map_plan = self._plan_maps()
+        base_results = grouped_results[''][()] # the special case from _get_result_key()
+        return [self._map_result((base_obj,), grouped_results[''],
+                                 map_plan[''], self.result_class,
+                                 grouped_results, map_plan)
+                for base_obj in base_results[self.RESULT_VAR]]
+
+
+    # {'': {'foo': 'foo'}, 'foo': {'bar': 'foo__bar'}, 'foo__bar': {'baz': 'foo__bar__baz'}}
+    def _plan_maps(self):
+        '''Groups the requested nested field paths into a dictionary mapping
+        parent object paths to a set of properties and the full field paths
+        that fulfil those properties. We calculate this map once and refer
+        to it throughout the recursive mapping process.'''
+        maps = defaultdict(dict)
+        for field_name in self.extra_fields.keys():
+            prefix, _, property_name = field_name.rpartition('__')
+            maps[prefix][property_name] = field_name
+        return maps
+
+    def _map_result(self, context_objs, field_context, field_map, result_type, grouped_results, map_plan):
+        '''Wrap the single object represented by a ``grouped_results`` entry
+        in its appropriate Python type, recursively wrapping subobjects
+        along the way.'''
+        # grab the field data (buried inside grouped_results) that applies
+        # specifically to this object
+        field_data = field_context[context_objs]
+        context_obj = context_objs[-1]
+        # our goal is to grab and map all of the properties that are going
+        # to be wrapped up in this object.
+        extra_properties = {}
+        # the fields requested for this object are in field_map
+        for subproperty_name, subfield_name in field_map.items():
+            # for each subfield
+            subproperty_data = field_data.get(subfield_name, None)
+            subfield_path = self.extra_fields[subfield_name]
+            subfield = subfield_path[-1]
+
+            # make a function that will wrap a single value for this
+            # subfield. this function could wrap it in a simple type
+            # (integer, date, etc), or it could recursively call into
+            # _map_result() to wrap it in a complex object type.
+            wrap_value = self._make_subfield_wrap_value(context_objs,
+                    subfield_name, grouped_results, map_plan)
+            # and call it on the property value if it's a single-value
+            # field, or on each item if it's multi-valued.
+            # NOTE: the results grouping above made sure that query targets
+            # were in lists and extra properties were single values; the
+            # query planning made sure that multi-valued fields were query
+            # targets and single-valued fields were extra properties.
+            if subfield.multiple:
+                if subproperty_data is None:
+                    subproperty_data = []
+                subproperty_value = [wrap_value(d) for d in subproperty_data]
             else:
-                binding = bindings.get(field_name, None)
-                if binding:
-                    binding = field.wrap_result(binding)
-                props[field_name] = binding
+                subproperty_value = wrap_value(subproperty_data)
 
-        return self.result_class(result_id, extra_properties=props)
+            # collect this particular subproperty into our extra properties
+            extra_properties[subproperty_name] = subproperty_value
+        # and then wrap those up into our result object
+        return result_type(context_obj, extra_properties=extra_properties)
+
+    def _make_subfield_wrap_value(self, context_objs, subfield_name, grouped_results, map_plan):
+        '''Return a function that will wrap a single raw data result in an
+        appropriate Python object. For complex types this may recursively
+        call :meth:`_map_result`.'''
+        subfield_path = self.extra_fields[subfield_name]
+        subfield = subfield_path[-1]
+        # if we have a plan to map this subfield, then return a function
+        # that recurses into _map_result(). otherwise return a function that
+        # just wraps the data in a simple Python type.
+        if subfield_name in map_plan:
+            def _wrap_value(val):
+                context_subobjs = context_objs + (val,)
+                subfield_context = grouped_results[subfield_name]
+                return self._map_result(context_subobjs, subfield_context,
+                        map_plan[subfield_name], subfield.result_type,
+                        grouped_results, map_plan)
+        else:
+            def _wrap_value(val):
+                return subfield.result_type(val) if subfield.result_type else val
+        return _wrap_value
 
 
 class QuerySetDescriptor(object):
