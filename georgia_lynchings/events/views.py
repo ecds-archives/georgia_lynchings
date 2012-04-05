@@ -195,7 +195,6 @@ def map_json(request):
 def _get_macro_events_for_timemap():
     return MacroEvent.objects \
            .fields('label', 'events__start_date', 'events__end_date', 
-                   'events__triplets__city',
                    'victims__victim_county_of_lynching',
                    'victims__victim_alleged_crime') \
            .all()
@@ -215,7 +214,6 @@ def _macro_event_timemap_data(mac):
     data = {
         'title': mac.label,
         'options': {
-            'city_filter': [c.title() for c in mac._tmp_cities()],
             'county': mac._tmp_county(),
             'detail_link': mac.get_absolute_url(),
             'min_date': mac._tmp_start(),
@@ -246,13 +244,10 @@ def _macro_event_tags(mac):
     'Get the timemap tags used for filtering a macro event.'
     # TODO: revisit filtering
 
-    cities = mac._tmp_cities()
-    city_tags = [slugify('city ' + c) for c in cities]
-
     alleged_crimes = mac._tmp_alleged_crimes()
     alleged_crime_tags = [slugify('ac ' + c) for c in alleged_crimes]
 
-    return city_tags + alleged_crime_tags
+    return alleged_crime_tags
 
 # XXX old implementation. leaving around for temporary reference while
 # reimplementing this feature using models

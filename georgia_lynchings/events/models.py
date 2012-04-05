@@ -678,8 +678,9 @@ class SemanticTriplet(ComplexObject):
     is_passive = ssxn.Passive_no_agent
     'does the statement use passive voice? (typically specified only if true)'
 
-    # FIXME: this property is ridiculously complicated. we need to either
-    # break it up, index it in setup-queries, or eliminate it as unnecessary
+    # FIXME: this property is ridiculously complicated. before we use it
+    # agat (we're not as of 2012-04-05) we need to either break it up or
+    # index it in setup-queries
     city = ChainedRdfPropertyField(process, 
                UnionRdfPropertyField(
                    ChainedRdfPropertyField(

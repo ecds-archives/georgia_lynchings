@@ -17,7 +17,7 @@ $(document).ready(function() {
                  // Data to be loaded in JSON from a URL
                  type: "json_string",
                  url: url,
-                 infoTemplate: "<div><b>{{title}}</b></div><div>Start Date: {{min_date}}</div><div>Location: {{county}} County</div><div>City: {{city_filter}}</div><div>Alleged Crime: {{victim_allegedcrime_brundage_filter}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>"
+                 infoTemplate: "<div><b>{{title}}</b></div><div>Start Date: {{min_date}}</div><div>Location: {{county}} County</div><div>Alleged Crime: {{victim_allegedcrime_brundage_filter}}</div><div><a target='_blank' href='{{detail_link}}'>more info</a></div>"
              }
 
            }],
