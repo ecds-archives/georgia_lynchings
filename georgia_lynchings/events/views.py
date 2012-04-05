@@ -16,7 +16,6 @@ from georgia_lynchings.events.details import Details
 from georgia_lynchings.events.forms import SearchForm, AdvancedSearchForm
 from georgia_lynchings.events.models import MacroEvent, \
     get_all_macro_events, SemanticTriplet, get_filters
-from georgia_lynchings.events.timemap import Timemap   
 
 logger = logging.getLogger(__name__)
 
@@ -158,10 +157,6 @@ filters= [
 ]
 
 def timemap(request):
-    '''Send list of filters generated from :class:`~georgia_lynchings.events.timemap.Timemap`
-    to the template for the filter dropdown lists.
-    '''
-    # FIXME: the frequencies should be calcuated as the timemap is built for accuracy.
     return render(request, 'events/timemap.html', \
         {'filters' : get_filters(filters)})
 
