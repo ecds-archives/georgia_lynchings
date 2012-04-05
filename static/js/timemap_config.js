@@ -46,22 +46,11 @@ $(document).ready(function() {
 
        // onChange handler for pulldown menu
        $('#ac_tag_select').change(function() {
-            var city_reset = document.getElementById("city_tag_select");
-            city_reset.value = "";            
             window.selectedTag = $(this).val();
             // run filters
             tm.filter('map');
             tm.filter('timeline');
        });
        
-       // onChange handler for pulldown menu
-       $('#city_tag_select').change(function() {
-            var ac_reset = document.getElementById("ac_tag_select");
-            ac_reset.value = "";             
-            window.selectedTag = $(this).val();
-            // run filters
-            tm.filter('map');
-            tm.filter('timeline');
-       });       
 });
 }
