@@ -2,6 +2,10 @@
 This file contains a dictionary of predefined SPARQL queries.
 '''
 
+# DEPRECATED: This entire module is deprecated. New code should get
+# information directly from model properties. If QuerySets and model
+# properties don't have the needed functionality, then fix them.
+
 articles={}
 events={}
 filters={}
