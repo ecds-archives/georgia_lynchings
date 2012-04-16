@@ -8,10 +8,7 @@ import json
 import logging
 import re
 from urllib import urlencode
-
-
-import xml.dom.minidom
-from xml.dom.minidom import Node
+from xml.dom import minidom
 
 from django.conf import settings
 from rdflib import URIRef, Literal, BNode
@@ -19,6 +16,8 @@ from rdflib import URIRef, Literal, BNode
 logger = logging.getLogger(__name__)
 
 XML_NS = 'http://www.w3.org/XML/1998/namespace'
+
+# FIXME: This module needs some general cleanup.
 
 class SparqlStoreException(Exception):
     def __init__(self, value):
@@ -138,7 +137,7 @@ class SparqlStore:
     def _parse_xml_results(self, content):
         '''Parse SPARQL XML query result contents into a list of result
         objects.'''
-        doc = xml.dom.minidom.parseString(content)
+        doc = minidom.parseString(content)
         return [self._parse_result_node(res)
                 for res in doc.getElementsByTagName('result')]
 

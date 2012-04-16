@@ -1,8 +1,9 @@
 from collections import defaultdict
-from rdflib import Variable
+import logging
 from urllib import quote
 
 from django.template.defaultfilters import slugify
+from rdflib import Variable
 
 from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
@@ -11,11 +12,8 @@ from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
-import logging
-from pprint import pprint
 
 logger = logging.getLogger(__name__)
-
 
 class MacroEvent(ComplexObject):
     '''A Macro Event is an object type defined by the project's (currently
@@ -39,6 +37,9 @@ class MacroEvent(ComplexObject):
         or lists. Lists will be indexed in solr as multi-valued fields.
         '''
         data = super(MacroEvent, self).index_data().copy()
+
+        # FIXME: get this info from model properties and querysets instead
+        # of hand-maintained query_bank queries
         
         # victims new format (mutliple victims and assoc. properties)
         data['victim_uri'] = []        
@@ -99,7 +100,11 @@ class MacroEvent(ComplexObject):
     # hope in time to be able to generate these queries from the RDF
     # properties above.
 
-    #TODO: consider moving the PDF documents to /static/documents so that it can work with runserver and apache
+    # TODO: consider moving the PDF documents to /static/documents so that it can work with runserver and apache
+    # DEPRECATED. Not sure if this logic belongs in events or articles, but
+    # it should be returning other models, not dictionaries of data. using
+    # QuerySets (via self.objects) for sparql queries or django query sets
+    # (Articles.objects) for traditional django models will accomplish this.
     def get_articles(self, clean=True):
         '''Get all articles associated with this macro event, along with the
         particular events that the articles are attached to.
@@ -136,6 +141,8 @@ class MacroEvent(ComplexObject):
                     result['docpath'] = result['docpath'][10:]
         return resultSet
         
+    # DEPRECATED. Used only by deprecated events.details and by index_data.
+    # If you need cities, use QuerySets.
     def get_cities(self):
         '''Get all cities associated with this macro event.
 
@@ -151,6 +158,8 @@ class MacroEvent(ComplexObject):
         # return the list of cities
         return [result['city'] for result in resultSet]
         
+    # DEPRECATED. Used only by deprecated events.details and by index_data.
+    # If you need date ranges, use QuerySets.
     def get_date_range(self):
         '''Get minimum and maximum date range associated with this macro event.
 
@@ -181,6 +190,9 @@ class MacroEvent(ComplexObject):
             return datedict
         else: return None
         
+    # DEPRECATED. Used only by deprecated events.details and by index_data.
+    # If you need these details, then get them from the object. If you want
+    # to query them all at once, use QuerySets.
     def get_details(self):
         '''Get all details associated with this macro event.
 
@@ -209,6 +221,9 @@ class MacroEvent(ComplexObject):
         # return the list of cities
         return detailResult  
                 
+    # DEPRECATED. Used only by deprecated events.details. If you need
+    # events, then use self.events. If you want to query them all at once,
+    # use QuerySets (e.g., self.objects.events)
     def get_events(self):
         '''Get the events associated with this macro event.
 
@@ -227,6 +242,9 @@ class MacroEvent(ComplexObject):
         # return the dictionary results of the details information          
         return results
         
+    # DEPRECATED. Used only by deprecated get_triplets_by_event() (which is
+    # used by deprecated module events.details) and by index_data(). If you
+    # need triplets, then use self.objects.events.triplets.
     def get_triplets(self):
         '''Get the semantic triplets related to this macro event.
 
@@ -249,6 +267,10 @@ class MacroEvent(ComplexObject):
                              initial_bindings={'macro': self.uri.n3()})                                       
         return resultSet
 
+    # DEPRECATED. Used only by deprecated module events.details.
+    # If you need triplets by event then loop through self.events and then
+    # through ev.triplets. If you want to query them all at once then use
+    # self.objects.events.fields(triplets)
     def get_triplets_by_event(self):
         triplets = self.get_triplets()
         events = defaultdict(list)
@@ -257,6 +279,9 @@ class MacroEvent(ComplexObject):
         return events
 
     # Get unique participant (of type subject or object) data
+    # DEPRECATED. Used only by deprecated module events.details. If you need
+    # information about statements and their participants, loop through
+    # self.objects.events.triplets.participants.
     def get_statement_data(self, stmt_type):
         '''Get unique data about the particpant (sentence object or subject) 
         of statements related to this macro event.
@@ -286,6 +311,10 @@ class MacroEvent(ComplexObject):
         # return a dictionary of the resultSet
         return resultSet        
         
+    # DEPRECATED. Used only by deprecated module events.details and by
+    # index_data(). If you need information about victims then loop through
+    # self.victims. If you want to query it more efficiently, use
+    # self.objects.victims.fields(...)
     def get_victim_data(self):
         '''Get the victim data related to this macro event.
 
@@ -306,6 +335,9 @@ class MacroEvent(ComplexObject):
                              initial_bindings={'macro': self.uri.n3()})
         return resultSet        
 
+# DEPRECATED. Used only by events.views.macro_events. If you need macro
+# event details, use MacroEvent.objects.all() with any .fields() you want to
+# prepopulate.
 def get_all_macro_events():
     '''Get a list of macro events along with number of linked articles.
 
@@ -329,6 +361,8 @@ def get_all_macro_events():
     # return the dictionary resultset of the query          
     return resultSet
     
+# DEPRECATED. Used only by MacroEvent.get_victim_data(). Use QuerySets to
+# generate queries programmatically.
 def get_victim_query():
     '''Get the query to retrieve victim information.
 
@@ -352,6 +386,8 @@ def get_victim_query():
 
     return unicode(q)  
     
+# DEPRECATED. Used only by get_metadata(). Use QuerySets to generate queries
+# programmatically.
 def get_metadata_query():
     '''Get the query to retrieve core metadata information.
 
@@ -370,6 +406,9 @@ def get_metadata_query():
             Variable('vcounty_brdg')))
     return unicode(q)
     
+# DEPRECATED. Used only by events.mapdata, which is already removed in a
+# feature branch. If you need metadata about a MacroEvent or its victims,
+# get them from the model properties.
 def get_metadata(add_fields=[]):
     '''Get the macro event core metadata from sesame triplestore, plus
     any additional fields used in the timemap filter.
@@ -398,6 +437,8 @@ def get_metadata(add_fields=[]):
     
     return resultSetIndexed
     
+# DEPRECATED. Used only by deprecated get_metadata(). If you need to
+# restructure MacroEvent data, do it in a view.
 def indexOnMacroEvent(resultSet=[]):
     '''Create a new dictionary using the macroevent id as the key.
     
@@ -425,6 +466,8 @@ def indexOnMacroEvent(resultSet=[]):
 
     return indexedResultSet
     
+# DEPRECATED. Used only by deprecated get_metadata(). If you need
+# information about victims and cities, get them from the models.
 def update_filter_fields(add_fields=[], resultSetIndexed={}):
     '''Update the core metadata with filter field data.
     
@@ -452,6 +495,8 @@ def update_filter_fields(add_fields=[], resultSetIndexed={}):
         city_resultSet = ss.query(sparql_query=query)
         join_data_on_macroevent(resultSetIndexed, city_resultSet)
                 
+# DEPRECATED. Used only by deprecated update_filter_fields(). If you need to
+# restructure model data, do it in a view.
 def join_data_on_macroevent(resultSetIndexed={}, filterdict=[]):
     '''Join the filter resultSet to the metadata indexed dictionary  
 
@@ -476,6 +521,8 @@ def join_data_on_macroevent(resultSetIndexed={}, filterdict=[]):
             except KeyError, err:
                 logger.debug("Filter[%s] not defined for MacroEvent[%s]" % (filtername, err))
     
+# DEPRECATED. Used only in events.views.timemap(), and it's not staying
+# there.
 def get_filters(filters):
     '''Get the queries to retrieve filters tags and frequency.
 
@@ -688,6 +735,8 @@ class Victim(ComplexObject):
     rdf_type = scxn.Victim
     'the URI of the RDF Class describing victim objects'
     
+    # TODO: rename these properties to something shorter.
+
     # simplex fields potentially attached to a Victim
     # Victim has a name (Brundage)
     victim_uri = sxcxcxn.Victim
@@ -720,6 +769,8 @@ class Victim(ComplexObject):
                                            result_type=MacroEvent,
                                            reverse_field_name='victims')
 
+    # FIXME: do we need to index victims? pretty sure we're not searching
+    # them.
     def index_data(self):
         data = super(Victim, self).index_data().copy()
 

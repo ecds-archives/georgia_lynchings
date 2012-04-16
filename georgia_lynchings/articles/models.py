@@ -1,16 +1,15 @@
+import logging
 from urllib import quote
 
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.conf import settings
 
-from georgia_lynchings.localsettings import ARTICLE_UPLOAD_DIR, MEDIA_URL
 from georgia_lynchings.rdf.fields import ChainedRdfPropertyField, \
         ReversedRdfPropertyField, RdfPropertyField
 from georgia_lynchings.rdf.models import RdfObject, ComplexObject
 from georgia_lynchings.rdf.ns import dd, dxcxd, ssxn
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from georgia_lynchings import query_bank
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +78,7 @@ class Article(models.Model):
 
     # Fields dealing with File objects and their permissions.
     file_help = "PDF file representing the article.  DO NOT UPLOAD FILES WE DO NOT HAVE THE RIGHTS TO USE."
-    file = models.FileField(upload_to=ARTICLE_UPLOAD_DIR, help_text=file_help, null=True, blank=True)
+    file = models.FileField(upload_to=settings.ARTICLE_UPLOAD_DIR, help_text=file_help, null=True, blank=True)
 
     def __unicode__(self):
         return u"%s" % (self.title)

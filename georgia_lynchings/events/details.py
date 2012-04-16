@@ -11,6 +11,10 @@ from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 from georgia_lynchings.events.models import MacroEvent, get_all_macro_events
 
+# DEPRECATED: This entire module is deprecated. New code should get
+# information directly from MacroEvent models instead of from hard-coded
+# query_bank queries.
+
 logger = logging.getLogger(__name__)
 
 class Details:
