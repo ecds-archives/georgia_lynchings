@@ -115,10 +115,6 @@ class MacroEvent(ComplexObject):
         # code. it needs to be fixed.
         return self.victims[-1].victim_county_of_lynching
 
-    def _tmp_alleged_crimes(self):
-        return [v.victim_alleged_crime for v in self.victims
-                if v.victim_alleged_crime]
-
     # FIXME: end of temporary support methods (see above)
 
     # methods for wrapping a MacroEvent around a URI and querying utility

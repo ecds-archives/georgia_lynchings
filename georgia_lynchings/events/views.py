@@ -186,8 +186,7 @@ def _get_macro_events_for_timemap():
 # FIXME: or even better, the properties actually used in this view so that
 # the view doesn't need to know model implementation details:
 #    return MacroEvent.objects \
-#        .fields('label', 'start_date', 'end_date', 
-#                '_tmp_county', '_tmp_alleged_crimes') \
+#        .fields('label', 'start_date', 'end_date', '_tmp_county') \
 #        .all()
 
 def _macro_event_timemap_data(mac):
@@ -203,7 +202,7 @@ def _macro_event_timemap_data(mac):
             'detail_link': mac.get_absolute_url(),
             'tags': _macro_event_tags(mac),
             'title': mac.label,
-            'victim_allegedcrime_brundage_filter': mac._tmp_alleged_crimes(),
+            'victim_allegedcrime_brundage_filter': _macro_alleged_crimes(mac),
         },
     }
 
@@ -226,7 +225,7 @@ def _macro_event_tags(mac):
     'Get the timemap tags used for filtering a macro event.'
     # TODO: revisit filtering
 
-    alleged_crimes = mac._tmp_alleged_crimes()
+    alleged_crimes = _macro_alleged_crimes(mac)
     alleged_crime_tags = [slugify('ac ' + c) for c in alleged_crimes]
 
     return alleged_crime_tags
@@ -235,3 +234,7 @@ def _macro_coords(mac):
     # FIXME: this is an odd format to return coordinates.
     county = mac._tmp_county()
     return geo_coordinates.countymap.get(county, None)
+
+def _macro_alleged_crimes(mac):
+    return [v.victim_alleged_crime for v in mac.victims
+            if v.victim_alleged_crime]
