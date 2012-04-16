@@ -5,5 +5,5 @@
 {% block content-title %}{{ page.title }}{% endblock %}
 
 {% block content-body %}
-{{ page.content }}
+{{ page.content|safe }}
 {% endblock %}

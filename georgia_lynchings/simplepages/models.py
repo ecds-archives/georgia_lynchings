@@ -20,8 +20,6 @@ class Page(models.Model):
     def __unicode__(self):
         return u"%s" % self.title
 
-    @models.permalink
+    #@models.permalink
     def get_absolute_url(self):
-        return ('view_page', (), {
-            'slug': self.slug,
-        })
+        return reverse('simplepages:view', args=[self.slug,])
