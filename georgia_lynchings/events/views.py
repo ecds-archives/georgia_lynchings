@@ -16,7 +16,7 @@ from georgia_lynchings import geo_coordinates
 from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.forms import SearchForm, AdvancedSearchForm
 from georgia_lynchings.events.models import MacroEvent, \
-    get_all_macro_events, SemanticTriplet, get_filters
+    get_all_macro_events, SemanticTriplet
 
 logger = logging.getLogger(__name__)
 
@@ -139,29 +139,10 @@ def advanced_search(request):
                   {'form': form, 'results': results})
 
 
-#These views and variables are for Map display
-
-# Create filters for timemap
-filters= [
-    { 
-        'title': 'Alleged Crime',
-        'name': 'victim_allegedcrime_brundage',
-        'prefix': 'ac',
-        'dropdown_id': 'ac_tag_select',        
-        # example of tag tuple (display name, slug, frequency):
-        # 'tags': [
-        #   ('Argument', 'ac_argument', 4), 
-        #   ('Debt Dispute', 'ac_debt_dispute', 7), 
-        #   ('Kidnapping/Theft', 'ac_kidnapping/theft', 17)
-        # ]        
-    },
-]
-
 def timemap(request):
     # TODO: filter info is heavily dependent on the data itself. move filter
     # generation either to the client js, or tie it somehow to timemap_data().
-    return render(request, 'events/timemap.html', \
-        {'filters' : get_filters(filters)})
+    return render(request, 'events/timemap.html')
 
 def timemap_data(request):
     macro_events = _get_macro_events_for_timemap()
@@ -196,8 +177,7 @@ def _macro_event_timemap_data(mac):
             'county': _macro_county(mac),
             'detail_link': mac.get_absolute_url(),
             'tags': _macro_event_tags(mac),
-            'title': mac.label,
-            'victim_allegedcrime_brundage_filter': _macro_alleged_crimes(mac),
+            'alleged_crime': _macro_alleged_crimes(mac),
         },
     }
 
@@ -205,7 +185,7 @@ def _macro_event_timemap_data(mac):
 
     if mac.start_date:
         data['start'] = mac.start_date
-        data['options']['min_date'] = mac.start_date
+        data['options']['start'] = mac.start_date
     if mac.end_date:
         data['end'] = mac.end_date
 

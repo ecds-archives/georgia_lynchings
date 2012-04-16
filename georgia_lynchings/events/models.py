@@ -5,7 +5,7 @@ from urllib import quote
 from django.db.models import permalink
 from django.template.defaultfilters import slugify
 
-from georgia_lynchings import geo_coordinates, query_bank
+from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, UnionRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
@@ -361,109 +361,7 @@ def get_victim_query():
         Variable('vrace_brdg')), optional=True)
 
     return unicode(q)  
-    
-def get_filters(filters):
-    '''Get the queries to retrieve filters tags and frequency.
 
-    :param filter: a mapping dict of the timemap filters.
-            It has the following bindings:
-              * `title`: the display name of the filter tag
-              * `name`: the filter name
-              * `prefix`: the prefix to the slug value
-              PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
-PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
-PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
-
-SELECT DISTINCT ?macro ?city
-WHERE {
-  # For all ?macro, find all of the
-  # Events for those macros, and all of the Triplets for those events.
-  # We'll be looking in these triplets for locations.
-
-  ?macro a scxn:Macro_Event.
-  ?macro sxcxcxn:Event ?event.
-  ?event sxcxcxn:Semantic_Triplet ?_1.
-
-  # Every Triplet has a Process
-  ?_1 sxcxcxn:Process ?_2.
-
-  # We need all of the places for that Process. There are four ways
-  # they might be expressed:
-  {
-    ?_2 sxcxcxn:Simple_process ?_3.
-    ?_3 sxcxcxn:Circumstances ?_4.
-    ?_4 sxcxcxn:Space ?_5.
-  } UNION {
-    ?_2 sxcxcxn:Complex_process ?_6.
-    ?_6 sxcxcxn:Simple_process ?_3.
-    ?_3 sxcxcxn:Circumstances ?_4.
-    ?_4 sxcxcxn:Space ?_5.
-  } UNION {
-    ?_2 sxcxcxn:Complex_process ?_6.
-    ?_6 sxcxcxn:Other_process ?_7.
-    ?_7 sxcxcxn:Simple_process ?_3.
-    ?_3 sxcxcxn:Circumstances ?_4.
-    ?_4 sxcxcxn:Space ?_5.
-  } UNION {
-    ?_2 sxcxcxn:Complex_process ?_6.
-    ?_6 sxcxcxn:Other_process ?_7.
-    ?_7 sxcxcxn:Nominalization ?_8.
-    ?_8 sxcxcxn:Space ?_5.
-  }
-
-  # Regardless of which way we came, ?_5 is some sort of place. If
-  # we're going to get from there to location simplex data, this
-  # is how we get there:
-  {
-    ?_5 sxcxcxn:City ?_10.
-  }
-
-  # Grab the simplex data we're interested in, whichever are
-  # available (but note that "?" is equivalent to missing data)
-  OPTIONAL {
-    ?_10 ssxn:City_name ?city.
-    FILTER (?city != "?")
-  }
-
-  # And grab only those records that have at least one data point.
-  FILTER (BOUND(?city))
-}
-ORDER BY ?macro
-    :rtype: an updated mapping dict of the timemap filters.
-            It has the following bindings:
-              * `title`: the display name of the filter tag
-              * `name`: the filter name
-              * `prefix`: the prefix to the slug value
-              * `tags`: a tuple as (filtername, slug, frequency)
-    '''
-
-    for filter in filters:
-        query=query_bank.filters[filter['name']+"_freq" ]  
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query)
-        
-        # processing for calculating city frequency.
-        if filter['name']=='city':
-            freqDict = {}
-            for item in resultSet:
-                cityname = item[filter['name']].encode('ascii')
-                freqDict[cityname] = freqDict.get(cityname, 0) + 1
-            rs = sorted(freqDict.items(), key=lambda (key,value): value, reverse=True)
-            resultSet = []
-            for city,freq in rs[:20]:
-                resultSet.append({'frequency':freq, 'city':city})
-
-        tag_tuples = []
-        # Add tags and frequency as tuples to filter dict
-        for item in resultSet:
-            # Slugify the tag (lc, add prefix, replace spaces with underscore.
-            slug = slugify(filter['prefix'] + " " + item[filter['name']])
-            tag_tuples.append((item[filter['name']],slug,item['frequency']))
-
-        filter['tags'] = tag_tuples           
-         
-    return filters  
 
 class Event(ComplexObject):
     '''An Event is an object type defined by the project's private PC-ACE
