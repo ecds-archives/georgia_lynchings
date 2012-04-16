@@ -183,11 +183,6 @@ def _get_macro_events_for_timemap():
                    'victims__victim_county_of_lynching',
                    'victims__victim_alleged_crime') \
            .all()
-# FIXME: or even better, the properties actually used in this view so that
-# the view doesn't need to know model implementation details:
-#    return MacroEvent.objects \
-#        .fields('label', 'start_date', 'end_date', '_tmp_county') \
-#        .all()
 
 def _macro_event_timemap_data(mac):
     '''Get the timemap json data for a single
@@ -198,7 +193,7 @@ def _macro_event_timemap_data(mac):
     data = {
         'title': mac.label,
         'options': {
-            'county': mac._tmp_county(),
+            'county': _macro_county(mac),
             'detail_link': mac.get_absolute_url(),
             'tags': _macro_event_tags(mac),
             'title': mac.label,
@@ -232,9 +227,15 @@ def _macro_event_tags(mac):
 
 def _macro_coords(mac):
     # FIXME: this is an odd format to return coordinates.
-    county = mac._tmp_county()
+    county = _macro_county(mac)
     return geo_coordinates.countymap.get(county, None)
 
 def _macro_alleged_crimes(mac):
     return [v.victim_alleged_crime for v in mac.victims
             if v.victim_alleged_crime]
+
+def _macro_county(mac):
+    # FIXME: this is broken: it only returns the county for the last victim.
+    # this error is inherited from an earlier version of this code. it needs
+    # to be fixed.
+    return mac.victims[-1].victim_county_of_lynching

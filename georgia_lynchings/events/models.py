@@ -104,19 +104,6 @@ class MacroEvent(ComplexObject):
 
         return data
 
-    # FIXME: temporary methods to support timemap generation. these need to
-    # change: some of them belong in the view; others should turn into nicer
-    # properties on the model. at the very least they all need less
-    # offensive names before this code hits mainline development.
-
-    def _tmp_county(self):
-        # FIXME: this is broken: it only returns the county for the last
-        # victim. this error is inherited from an earlier version of this
-        # code. it needs to be fixed.
-        return self.victims[-1].victim_county_of_lynching
-
-    # FIXME: end of temporary support methods (see above)
-
     # methods for wrapping a MacroEvent around a URI and querying utility
     # data about it. For now these methods have hard-coded SPARQL, but we
     # hope in time to be able to generate these queries from the RDF
