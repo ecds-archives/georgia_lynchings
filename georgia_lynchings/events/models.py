@@ -109,11 +109,6 @@ class MacroEvent(ComplexObject):
     # properties on the model. at the very least they all need less
     # offensive names before this code hits mainline development.
 
-    def _tmp_coords(self):
-        # FIXME: this is an odd format to return coordinates.
-        county = self._tmp_county()
-        return geo_coordinates.countymap.get(county, None)
-
     def _tmp_cities(self):
         return set([tr.city for ev in self.events for tr in ev.triplets if tr.city])
 

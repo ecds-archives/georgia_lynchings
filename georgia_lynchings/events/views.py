@@ -12,6 +12,7 @@ from django.shortcuts import render
 from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
 
+from georgia_lynchings import geo_coordinates
 from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.forms import SearchForm, AdvancedSearchForm
 from georgia_lynchings.events.models import MacroEvent, \
@@ -185,7 +186,7 @@ def _get_macro_events_for_timemap():
 # FIXME: or even better, the properties actually used in this view so that
 # the view doesn't need to know model implementation details:
 #    return MacroEvent.objects \
-#        .fields('label', 'start_date', 'end_date', '_tmp_coords',
+#        .fields('label', 'start_date', 'end_date', 
 #                '_tmp_county', '_tmp_alleged_crimes') \
 #        .all()
 
@@ -214,7 +215,7 @@ def _macro_event_timemap_data(mac):
     if mac.end_date:
         data['end'] = mac.end_date
 
-    coords = mac._tmp_coords()
+    coords = _macro_coords(mac)
     if coords:
         data['point'] = { 'lat':coords['latitude'],
                           'lon':coords['longitude']}
@@ -229,3 +230,8 @@ def _macro_event_tags(mac):
     alleged_crime_tags = [slugify('ac ' + c) for c in alleged_crimes]
 
     return alleged_crime_tags
+
+def _macro_coords(mac):
+    # FIXME: this is an odd format to return coordinates.
+    county = mac._tmp_county()
+    return geo_coordinates.countymap.get(county, None)
