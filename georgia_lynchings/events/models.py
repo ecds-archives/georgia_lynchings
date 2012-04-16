@@ -109,9 +109,6 @@ class MacroEvent(ComplexObject):
     # properties on the model. at the very least they all need less
     # offensive names before this code hits mainline development.
 
-    def _tmp_cities(self):
-        return set([tr.city for ev in self.events for tr in ev.triplets if tr.city])
-
     def _tmp_county(self):
         # FIXME: this is broken: it only returns the county for the last
         # victim. this error is inherited from an earlier version of this
