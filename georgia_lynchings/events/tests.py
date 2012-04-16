@@ -389,8 +389,8 @@ class VictimTest(EventsAppTest):
     def test_basic_rdf_properties(self):
         victim = Victim(self.VICTIM_E_COOPER_ID)
         self.assertEqual(victim.victim_name, 'Eli Cooper')
-        self.assertEqual(victim.victim_alleged_crime, 'Organizing Black Farmers')
-        self.assertEqual(victim.victim_county_of_lynching, 'Laurens')        
+        self.assertEqual(victim.alleged_crime, 'Organizing Black Farmers')
+        self.assertEqual(victim.county_of_lynching, 'Laurens')        
 
     def test_related_object_properties(self):
         victim = Victim(self.VICTIM_E_COOPER_ID)

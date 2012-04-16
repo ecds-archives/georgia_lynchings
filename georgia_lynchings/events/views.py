@@ -180,8 +180,8 @@ def timemap_data(request):
 def _get_macro_events_for_timemap():
     return MacroEvent.objects \
            .fields('label', 'start_date', 'end_date', 
-                   'victims__victim_county_of_lynching',
-                   'victims__victim_alleged_crime') \
+                   'victims__county_of_lynching',
+                   'victims__alleged_crime') \
            .all()
 
 def _macro_event_timemap_data(mac):
@@ -231,11 +231,11 @@ def _macro_coords(mac):
     return geo_coordinates.countymap.get(county, None)
 
 def _macro_alleged_crimes(mac):
-    return [v.victim_alleged_crime for v in mac.victims
-            if v.victim_alleged_crime]
+    return [v.alleged_crime for v in mac.victims
+            if v.alleged_crime]
 
 def _macro_county(mac):
     # FIXME: this is broken: it only returns the county for the last victim.
     # this error is inherited from an earlier version of this code. it needs
     # to be fixed.
-    return mac.victims[-1].victim_county_of_lynching
+    return mac.victims[-1].county_of_lynching

@@ -610,32 +610,25 @@ class Victim(ComplexObject):
     rdf_type = scxn.Victim
     'the URI of the RDF Class describing victim objects'
     
-    # simplex fields potentially attached to a Victim
-    # Victim has a name (Brundage)
-    victim_uri = sxcxcxn.Victim
-    
-    # simplex fields potentially attached to a Victim
-    # Victim has a name (Brundage)
-    #victim_name = ssxn.Name_of_victim_Brundage
-    
-    victim_name = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Name_of_victim_Brundage)    
+    name = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                   ssxn.Name_of_victim_Brundage)
+    'name of this victim'
 
-    # Victim has a county of lynching (Brundage)
-    victim_county_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.County_of_lynching_Brundage) 
+    county_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                                 ssxn.County_of_lynching_Brundage)
+    'county the lynching took place in'
                                                 
-    # Victim has an alleged crime (Brundage)        
-    victim_alleged_crime = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Alleged_crime_Brundage)    
+    alleged_crime = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                            ssxn.Alleged_crime_Brundage)
+    'crime the lynching victim was accused of committing'
     
-    # Victim has a date of lynchings (Brundage)    
-    victim_date_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Date_of_lynching_Brundage)     
+    date_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                               ssxn.Date_of_lynching_Brundage)
+    'date the victim was lynched'
     
-    # Victim has a race (Brundage)    
-    victim_race = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Race_Brundage)       
+    race = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                   ssxn.Race_Brundage)
+    'race of the lynching victim'
                     
     # reverse and aggregate properties
     macro_event = ReversedRdfPropertyField(sxcxcxn.Victim,
