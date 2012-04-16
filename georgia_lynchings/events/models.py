@@ -75,10 +75,10 @@ class MacroEvent(ComplexObject):
             if 'victim_allegedcrime_brundage' in victim_row:
                 data['victim_allegedcrime_brundage'].append(victim_row['victim_allegedcrime_brundage'])
 
-        datedict = self.get_date_range()
-        if datedict:
-            data['min_date'] = datedict['mindate']
-            data['max_date'] = datedict['maxdate']
+        if self.start_date:
+            data['min_date'] = self.start_date
+        if self.end_date:
+            data['max_date'] = self.end_date
 
         details = self.get_details()
         if details:
