@@ -9,7 +9,7 @@ from georgia_lynchings import geo_coordinates, query_bank
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, UnionRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
-from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
+from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_mbd, dcx
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 import logging
@@ -27,6 +27,11 @@ class MacroEvent(ComplexObject):
     rdf_type = scxn.Macro_Event
     'the URI of the RDF Class describing macro event objects'     
 
+    start_date = ix_mbd.mindate
+    'the earliest date associated with this macro event'
+    end_date = ix_mbd.maxdate
+    'the latest date associated with this macro event'
+    
     @permalink
     def get_absolute_url(self):
         return ('events:details', [str(self.id)])
@@ -35,7 +40,7 @@ class MacroEvent(ComplexObject):
     # themselves to simplify syntax. For example, see Event.macro_event,
     # below, which adds an "events" property to MacroEvent with its
     # reverse_field_name.
-    
+
     def index_data(self):
         '''Return a dictionary of index terms for this macro event.
         `sunburnt <http://opensource.timetric.com/sunburnt/>`_ expects a
@@ -103,18 +108,6 @@ class MacroEvent(ComplexObject):
     # change: some of them belong in the view; others should turn into nicer
     # properties on the model. at the very least they all need less
     # offensive names before this code hits mainline development.
-
-    def _tmp_start(self):
-        # FIXME: index this on the macro event, not events
-        dates = [ ev.start_date for ev in self.events if ev.start_date ]
-        if dates:
-            return min(dates)
-
-    def _tmp_end(self):
-        # FIXME: index this on the macro event, not events
-        dates = [ ev.end_date for ev in self.events if ev.end_date ]
-        if dates:
-            return max(dates)
 
     def _tmp_coords(self):
         # FIXME: this is an odd format to return coordinates.
@@ -513,19 +506,6 @@ class Event(ComplexObject):
     # simplex fields potentially attached to an Event
     event_type = ssxn.Type_of_event
     'a word or short phrase describing the type of event'
-
-    # FIXME: Do we actually need these index properties? The one piece of
-    # code that uses the Python properties (MacroEvent._tmp_start() and
-    # MacroEvent._tmp_end()) has a note to move to indexing by MacroEvent
-    # instead of Event. Other explicit queries use the RDF properties, but
-    # it's not entirely clear whether those queries are in active use or are
-    # stale.
-    #
-    # derived fields indexed during data load in top-level setup-queries
-    start_date = ix_ebd.mindate
-    'the earliest date associated with this event'
-    end_date = ix_ebd.maxdate
-    'the latest date associated with this event'
 
     # reverse and aggregate properties
     macro_event = ReversedRdfPropertyField(sxcxcxn.Event,

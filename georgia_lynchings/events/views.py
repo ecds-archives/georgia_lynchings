@@ -178,15 +178,15 @@ def timemap_data(request):
 
 def _get_macro_events_for_timemap():
     return MacroEvent.objects \
-           .fields('label', 'events__start_date', 'events__end_date', 
+           .fields('label', 'start_date', 'end_date', 
                    'victims__victim_county_of_lynching',
                    'victims__victim_alleged_crime') \
            .all()
 # FIXME: or even better, the properties actually used in this view so that
 # the view doesn't need to know model implementation details:
 #    return MacroEvent.objects \
-#        .fields('label', '_tmp_start', '_tmp_end', '_tmp_coords',
-#                '_tmp_cities', '_tmp_county', '_tmp_alleged_crimes') \
+#        .fields('label', 'start_date', 'end_date', '_tmp_coords',
+#                '_tmp_county', '_tmp_alleged_crimes') \
 #        .all()
 
 def _macro_event_timemap_data(mac):
@@ -200,7 +200,6 @@ def _macro_event_timemap_data(mac):
         'options': {
             'county': mac._tmp_county(),
             'detail_link': mac.get_absolute_url(),
-            'min_date': mac._tmp_start(),
             'tags': _macro_event_tags(mac),
             'title': mac.label,
             'victim_allegedcrime_brundage_filter': mac._tmp_alleged_crimes(),
@@ -209,13 +208,11 @@ def _macro_event_timemap_data(mac):
 
     # add fields that might not actually be available for some macro events:
 
-    start_date = mac._tmp_start()
-    if start_date:
-        data['start'] = start_date
-
-    end_date = mac._tmp_end()
-    if end_date:
-        data['end'] = end_date
+    if mac.start_date:
+        data['start'] = mac.start_date
+        data['options']['min_date'] = mac.start_date
+    if mac.end_date:
+        data['end'] = mac.end_date
 
     coords = mac._tmp_coords()
     if coords:
