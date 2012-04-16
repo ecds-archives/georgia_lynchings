@@ -124,6 +124,7 @@ class ComplexObject(RdfObject):
                 self.id = None
         else:
             uri = dcx['r' + str(id)]
+            self.id = id
 
         super(ComplexObject, self).__init__(uri, *args, **kwargs)
 
