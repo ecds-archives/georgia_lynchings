@@ -1,11 +1,10 @@
-from django.conf.urls.defaults import *
+'''
+URL patterns for articles
+'''
 
-'''
-Patterns: 
-'Events related to an Article'      articles 
-'''
+from django.conf.urls.defaults import *
   
 urlpatterns = patterns('georgia_lynchings.articles.views',
-    url(r'', 'newspaper_articles', name="newspaper_articles"),     # all articles    
+    url(r'^$', 'newspaper_articles', name="newspaper_articles"),     # all articles
 )
 

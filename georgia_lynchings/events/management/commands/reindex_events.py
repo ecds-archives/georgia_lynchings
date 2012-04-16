@@ -36,8 +36,11 @@ class Command(BaseCommand):
         solr = sunburnt.SolrInterface(settings.SOLR_INDEX_URL)
         
         progress = NullProgressBar()
+        # FIXME: all_instances() is deprecated. use MyClass.objects.all()
         macs = MacroEvent.all_instances()
         triplets = SemanticTriplet.all_instances()
+        # FIXME: do we need to index victims? pretty sure we're not
+        # searching them.
         victims = Victim.all_instances()        
         items = macs + triplets + victims
         

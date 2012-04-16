@@ -1,13 +1,8 @@
-from django.conf.urls.defaults import *
+'''
+URL patterns for events 
+'''
 
-'''
-Patterns: 
-'Articles related to an Event'      events/<row_id>/articles/ 
-'Details related to an Event'       events/<row_id>/details/ 
-'List all events, sorted by loc'    events/locations/ 
-'List all events, sorted by time'   events/times/
-'List all events, provide article count link'   events/
-'''
+from django.conf.urls.defaults import *
   
 urlpatterns = patterns('georgia_lynchings.events.views',
     url(r'search/advanced/$', 'advanced_search', name='advanced_search'),# advanced event search

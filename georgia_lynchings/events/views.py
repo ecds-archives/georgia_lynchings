@@ -47,6 +47,8 @@ def details(request, row_id):
     '''
     
     # Get the details associate with this macro event.
+    # FIXME: The details module is deprecated. Pass the MacroEvent model
+    # directly to the template and let it grab the information it needs.
     details = Details(row_id)
     results = details.get()
 
@@ -70,6 +72,9 @@ def home(request):
 def macro_events(request):
     '''List all macro events, provide article count.'''
 
+    # FIXME: get_all_macro_events() is deprecated. we need code in this
+    # module to grab MacroEvent.objects.all() with any .fields() we want to
+    # prepopulate.
     results = get_all_macro_events()
     if results:   title = "%d Macro Events" % len(results)
     else:   title = "No records found"      
