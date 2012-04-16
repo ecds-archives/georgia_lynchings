@@ -1,0 +1,31 @@
+thebigreason TinyMCE Skin for advanced theme 
+by Mark Eagleton thebigreason.com
+Version 1 - Released 9/29/2008
+
+To Install
+
+	1. Place thebigreason folder in /tiny_mce/themes/advanced/skins/
+
+	2. Add the following line to the tinyMCE.init() function call in your form:
+	
+		skin : "thebigreason"
+		
+		-- example in context ----------------
+		
+			tinyMCE.init({
+				...
+				theme : "advanced",
+				skin : "thebigreason"
+			});
+			
+		--------------------------------------
+
+	3. Refresh your form page.
+	
+For more information on form configuration, consult the TinyMCE Wiki
+
+	http://wiki.moxiecode.com/index.php/TinyMCE:Configuration
+	
+This TinyMCE theme makes use of the fabulous famfamfam silk icons set by Mark James
+
+	http://www.famfamfam.com/lab/icons/silk/
