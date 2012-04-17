@@ -9,13 +9,14 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
+from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
 
+from georgia_lynchings import geo_coordinates
 from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.forms import SearchForm, AdvancedSearchForm
-from georgia_lynchings.events.models import MacroEvent, \
-    get_all_macro_events, SemanticTriplet, get_filters
-from georgia_lynchings.events.timemap import Timemap   
+from georgia_lynchings.events.models import MacroEvent, Victim, \
+    get_all_macro_events, SemanticTriplet
 
 logger = logging.getLogger(__name__)
 
@@ -143,60 +144,66 @@ def advanced_search(request):
                   {'form': form, 'results': results})
 
 
-#These views and variables are for Map display
-
-# Create filters for timemap
-filters= [
-    { 
-        'title': 'Alleged Crime',
-        'name': 'victim_allegedcrime_brundage',
-        'prefix': 'ac',
-        'dropdown_id': 'ac_tag_select',        
-        # example of tag tuple (display name, slug, frequency):
-        # 'tags': [
-        #   ('Argument', 'ac_argument', 4), 
-        #   ('Debt Dispute', 'ac_debt_dispute', 7), 
-        #   ('Kidnapping/Theft', 'ac_kidnapping/theft', 17)
-        # ]        
-    },
-    { 
-        'title': 'Cities',
-        'name': 'city',
-        'prefix': 'city',
-        'dropdown_id': 'city_tag_select',               
-    }    
-]
-
 def timemap(request):
-    '''Send list of filters generated from :class:`~georgia_lynchings.events.timemap.Timemap`
-    to the template for the filter dropdown lists.
-    '''
-    # FIXME: the frequencies should be calcuated as the timemap is built for accuracy.
-    return render(request, 'events/timemap.html', \
-        {'filters' : get_filters(filters)})
+    # TODO: filter info is heavily dependent on the data itself. move filter
+    # generation either to the client js, or tie it somehow to timemap_data().
+    return render(request, 'events/timemap.html')
 
-def map_json(request):
-    '''
-    Renders json data from :class:`~georgia_lynchings.events.timemap.Timemap` for map display
-    '''
+def timemap_data(request):
+    macro_events = _get_macro_events_for_timemap()
+    macro_data = [ _macro_event_timemap_data(me) for me in macro_events ]
+    # FIXME: several events have no start or end date associated with them.
+    # ideally, we should find a way to associate dates with these items.
+    # lacking that, we should consider how we can include them in the data
+    # set, since right now they're entirely invisible in the timemap.
+    json_literal = [d for d in macro_data
+                    if d.get('start', None) and
+                       d.get('end', None) and
+                       d.get('point', None)]
+    return HttpResponse(json.dumps(json_literal, indent=4),
+                        mimetype='application/json')
 
-    map_data = Timemap(filters)
-    add_fields = get_additional_fields()
-    # Get the json for core metadata plus any additional fields for the timemap filter
-    json_str = json.dumps(map_data.get_json(add_fields=add_fields), indent=4)    
-    response = HttpResponse(json_str, mimetype='application/json')
 
-    return response
+def timemap_victim_data(request):
+    victims = Victim.objects \
+              .fields('name', 'alt_name', 'county_of_lynching',
+                      'alleged_crime', 'date_of_lynching', 'brundage__name',
+                      'brundage__county_of_lynching',
+                      'brundage__alleged_crime',
+                      'brundage__date_of_lynching', 'macro_event') \
+              .all()
+    victim_data = [_victim_timemap_data(v) for v in victims]
+    json_literal = [d for d in victim_data
+                    if d.get('start', None) and
+                       d.get('point', None)]
+    return HttpResponse(json.dumps(json_literal, indent=4),
+                        mimetype='application/json')
+
+def _victim_timemap_data(victim):
+    data = {
+        'title': victim.primary_name or 'Unnamed victim',
+        'options': {
+            'detail_link': victim.macro_event.get_absolute_url(),
+        }
+    }
+
+    county = victim.primary_county
+    if county:
+        data['options']['county'] = county
+        coords = geo_coordinates.countymap.get(county, None)
+        if coords:
+            data['point'] = {'lat': coords['latitude'],
+                             'lon': coords['longitude']}
+        else:
+            logger.info('No county coordinages for %s county (victim %s)' % (county, victim.id))
     
-def get_additional_fields():
-    '''
-    Create a list of names for the timemap filter fields.
-    
-    :rtype: a list of filter names    
-    '''    
-        
-    # Get a list of filter names
-    fields = []
-    for filter in filters:
-        fields.append(filter['name'])
-    return fields    
+    crime = victim.primary_alleged_crime
+    if crime:
+        data['options']['alleged_crime'] = crime
+
+    date = victim.primary_lynching_date
+    if date:
+        data['start'] = date
+        data['options']['date'] = date
+
+    return data

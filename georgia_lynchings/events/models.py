@@ -2,6 +2,7 @@ from collections import defaultdict
 import logging
 from urllib import quote
 
+from django.db.models import permalink
 from django.template.defaultfilters import slugify
 from rdflib import Variable
 
@@ -9,7 +10,7 @@ from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, UnionRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
-from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_ebd, dcx
+from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_mbd, dcx
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
@@ -24,11 +25,20 @@ class MacroEvent(ComplexObject):
     rdf_type = scxn.Macro_Event
     'the URI of the RDF Class describing macro event objects'     
 
+    start_date = ix_mbd.mindate
+    'the earliest date associated with this macro event'
+    end_date = ix_mbd.maxdate
+    'the latest date associated with this macro event'
+    
+    @permalink
+    def get_absolute_url(self):
+        return ('events:details', [str(self.id)])
+
     # NOTE: Fields for complex subobjects are defined on the subobjects
     # themselves to simplify syntax. For example, see Event.macro_event,
     # below, which adds an "events" property to MacroEvent with its
     # reverse_field_name.
-    
+
     def index_data(self):
         '''Return a dictionary of index terms for this macro event.
         `sunburnt <http://opensource.timetric.com/sunburnt/>`_ expects a
@@ -66,10 +76,10 @@ class MacroEvent(ComplexObject):
             if 'victim_allegedcrime_brundage' in victim_row:
                 data['victim_allegedcrime_brundage'].append(victim_row['victim_allegedcrime_brundage'])
 
-        datedict = self.get_date_range()
-        if datedict:
-            data['min_date'] = datedict['mindate']
-            data['max_date'] = datedict['maxdate']
+        if self.start_date:
+            data['min_date'] = self.start_date
+        if self.end_date:
+            data['max_date'] = self.end_date
 
         details = self.get_details()
         if details:
@@ -385,246 +395,7 @@ def get_victim_query():
         Variable('vrace_brdg')), optional=True)
 
     return unicode(q)  
-    
-# DEPRECATED. Used only by get_metadata(). Use QuerySets to generate queries
-# programmatically.
-def get_metadata_query():
-    '''Get the query to retrieve core metadata information.
 
-    :rtype: a unicode string of the SPARQL query
-
-    '''
-    q = SelectQuery(results=['macro', 'label', 'min_date', 'max_date', \
-        'vcounty_brdg'], distinct=True)
-    q.append((Variable('macro'), sxcxcxn.Event, Variable('event')))
-    q.append((Variable('macro'), dcx.Identifier, Variable('label')))  
-    q.append((Variable('event'), ix_ebd.mindate, Variable('min_date')))
-    q.append((Variable('event'), ix_ebd.maxdate, Variable('max_date')))
-    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))
-    q.append((Variable('victim'), sxcxcxn.Victim_Brundage, Variable('victim_Brundage')))     
-    q.append((Variable('victim_Brundage'), ssxn.County_of_lynching_Brundage, \
-            Variable('vcounty_brdg')))
-    return unicode(q)
-    
-# DEPRECATED. Used only by events.mapdata, which is already removed in a
-# feature branch. If you need metadata about a MacroEvent or its victims,
-# get them from the model properties.
-def get_metadata(add_fields=[]):
-    '''Get the macro event core metadata from sesame triplestore, plus
-    any additional fields used in the timemap filter.
-    
-    :param add_fields: add extra fields to the basic metadata set.    
-
-    :rtype: a mapping dict of core metadata plus timemap field using
-            core data returned by
-            :meth:`~georgia_lynchings.rdf.sparqlstore.SparqlStore.query`.
-            joined with data from additional filter fields, and indexed
-            on the macro event id.
-            with the following bindings:
-              * `label`: the label of this Macro Event              
-              * `min_date`: the minimum date related to this event
-              * `max_date`: the maximum date related to this event
-              * `victim_county_brundage`: the (Brundage) county of the Victim
-              plus any additional fields used by the timemap filter
-    '''
-    store = SparqlStore()
-    resultSet = store.query(sparql_query=get_metadata_query())
-    
-    resultSetIndexed = indexOnMacroEvent(resultSet)
-    
-    # Add any additional field requests
-    update_filter_fields(add_fields, resultSetIndexed)
-    
-    return resultSetIndexed
-    
-# DEPRECATED. Used only by deprecated get_metadata(). If you need to
-# restructure MacroEvent data, do it in a view.
-def indexOnMacroEvent(resultSet=[]):
-    '''Create a new dictionary using the macroevent id as the key.
-    
-    :param resultSet: a mapping list of the type returned by
-            :meth:`~georgia_lynchings.rdf.sparqlstore.SparqlStore.query`.
-            It returns metadata for all  MacroEvents, 
-            with the following bindings:
-              * `macro`: the URI of this Macro Event
-              * `label`: the label of this Macro Event              
-              * `min_date`: the minimum date related to this event
-              * `max_date`: the maximum date related to this event
-              * `victim_county_brundage`: the (Brundage) county of the Victim
-              
-    :rtype: a mapping dictionary of the resultSet using the macroevent 
-            id as the key.           
-    '''
-    indexedResultSet = {}
-    if resultSet:
-        fields = resultSet[0].keys()
-        fields.remove('macro')        
-        for item in resultSet:
-            row_id = item['macro'].split('#r')[1]
-            del item['macro']
-            indexedResultSet[row_id]=item
-
-    return indexedResultSet
-    
-# DEPRECATED. Used only by deprecated get_metadata(). If you need
-# information about victims and cities, get them from the models.
-def update_filter_fields(add_fields=[], resultSetIndexed={}):
-    '''Update the core metadata with filter field data.
-    
-    :param add_fields: add extra fields to the basic metadata set.    
-
-    :param resultSetIndexed: a mapping dict of core metadata using the
-        macroevent id as the dict key.  
-    '''
-
-    # Add `victim_allegedcrime_brundage`, if present in add_fields list
-    if 'victim_allegedcrime_brundage' in add_fields:
-        q = SelectQuery(results=['macro', 'victim_allegedcrime_brundage'], distinct=True)
-        q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))
-        q.append((Variable('victim'), sxcxcxn.Victim_Brundage, Variable('victim_Brundage')))  
-        q.append((Variable('victim_Brundage'), ssxn.Alleged_crime_Brundage, \
-                Variable('victim_allegedcrime_brundage')))              
-        store = SparqlStore()
-        ac_resultSet = store.query(sparql_query=unicode(q))
-        join_data_on_macroevent(resultSetIndexed, ac_resultSet)
-
-    # Add `cities`, if present in add_fields list
-    if 'city' in add_fields:
-        query=query_bank.filters['city']    
-        ss=SparqlStore()
-        city_resultSet = ss.query(sparql_query=query)
-        join_data_on_macroevent(resultSetIndexed, city_resultSet)
-                
-# DEPRECATED. Used only by deprecated update_filter_fields(). If you need to
-# restructure model data, do it in a view.
-def join_data_on_macroevent(resultSetIndexed={}, filterdict=[]):
-    '''Join the filter resultSet to the metadata indexed dictionary  
-
-    :param resultSetIndexed: a mapping dict of core metadata using the
-        macroevent id as the dict key. 
-    :param filterdict: a list of dictionary with the following bindings:
-              * `macro`: the URI of this Macro Event
-              * filtername: the name of the filter 
-    '''
-    if resultSetIndexed and filterdict:
-        filtername = filterdict[0].keys()
-        filtername.remove('macro')
-        filtername = filtername[0]
-        for item in filterdict:
-            try:
-                row_id = item['macro'].split('#r')[1]
-                if filtername in resultSetIndexed[row_id]:
-                    if item[filtername] not in resultSetIndexed[row_id][filtername]:
-                        resultSetIndexed[row_id][filtername].append(item[filtername].encode('ascii').title())
-                else:
-                    resultSetIndexed[row_id][filtername] = [item[filtername].encode('ascii').title()]
-            except KeyError, err:
-                logger.debug("Filter[%s] not defined for MacroEvent[%s]" % (filtername, err))
-    
-# DEPRECATED. Used only in events.views.timemap(), and it's not staying
-# there.
-def get_filters(filters):
-    '''Get the queries to retrieve filters tags and frequency.
-
-    :param filter: a mapping dict of the timemap filters.
-            It has the following bindings:
-              * `title`: the display name of the filter tag
-              * `name`: the filter name
-              * `prefix`: the prefix to the slug value
-              PREFIX dcx:<http://galyn.example.com/source_data_files/data_Complex.csv#>
-PREFIX scxn:<http://galyn.example.com/source_data_files/setup_Complex.csv#name->
-PREFIX ssxn:<http://galyn.example.com/source_data_files/setup_Simplex.csv#name->
-PREFIX sxcxcxn:<http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name->
-
-SELECT DISTINCT ?macro ?city
-WHERE {
-  # For all ?macro, find all of the
-  # Events for those macros, and all of the Triplets for those events.
-  # We'll be looking in these triplets for locations.
-
-  ?macro a scxn:Macro_Event.
-  ?macro sxcxcxn:Event ?event.
-  ?event sxcxcxn:Semantic_Triplet ?_1.
-
-  # Every Triplet has a Process
-  ?_1 sxcxcxn:Process ?_2.
-
-  # We need all of the places for that Process. There are four ways
-  # they might be expressed:
-  {
-    ?_2 sxcxcxn:Simple_process ?_3.
-    ?_3 sxcxcxn:Circumstances ?_4.
-    ?_4 sxcxcxn:Space ?_5.
-  } UNION {
-    ?_2 sxcxcxn:Complex_process ?_6.
-    ?_6 sxcxcxn:Simple_process ?_3.
-    ?_3 sxcxcxn:Circumstances ?_4.
-    ?_4 sxcxcxn:Space ?_5.
-  } UNION {
-    ?_2 sxcxcxn:Complex_process ?_6.
-    ?_6 sxcxcxn:Other_process ?_7.
-    ?_7 sxcxcxn:Simple_process ?_3.
-    ?_3 sxcxcxn:Circumstances ?_4.
-    ?_4 sxcxcxn:Space ?_5.
-  } UNION {
-    ?_2 sxcxcxn:Complex_process ?_6.
-    ?_6 sxcxcxn:Other_process ?_7.
-    ?_7 sxcxcxn:Nominalization ?_8.
-    ?_8 sxcxcxn:Space ?_5.
-  }
-
-  # Regardless of which way we came, ?_5 is some sort of place. If
-  # we're going to get from there to location simplex data, this
-  # is how we get there:
-  {
-    ?_5 sxcxcxn:City ?_10.
-  }
-
-  # Grab the simplex data we're interested in, whichever are
-  # available (but note that "?" is equivalent to missing data)
-  OPTIONAL {
-    ?_10 ssxn:City_name ?city.
-    FILTER (?city != "?")
-  }
-
-  # And grab only those records that have at least one data point.
-  FILTER (BOUND(?city))
-}
-ORDER BY ?macro
-    :rtype: an updated mapping dict of the timemap filters.
-            It has the following bindings:
-              * `title`: the display name of the filter tag
-              * `name`: the filter name
-              * `prefix`: the prefix to the slug value
-              * `tags`: a tuple as (filtername, slug, frequency)
-    '''
-
-    for filter in filters:
-        query=query_bank.filters[filter['name']+"_freq" ]  
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query)
-        
-        # processing for calculating city frequency.
-        if filter['name']=='city':
-            freqDict = {}
-            for item in resultSet:
-                cityname = item[filter['name']].encode('ascii')
-                freqDict[cityname] = freqDict.get(cityname, 0) + 1
-            rs = sorted(freqDict.items(), key=lambda (key,value): value, reverse=True)
-            resultSet = []
-            for city,freq in rs[:20]:
-                resultSet.append({'frequency':freq, 'city':city})
-
-        tag_tuples = []
-        # Add tags and frequency as tuples to filter dict
-        for item in resultSet:
-            # Slugify the tag (lc, add prefix, replace spaces with underscore.
-            slug = slugify(filter['prefix'] + " " + item[filter['name']])
-            tag_tuples.append((item[filter['name']],slug,item['frequency']))
-
-        filter['tags'] = tag_tuples           
-         
-    return filters  
 
 class Event(ComplexObject):
     '''An Event is an object type defined by the project's private PC-ACE
@@ -669,6 +440,42 @@ class SemanticTriplet(ComplexObject):
     'conjunction or subordinating phrase linking this triplet to the next'
     is_passive = ssxn.Passive_no_agent
     'does the statement use passive voice? (typically specified only if true)'
+
+    # FIXME: this property is ridiculously complicated. before we use it
+    # agat (we're not as of 2012-04-05) we need to either break it up or
+    # index it in setup-queries
+    city = ChainedRdfPropertyField(process, 
+               UnionRdfPropertyField(
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Simple_process,
+                       sxcxcxn.Circumstances,
+                       sxcxcxn.Space
+                   ),
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Complex_process,
+                       sxcxcxn.Simple_process,
+                       sxcxcxn.Circumstances,
+                       sxcxcxn.Space
+                   ),
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Complex_process,
+                       sxcxcxn.Other_process,
+                       sxcxcxn.Simple_process,
+                       sxcxcxn.Circumstances,
+                       sxcxcxn.Space
+                   ),
+                   ChainedRdfPropertyField(
+                       sxcxcxn.Complex_process,
+                       sxcxcxn.Other_process,
+                       sxcxcxn.Nominalization,
+                       sxcxcxn.Space
+                   ),
+                   multiple=False
+               ),
+               sxcxcxn.City,
+               ssxn.City_name
+           )
+    'the city this triplet happened in'
 
     # reverse and aggregate properties
     event = ReversedRdfPropertyField(sxcxcxn.Semantic_Triplet,
@@ -734,36 +541,26 @@ class Victim(ComplexObject):
 
     rdf_type = scxn.Victim
     'the URI of the RDF Class describing victim objects'
-    
-    # TODO: rename these properties to something shorter.
 
-    # simplex fields potentially attached to a Victim
-    # Victim has a name (Brundage)
-    victim_uri = sxcxcxn.Victim
-    
-    # simplex fields potentially attached to a Victim
-    # Victim has a name (Brundage)
-    #victim_name = ssxn.Name_of_victim_Brundage
-    
-    victim_name = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Name_of_victim_Brundage)    
+    name = ssxn.Name_of_victim
+    'name of this victim'
+    alt_name = ssxn.Name_of_victim_alternative
+    'alternate name of this victim'
+    race = ssxn.Race
+    'race of the lynching victim'
+    date_of_lynching = ssxn.Date_of_lynching
+    'date the victim was lynched'
+    gender = ssxn.Gender
+    'gender of the victim'
+    alleged_crime = ssxn.Alleged_crime
+    'crime the lynching victim was accused of committing'
+    county_of_lynching = ssxn.County
+    'county the lynching took place in'
+    occupation = ssxn.Occupation
+    'occupation of the victim'
+    status_in_community = ssxn.Status_in_community
+    'status of the victim in the community'
 
-    # Victim has a county of lynching (Brundage)
-    victim_county_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.County_of_lynching_Brundage) 
-                                                
-    # Victim has an alleged crime (Brundage)        
-    victim_alleged_crime = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Alleged_crime_Brundage)    
-    
-    # Victim has a date of lynchings (Brundage)    
-    victim_date_of_lynching = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Date_of_lynching_Brundage)     
-    
-    # Victim has a race (Brundage)    
-    victim_race = ChainedRdfPropertyField(sxcxcxn.Victim_Brundage,
-                                        ssxn.Race_Brundage)       
-                    
     # reverse and aggregate properties
     macro_event = ReversedRdfPropertyField(sxcxcxn.Victim,
                                            result_type=MacroEvent,
@@ -779,3 +576,93 @@ class Victim(ComplexObject):
             data['macro_event_uri'] = macro_event.uri
 
         return data
+
+    def _all_values(self, *property_names):
+        '''Get all values for `property_names` on this object and any
+        associated :class:`BrundageVictimData`.
+        '''
+        items = []
+        for property_name in property_names:
+            if getattr(self, property_name, None):
+                items.append(getattr(self, property_name))
+        for property_name in property_names:
+            items.extend(getattr(brundage, property_name)
+                         for brundage in self.brundage
+                         if getattr(brundage, property_name, None))
+        return items
+
+    def _primary_value(self, *property_names):
+        '''Get the primary value for `property_names` for this victim. Try
+        each property names on this object. If this object doesn't have data
+        for any of them, then try each of the associated Brundage data
+        objects in turn. Ordering of Brundage data is not guaranteed, though
+        property order for each is maintained.
+        '''
+        for property_name in property_names:
+            if getattr(self, property_name, None):
+                return getattr(self, property_name)
+        brundage_values = []
+        for brundage in self.brundage:
+            for property_name in property_names:
+                if getattr(brundage, property_name, None):
+                    brundage_values.append(getattr(brundage, property_name))
+        if brundage_values:
+            if len(brundage_values) > 1:
+                logger.info('%s: multiple Brundage values for victim %s. picking arbitrarily' %
+                    (property_name, self.id))
+            return brundage_values[0]
+        logger.info('%s: no value for victim %s' % (property_name, self.id))
+
+    @property
+    def all_names(self):
+        return self._all_values('name', 'alt_name')
+    @property
+    def primary_name(self):
+        return self._primary_value('name', 'alt_name')
+
+    @property
+    def all_counties(self):
+        return self._all_values('county_of_lynching')
+    @property
+    def primary_county(self):
+        return self._primary_value('county_of_lynching')
+
+    @property
+    def all_alleged_crimes(self):
+        return self._all_values('alleged_crime')
+    @property
+    def primary_alleged_crime(self):
+        return self._primary_value('alleged_crime')
+
+    @property
+    def all_lynching_dates(self):
+        return self._all_values('date_of_lynching')
+    @property
+    def primary_lynching_date(self):
+        return self._primary_value('date_of_lynching')
+
+
+class BrundageVictimData(ComplexObject):
+    '''A BrundageVictimData is supplementary data about a victim collected
+    from an external source named Brundage.
+    '''
+
+    rdf_type = scxn.Victim_Brundage
+    'the URI of the RDF Class describing victim Brundage data'
+
+    name = ssxn.Name_of_victim_Brundage
+    'name of this victim'
+    county_of_lynching = ssxn.County_of_lynching_Brundage
+    'county the lynching took place in'
+    alleged_crime = ssxn.Alleged_crime_Brundage
+    'crime the lynching victim was accused of committing'
+    date_of_lynching = ssxn.Date_of_lynching_Brundage
+    'date the victim was lynched'
+    mob_type = ssxn.Mob_type_Brundage
+    'short textual description of the type of mob that performed the lynching'
+    race = ssxn.Race_Brundage
+    'race of the lynching victim'
+
+    victim = ReversedRdfPropertyField(sxcxcxn.Victim_Brundage,
+                                      result_type=Victim,
+                                      reverse_field_name='brundage')

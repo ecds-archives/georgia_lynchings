@@ -12,10 +12,44 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/json.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/progressive.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap_config.js"></script>
-    <script type="text/javascript" >
-    init_timemap("{% url events:map-json %}");
-    </script>
 {% endblock %}
+
+{% block endscript %}
+  {{ block.super }}
+  <script type="text/javascript">
+    var START_LOCATION = "1899-04-23"; {# date of Sam Hose lynching #}
+
+    $(document).ready(function() {
+      TimeMap.init({
+        mapId: "map",
+        timelineId: "timeline",
+        options: {
+          eventIconPath: "{{ STATIC_URL }}js/timemap/images/",
+        },
+        datasets: [
+          {
+            type: "json",
+            options: {
+              url: "{% url events:map-victim-data %}",
+              {# TimeMap infoTemplate language uses literal {{}}, so make them with templatetag #}
+              infoTemplate:
+                "<div><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
+                 <div>Date: {% templatetag openvariable %}date{% templatetag closevariable %}</div> \
+                 <div>Location: {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
+                 <div>Alleged Crime: {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
+                 <div><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a></div>"
+            }
+          }
+        ],
+        bandIntervals: [
+          Timeline.DateTime.MONTH,
+          Timeline.DateTime.DECADE
+        ],
+        scrollTo: START_LOCATION
+      });
+    });
+  </script>
+{% endblock %}{# endscript #}
 
 {% block head-style %}
    {{ block.super }}
@@ -25,19 +59,6 @@
 {% block content-title %}Lynchings in Georgia (1875-1930) Timeline Map{% endblock %}
 
 {% block content-body %}
-    {% for filter in filters %}
-        <div id="filtertitle">Filter by {{ filter.title }}:</div>
-        <form>
-            <select id="{{ filter.dropdown_id }}">
-                <option value="">All tags</option>
-                {% for tag, slug, freq in filter.tags %}
-                    <option value="{{ slug }}">{{ tag }} ({{ freq }})</option>
-                {% endfor %}
-            </select>
-        </form>
-    {% endfor %}
-
-
         {# divs for timemap display #}
         <div class="mapdisplay">
         <div id="timemap" />

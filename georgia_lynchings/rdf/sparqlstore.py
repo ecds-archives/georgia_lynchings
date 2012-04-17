@@ -26,110 +26,53 @@ class SparqlStoreException(Exception):
         return repr(self.value)
         
 class SparqlStore:
-    "The main class for communicating with a Sesame Server."
-    '''
-    result_type: [SPARQL_XML|SPARQL_JSON]
-    request_method: [GET|POST|...]
-    query: sparql query string
-    url: sparql store API URL
-    repository: sparql store repository
-    '''
+    "The main class for communicating with a Sesame SPARQL endpoint."
+
     def __init__(self, url=None, repository=None):
-        
-        if url: self.url = url
-        else:
+        if not url:
             if not hasattr(settings, 'SPARQL_STORE_API') or not settings.SPARQL_STORE_API:
-                raise SparqlStoreException('SPARQL_STORE_API must be configured in localsettings.py')
-            else: self.url = settings.SPARQL_STORE_API
-       
-        if repository: self.repository = repository
-        else:        
+                raise SparqlStoreException('SPARQL_STORE_API must be configured in settings')
+            url = settings.SPARQL_STORE_API
+        if not repository:
             if not hasattr(settings, 'SPARQL_STORE_REPOSITORY') or not settings.SPARQL_STORE_REPOSITORY:
-                raise SparqlStoreException('SPARQL_STORE_REPOSITORY must be configured in localsettings.py')
-            else: self.repository = settings.SPARQL_STORE_REPOSITORY 
+                raise SparqlStoreException('SPARQL_STORE_REPOSITORY must be configured in settings')
+            repository = settings.SPARQL_STORE_REPOSITORY
 
-        logger.debug("SesameConnection begin")    
-        logger.debug("url = [%s]" % self.url)      
-        logger.debug("repository = [%s]" % self.repository)
-
-    def getResultType(self, type):
-        if type=='SPARQL_XML':  return 'application/sparql-results+xml'
-        elif type=='SPARQL_JSON':  return 'application/sparql-results+json' 
-        elif type=='BINARY_TABLE':  return 'application/x-binary-rdf-results-table' 
-        elif type=='BOOLEAN':  return 'text/boolean'
-
-    def query(self, result_type="SPARQL_XML", request_method="POST",
-              sparql_query=None, initial_bindings={}):
+        self.url = url
+        self.repository = repository
+       
+    def query(self, sparql_query, initial_bindings={}):
         'Send a SPARQL query to the triplestore'
-        
-        logger.debug("query begin ... result_type=[%s]" % result_type)
+        logger.info('query: %r; bindings=%r' % (sparql_query, initial_bindings))
 
-        # set the content-type and accept headers 
-        headers = { 
-          'content-type': 'application/x-www-form-urlencoded',      
-          'accept': self.getResultType(result_type)
-        }
-        # create the endpoint      
-        endpoint = "%s/repositories" % (self.url)
-        logger.debug("query endpoint=[%s]" % endpoint)        
-        
-        if sparql_query:
-            # add query to params              
-            params = { 'query': sparql_query }            
-            endpoint += "/%s" % (self.repository)
-        else: 
-            '''If no query is defined, an api call will be made
-               to list the triplestore repositories available.'''
-            params = {}                            
-            request_method = 'GET'
+        query_params = dict((self._massage_into_binding(key), val)
+                            for key, val in initial_bindings.items())
+        query_params['query'] = sparql_query
 
-        # add sesame initial query bindings
-        binding_params = dict(('$' + key, val)
-                               for key, val in initial_bindings.items())
-        params.update(binding_params)
-            
-        logger.debug('query %s to %s' % (request_method, endpoint))
-        
         try:
             # send the query to the api
-            (response, content) = self.doRequest(endpoint, request_method, params, headers) 
-            logger.debug("Response Status = %s" % (response.status))
-            logger.debug("Content Length = %s" % (len(content)))                     
-                    
+            (response, content) = self._execute_remote_query(query_params)
+
             if (response.status == 200):
-                'HTML Response OK'
-                if (result_type == 'SPARQL_XML'):
-                    'XML Results Output'    
-                    logger.debug("Result type is SPARQL_XML, before call to _parse_xml_results")             
-                    return self._parse_xml_results(content)                  
-                elif (result_type == 'SPARQL_JSON'):
-                    'JSON Results Output'
-                    logger.debug("Result type is SPARQL_JSON")                  
-                    return self._parse_json_results(content)
+                results = self._parse_xml_results(content)
+                logger.debug("query returned %d results" % (len(results),))
+                return results
             else:
-                'HTML Response not OK'      
-                logger.warn('HTTP Response error code: %s' % response.status)            
-                match = re.search(r'<b>message</b> <u>([^<]+)<', content)            
-                if match:
-                    logger.warn('HTTP Response error message = [%s]' % match.group(1))      
-                match = re.search(r'<b>description</b> <u>([^<]+)<', content)            
-                if match: 
-                    error_desc='raise Exception description = [%s]' % match.group(1)
-                    logger.warn(error_desc)
-                    raise SparqlStoreException(error_desc)
-                else:
-                    logger.warn('HTTP Response failed with response code = [%s]' % response)
-                    logger.warn('raise Exception [%s ...]' % content[:50])  # only show first 30 chars
-                    raise SparqlStoreException(content)
+                logger.error('HTTP Response error code: %s' % response.status)            
+                raise self._parse_error(content)
         except httplib2.ServerNotFoundError:
             raise SparqlStoreException("Site is Down: %s" % self.url)                                             
+
+    def _massage_into_binding(self, var):
+        return '$' + (var[1:] if var.startswith('?') else var)
         
-    def doRequest(self, endpoint, request_method, params, headers):
-        (response, content) = httplib2.Http().request(endpoint, request_method, urlencode(params), headers=headers)
-        logger.debug('HTTP request endpoint=[%s]' % endpoint)
-        logger.debug('HTTP request request_method=[%s]' % request_method)  
-        logger.debug('HTTP request headers=[%s]' % headers) 
-        logger.debug('HTTP response=[%s]' % response)
+    def _execute_remote_query(self, params):
+        endpoint = "%s/repositories/%s" % (self.url, self.repository)
+        headers = {
+          'content-type': 'application/x-www-form-urlencoded',
+          'accept': 'application/sparql-results+xml',
+        }
+        (response, content) = httplib2.Http().request(endpoint, 'POST', urlencode(params), headers=headers)
         return (response, content)
 
     # parse xml results
@@ -186,35 +129,18 @@ class SparqlStore:
         '''Concatenate all of the text children for an XML node.'''
         return ''.join(child.nodeValue for child in node.childNodes)
 
-    # parse json results
+    # error handling
 
-    def _parse_json_results(self, content):
-        '''Parse SPARQL JSON query result contents into a list of result
-        objects.'''
-        body = json.loads(content)
-        bindings = body['results']['bindings']
-        return [self._parse_json_bindings(b) for b in bindings]
-
-    def _parse_json_bindings(self, bind_dict):
-        '''Parse a single SPARQL JSON result object into a dict of
-        bindings.'''
-        return dict((name, self._parse_json_binding_val(val))
-                    for name, val in bind_dict.items())
-
-    def _parse_json_binding_val(self, val_dict):
-        '''Parse the value from a single SPARQL JSON result binding as a
-        :class:`rdflib.URIRef`, :class:`rdflib.Literal`, or
-        :class:`rdflib.BNode`.'''
-        if val_dict['type'] == 'uri':
-            return URIRef(val_dict['value'])
-
-        if val_dict['type'] == 'literal':
-            datatype = val_dict.get('datatype', None)
-            language = val_dict.get('xml:lang', None)
-            value = val_dict['value']
-            return Literal(value, lang=language, datatype=datatype)
-
-        if val_dict['type'] == 'bnode':
-            return BNode(val_dict['value'])
-
-        # other types are invalid. return None for those, I guess?
+    def _parse_error(self, content):
+        '''Try to parse the server response into a sensible exception.'''
+        match = re.search(r'<b>message</b> <u>([^<]+)<', content)            
+        if match:
+            logger.error('HTTP query response error message = [%s]' % match.group(1))      
+        match = re.search(r'<b>description</b> <u>([^<]+)<', content)            
+        if match: 
+            error_desc='error description = [%s]' % match.group(1)
+            logger.debug(error_desc)
+            return SparqlStoreException(error_desc)
+        else:
+            logger.debug("couldn't find error description; error text = [%s ...]" % content[:50])  # only show first 50 chars
+            return SparqlStoreException(content)
