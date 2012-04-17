@@ -17,10 +17,10 @@
 {% block endscript %}
   {{ block.super }}
   <script type="text/javascript">
-    var START_LOCATION = "1899-04-23"; {# date of Sam Hose lynching #}
 
     $(document).ready(function() {
-      TimeMap.init({
+      var START_LOCATION = "1899-04-23"; {# date of Sam Hose lynching #}
+      var timemap = TimeMap.init({
         mapId: "map",
         timelineId: "timeline",
         options: {
@@ -47,6 +47,48 @@
         ],
         scrollTo: START_LOCATION
       });
+
+      /* configure the filter dropdowns: */
+      $('.filter').each(function() {
+        /* find the filter's select elem, and infer the item attribute name
+           that we're filtering based on the filter id */
+        var select = $(this).find('select');
+        var filter_id = $(this).attr('id');
+        if (filter_id.substring(0, 7) != 'filter_') {
+          /* this filter doesn't have an appropriate id, so bail. */
+          return;
+        }
+        var filter_attribute = filter_id.substring(7);
+
+        /* define the filter function, and apply it to the timeline and map */
+        var filter_function = function(item) {
+          return filter_timemap_item(item, filter_attribute, select);
+        };
+        timemap.addFilter("timeline", filter_function);
+        timemap.addFilter("map", filter_function);
+        /* and configure our select elem to update the timemap on change */
+        select.change(update_filtered_items);
+      });
+
+      /* Determine if a timemap item matches a defined dropdown filter.
+       *  item: a TimeMapItem
+       *  filter_option: the name of the item option field to examine
+       *  select: the select box controlling the filter
+       */
+      function filter_timemap_item(item, filter_option, select) {
+        var filter_value = select.val();
+        if (filter_value && item.opts[filter_option] != filter_value) {
+          return false;
+        }
+        return true;
+      }
+
+      /* Update items in a TimeMap, e.g., when a filter changes */
+      function update_filtered_items() {
+        timemap.filter("timeline");
+        timemap.filter("map");
+      }
+
     });
   </script>
 {% endblock %}{# endscript #}
@@ -60,6 +102,17 @@
 
 {% block content-body %}
         {# divs for timemap display #}
+        <div class="filters">
+          <div class="filter" id="filter_alleged_crime">
+            <label>Filter alleged crime
+              <select>
+                <option value="">All alleged crimes</option>
+                <option value="Murder">Murder</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
         <div class="mapdisplay">
         <div id="timemap" />
             <div id="timelinecontainer" />
