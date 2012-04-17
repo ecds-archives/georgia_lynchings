@@ -15,7 +15,7 @@ from django.utils.safestring import mark_safe
 from georgia_lynchings import geo_coordinates
 from georgia_lynchings.events.details import Details   
 from georgia_lynchings.events.forms import SearchForm, AdvancedSearchForm
-from georgia_lynchings.events.models import MacroEvent, \
+from georgia_lynchings.events.models import MacroEvent, Victim, \
     get_all_macro_events, SemanticTriplet
 
 logger = logging.getLogger(__name__)
@@ -158,64 +158,47 @@ def timemap_data(request):
     return HttpResponse(json.dumps(json_literal, indent=4),
                         mimetype='application/json')
 
-def _get_macro_events_for_timemap():
-    return MacroEvent.objects \
-           .fields('label', 'start_date', 'end_date', 
-                   'victims__county_of_lynching',
-                   'victims__alleged_crime') \
-           .all()
 
-def _macro_event_timemap_data(mac):
-    '''Get the timemap json data for a single
-    :class:`~georgia_lynchings.events.models.MacroEvent`.'''
-    # TODO: revisit json actually needed by timemap
+def timemap_victim_data(request):
+    victims = Victim.objects \
+              .fields('name', 'alt_name', 'county_of_lynching',
+                      'alleged_crime', 'date_of_lynching', 'brundage__name',
+                      'brundage__county_of_lynching',
+                      'brundage__alleged_crime',
+                      'brundage__date_of_lynching', 'macro_event') \
+              .all()
+    victim_data = [_victim_timemap_data(v) for v in victims]
+    json_literal = [d for d in victim_data
+                    if d.get('start', None) and
+                       d.get('point', None)]
+    return HttpResponse(json.dumps(json_literal, indent=4),
+                        mimetype='application/json')
 
-    # base data available (we think) for all macro events:
+def _victim_timemap_data(victim):
     data = {
-        'title': mac.label,
+        'title': victim.primary_name or 'Unnamed victim',
         'options': {
-            'county': _macro_county(mac),
-            'detail_link': mac.get_absolute_url(),
-            'tags': _macro_event_tags(mac),
-            'alleged_crime': _macro_alleged_crimes(mac),
-        },
+            'detail_link': victim.macro_event.get_absolute_url(),
+        }
     }
 
-    # add fields that might not actually be available for some macro events:
+    county = victim.primary_county
+    if county:
+        data['options']['county'] = county
+        coords = geo_coordinates.countymap.get(county, None)
+        if coords:
+            data['point'] = {'lat': coords['latitude'],
+                             'lon': coords['longitude']}
+        else:
+            logger.info('No county coordinages for %s county (victim %s)' % (county, victim.id))
+    
+    crime = victim.primary_alleged_crime
+    if crime:
+        data['options']['alleged_crime'] = crime
 
-    if mac.start_date:
-        data['start'] = mac.start_date
-        data['options']['start'] = mac.start_date
-    if mac.end_date:
-        data['end'] = mac.end_date
-
-    coords = _macro_coords(mac)
-    if coords:
-        data['point'] = { 'lat':coords['latitude'],
-                          'lon':coords['longitude']}
+    date = victim.primary_lynching_date
+    if date:
+        data['start'] = date
+        data['options']['date'] = date
 
     return data
-    
-def _macro_event_tags(mac):
-    'Get the timemap tags used for filtering a macro event.'
-    # TODO: revisit filtering
-
-    alleged_crimes = _macro_alleged_crimes(mac)
-    alleged_crime_tags = [slugify('ac ' + c) for c in alleged_crimes]
-
-    return alleged_crime_tags
-
-def _macro_coords(mac):
-    # FIXME: this is an odd format to return coordinates.
-    county = _macro_county(mac)
-    return geo_coordinates.countymap.get(county, None)
-
-def _macro_alleged_crimes(mac):
-    return [v.alleged_crime for v in mac.victims
-            if v.alleged_crime]
-
-def _macro_county(mac):
-    # FIXME: this is broken: it only returns the county for the last victim.
-    # this error is inherited from an earlier version of this code. it needs
-    # to be fixed.
-    return mac.victims[-1].county_of_lynching

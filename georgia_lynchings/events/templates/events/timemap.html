@@ -17,21 +17,24 @@
 {% block endscript %}
   {{ block.super }}
   <script type="text/javascript">
-    var START_LOCATION = "1890-07-15";
+    var START_LOCATION = "1899-04-23"; {# date of Sam Hose lynching #}
 
     $(document).ready(function() {
       TimeMap.init({
         mapId: "map",
         timelineId: "timeline",
+        options: {
+          eventIconPath: "{{ STATIC_URL }}js/timemap/images/",
+        },
         datasets: [
           {
             type: "json",
             options: {
-              url: "{% url events:map-data %}",
+              url: "{% url events:map-victim-data %}",
               {# TimeMap infoTemplate language uses literal {{}}, so make them with templatetag #}
               infoTemplate:
                 "<div><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
-                 <div>Start Date: {% templatetag openvariable %}start{% templatetag closevariable %}</div> \
+                 <div>Date: {% templatetag openvariable %}date{% templatetag closevariable %}</div> \
                  <div>Location: {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
                  <div>Alleged Crime: {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
                  <div><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a></div>"

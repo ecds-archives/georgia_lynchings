@@ -453,7 +453,7 @@ class QuerySet(object):
         along the way.'''
         # grab the field data (buried inside grouped_results) that applies
         # specifically to this object
-        field_data = field_context[context_objs]
+        field_data = field_context.get(context_objs, {})
         context_obj = context_objs[-1]
         # our goal is to grab and map all of the properties that are going
         # to be wrapped up in this object.
