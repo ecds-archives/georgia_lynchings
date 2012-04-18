@@ -11,7 +11,6 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/timemap.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/json.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/progressive.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/timemap_config.js"></script>
 {% endblock %}
 
 {% block endscript %}
@@ -20,11 +19,13 @@
 
     $(document).ready(function() {
       var START_LOCATION = "1899-04-23"; {# date of Sam Hose lynching #}
+
       var timemap = TimeMap.init({
         mapId: "map",
         timelineId: "timeline",
+        dataLoadedFunction: timemap_data_loaded,
         options: {
-          eventIconPath: "{{ STATIC_URL }}js/timemap/images/",
+          eventIconPath: "{{ STATIC_URL }}js/timemap/images/"
         },
         datasets: [
           {
@@ -44,21 +45,81 @@
         bandIntervals: [
           Timeline.DateTime.MONTH,
           Timeline.DateTime.DECADE
-        ],
-        scrollTo: START_LOCATION
+        ]
       });
 
-      /* configure the filter dropdowns: */
-      $('.filter').each(function() {
-        /* find the filter's select elem, and infer the item attribute name
-           that we're filtering based on the filter id */
-        var select = $(this).find('select');
-        var filter_id = $(this).attr('id');
+      /* Handle additional event processing after the timemap data has been
+       * loaded, but before it has been displayed. */
+      function timemap_data_loaded(timemap) {
+        timemap.scrollToDate(START_LOCATION, true);
+        init_filter_options(timemap);
+      }
+
+      /* Initialize all filter dropdown options from values in the dataset. */
+      function init_filter_options(timemap) {
+        /* Each filter is a div with class .filter and an id that indicates
+         * the field it's filtering. Initialize each of them in turn. */
+        $('.filter').each(function () {
+          var filter_attribute = get_filter_attribute($(this));
+          /* Collect the values in an object. Object property names are the
+           * field values take from the item opts (e.g., crime names for the
+           * alleged_crime filter). The value of each object property is a
+           * list of timemap items with that value. */
+          var filter_values = {};
+          timemap.eachItem(function(item) {
+            if (filter_attribute in item.opts) {
+              var filter_value = item.opts[filter_attribute];
+              if ( ! (filter_value in filter_values) ) {
+                filter_values[filter_value] = [];
+              }
+              filter_values[filter_value].push(item);
+            }
+          });
+
+          /* Get a sorted list of filter keys (the filter values that will
+           * go into the dropdown options). */
+          var filter_keys = []
+          for (var filter_value in filter_values) {
+            filter_keys.push(filter_value);
+          };
+          filter_keys.sort();
+
+          /* Get a list of html option elements based on the sorted filter
+           * keys, and put them in the filter select dropdown. */
+          var opts_html = "<option value=''>All values</option>";
+          for (var filter_idx in filter_keys) {
+            var filter_key = filter_keys[filter_idx];
+            var filter_text = filter_key + 
+                ' (' + filter_values[filter_key].length + ')';
+            var opt_html = "<option value='" + filter_key + "'>" +
+                filter_text + "</option>";
+            opts_html = opts_html + opt_html;
+          }
+          var filter_select = $(this).find('select');
+          filter_select.html(opts_html);
+        });
+      }
+
+      /* Each filter is a div with class .filter and an id that indicates
+       * the field it's filtering. Given the div, get the actual element in
+       * item options that the filter looks at. */
+      function get_filter_attribute(element) {
+        var filter_id = element.attr('id');
         if (filter_id.substring(0, 7) != 'filter_') {
           /* this filter doesn't have an appropriate id, so bail. */
           return;
         }
-        var filter_attribute = filter_id.substring(7);
+        return filter_id.substring(7);
+      }
+
+      /* Configure the filter dropdowns' handlers. Note that this happens at
+       * document ready, before timemap items have finished loading, and
+       * thus before select options have been collected from those items. */
+      $('.filter').each(function () {
+        /* find the filter's select elem, and infer the item attribute name
+           that we're filtering based on the filter id */
+        var select = $(this).find('select');
+        var filter_attribute = get_filter_attribute($(this));
 
         /* define the filter function, and apply it to the timeline and map */
         var filter_function = function(item) {
@@ -106,8 +167,7 @@
           <div class="filter" id="filter_alleged_crime">
             <label>Filter alleged crime
               <select>
-                <option value="">All alleged crimes</option>
-                <option value="Murder">Murder</option>
+                <option value="">All values</option>
               </select>
             </label>
           </div>
