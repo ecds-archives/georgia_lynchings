@@ -9,17 +9,18 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/lib/mxn/mxn.js?(googlev3)"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/lib/timeline-1.2.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/timemap.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/timemap-extensions/custom-info-bubble.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/json.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/timemap/src/loaders/progressive.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/infobox/infobox.js"></script>
 {% endblock %}
 
 {% block endscript %}
   {{ block.super }}
   <script type="text/javascript">
-
+var foo = null;
     $(document).ready(function() {
       var START_LOCATION = "1899-04-23"; {# date of Sam Hose lynching #}
-
       var timemap = TimeMap.init({
         mapId: "map",
         timelineId: "timeline",
@@ -34,11 +35,11 @@
               url: "{% url events:map-victim-data %}",
               {# TimeMap infoTemplate language uses literal {{}}, so make them with templatetag #}
               infoTemplate:
-                "<div><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
+                "<div class='info-bubble'><div><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
                  <div>Date: {% templatetag openvariable %}date{% templatetag closevariable %}</div> \
                  <div>Location: {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
                  <div>Alleged Crime: {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
-                 <div><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a></div>"
+                 <div><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a></div></div>"
             }
           }
         ],
@@ -157,6 +158,19 @@
 {% block head-style %}
    {{ block.super }}
     <link href="{{ STATIC_URL }}style/timemap.css" type="text/css" rel="stylesheet"/>
+    <style>
+        /* custom infobubble styles */
+       .info-window {
+           border-radius: 6px;
+           -webkit-border-radius: 6px;
+           padding: 0px;
+           font-size: 12px;
+       }
+       
+       .info-window div.foo {
+           margin: 5px;
+       }
+   </style>
 {% endblock %}
 
 {% block content-title %}Lynchings in Georgia (1875-1930) Timeline Map{% endblock %}
