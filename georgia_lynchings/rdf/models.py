@@ -144,6 +144,15 @@ class ComplexObject(RdfObject):
     '''has the coded data for this object been manually reviewed for
     detail accuracy?'''
 
+    @property
+    def exists(self):
+        """
+        Returns false if object is not bound to something in the triplestore.
+        """
+        if self.complex_type == self.rdf_type:
+            return True
+        return False
+
     def index_data(self):
         data = { 'uri': self.uri }
 

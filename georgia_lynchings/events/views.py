@@ -4,9 +4,11 @@ from pprint import pprint
 import sunburnt
 from urllib import quote
 import urllib2
+from datetime import datetime
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.template.defaultfilters import slugify
@@ -37,35 +39,33 @@ def articles(request, row_id):
     else:   title = "No records found"
     return render(request, 'events/articles.html',
                   {'resultSet': resultSet, 'row_id':row_id, 'title':title})
-                  
-def details(request, row_id):
-    '''
-    List details for a
-    :class:`~georgia_lynchings.events.models.MacroEvent`.
-    
-    :param row_id: the numeric identifier for the 
-                   :class:`~georgia_lynchings.events.models.MacroEvent`.
-    '''
-    
-    # Get the details associate with this macro event.
-    # FIXME: The details module is deprecated. Pass the MacroEvent model
-    # directly to the template and let it grab the information it needs.
-    details = Details(row_id)
-    results = details.get()
 
-    #Article data
-    event = MacroEvent(row_id)
-    article_data = event.get_articles()
+def detail(request, row_id):
+    """
+    Renders a view for a specific macro event of row_id.
 
-    if results:
-        title = row_id
-        results['articles_link'] = reverse('events:articles', kwargs={'row_id': row_id})          
-    else:   title = "No records found"  
-     
-    return render(request, 'events/details.html',
-                  {'results': results, 'row_id':row_id, 'title':title, 'article_data':article_data})
+    :param row_id:  Id of the macroevent.
 
-    
+    """
+    try:
+        event = MacroEvent.objects.get(row_id)
+    except ObjectDoesNotExist:
+        raise Http404
+    victim_names = None
+    if event.victims:
+        victim_names = [victim.primary_name for victim in event.victims]
+        county_names = set([victim.primary_county for victim in event.victims])
+        dates = sorted(set([victim.primary_lynching_date for victim in event.victims]))
+        if len(dates) > 1:
+            dates = [dates[0], dates[-1]]
+
+    return render(request, 'events/details.html',{
+        'event': event,
+        'victim_names': victim_names,
+        'county_names': county_names,
+        'dates': sorted(dates),
+    })
+
 def home(request):
     template = 'index.html'
     return render(request, template, {'search_form': SearchForm()})
@@ -203,7 +203,9 @@ def _victim_timemap_data(victim):
 
     date = victim.primary_lynching_date
     if date:
-        data['start'] = date
-        data['options']['date'] = date
+        # strftime can't reliably do dates before 1900
+        date_str = "%s-%s-%s" % (date.year, date.month, date.day)
+        data['start'] = date_str
+        data['options']['date'] = date_str
 
     return data

@@ -1,5 +1,8 @@
 from collections import defaultdict
 import logging
+
+from django.core.exceptions import ObjectDoesNotExist
+
 from rdflib import Variable, RDF
 from georgia_lynchings.rdf.fields import ChainedRdfPropertyField
 from georgia_lynchings.rdf.sparql import SelectQuery, GraphPattern
@@ -99,6 +102,18 @@ class QuerySet(object):
         # method to make this class more approachable to people familiar
         # with django models.
         return self
+
+    def get(self, id):
+        '''
+        Get a single instance of a specific object or raise a DoesNotExist error if
+        appropriate.
+
+        :param id: Id number (usually row number) used in the object.
+        '''
+        cx_cls = self.root_class(id)
+        if cx_cls.exists:
+            return cx_cls
+        raise ObjectDoesNotExist("No %s exists with id %s." % (cx_cls.__class__.__name__, id))
 
     def fields(self, *fields):
         '''Pre-fetch the named fields (from among fields defined on the

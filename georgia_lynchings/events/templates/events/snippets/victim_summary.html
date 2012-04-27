@@ -1,0 +1,22 @@
+{% comment %}
+Template snippet use to display summary information about a lynching victim.
+{% endcomment %}
+<div id="victim_{{ victim.id }}" class="victim">
+    <div class="summary">
+    <strong></strong><span alt="{{ victim.all_names|join:", " }}">
+        {{ victim.primary_name|default:"Unnamed" }}
+    </span></strong>
+    {% if victim.primary_county %}
+        lynched in {{ victim.primary_county }} County
+    {% endif %}
+    {% if victim.primary_lynching_date %}
+        on {{ victim.primary_lynching_date|date:"l, F jS Y" }}
+    {% endif %}
+    {% if victim.primary_alleged_crime %}
+        after being accused of {{ victim.primary_alleged_crime }}
+    {% endif %}
+    </div>
+    <div class="description">
+    {{ victim.race }} {{ victim.gender }} {{ victim.age }}
+    </div>
+</div>

@@ -1,6 +1,7 @@
 from collections import defaultdict
 import logging
 from urllib import quote
+from datetime import datetime
 
 from django.db.models import permalink
 from django.template.defaultfilters import slugify
@@ -32,7 +33,7 @@ class MacroEvent(ComplexObject):
     
     @permalink
     def get_absolute_url(self):
-        return ('events:details', [str(self.id)])
+        return ('events:detail', [str(self.id)])
 
     # NOTE: Fields for complex subobjects are defined on the subobjects
     # themselves to simplify syntax. For example, see Event.macro_event,
@@ -639,7 +640,10 @@ class Victim(ComplexObject):
         return self._all_values('date_of_lynching')
     @property
     def primary_lynching_date(self):
-        return self._primary_value('date_of_lynching')
+        if not self._primary_value('date_of_lynching'):
+            return None
+        date = datetime.strptime(self._primary_value('date_of_lynching'), "%Y-%m-%d").date()
+        return date
 
 
 class BrundageVictimData(ComplexObject):

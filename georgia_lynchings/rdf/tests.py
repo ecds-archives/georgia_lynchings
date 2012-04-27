@@ -11,7 +11,7 @@ import rdflib
 from georgia_lynchings.rdf.ns import ix_mbd, scxn, sxcxcxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
-from georgia_lynchings.rdf.management.commands import run_sparql_query
+#from georgia_lynchings.rdf.management.commands import run_sparql_query
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
         ReversedRdfPropertyField, ChainedRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
