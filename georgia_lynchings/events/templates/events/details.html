@@ -10,9 +10,15 @@
 {% endblock %}
 
 {% block content-body %}
-    <div id="victim_list"></div><strong>Victims</strong>
+    <div id="victim_list"><strong>Victims</strong>
     {% for victim in event.victims %}
         {% include "events/snippets/victim_summary.html" %}
     {% endfor %}
     </div>
+
+<div class="articles">
+    {% for article in articles %}
+        {% include "articles/snippets/article_block.html" %}
+    {% endfor %}
+</div>
 {% endblock %}

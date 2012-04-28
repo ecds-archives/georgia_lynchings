@@ -5,7 +5,9 @@ import sunburnt
 from urllib import quote
 import urllib2
 from datetime import datetime
+from operator import __or__ as OR
 
+from django.db.models import Q
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
@@ -19,6 +21,7 @@ from georgia_lynchings.events.details import Details
 from georgia_lynchings.events.forms import SearchForm, AdvancedSearchForm
 from georgia_lynchings.events.models import MacroEvent, Victim, \
     get_all_macro_events, SemanticTriplet
+from georgia_lynchings.articles.models import Article
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +62,15 @@ def detail(request, row_id):
         if len(dates) > 1:
             dates = [dates[0], dates[-1]]
 
+    q_list = [Q(identifier=document.uri) for document in event.documents]
+    articles = Article.objects.filter(reduce(OR, q_list))
+
     return render(request, 'events/details.html',{
         'event': event,
         'victim_names': victim_names,
         'county_names': county_names,
         'dates': sorted(dates),
+        'articles': articles,
     })
 
 def home(request):
