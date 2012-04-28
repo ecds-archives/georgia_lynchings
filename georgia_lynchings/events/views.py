@@ -73,14 +73,19 @@ def home(request):
 def macro_events(request):
     '''List all macro events, provide article count.'''
 
-    # FIXME: get_all_macro_events() is deprecated. we need code in this
-    # module to grab MacroEvent.objects.all() with any .fields() we want to
-    # prepopulate.
-    results = get_all_macro_events()
-    if results:   title = "%d Macro Events" % len(results)
-    else:   title = "No records found"      
-    return render(request, 'events/macro_events.html',
-                  {'results': results, 'title':title}) 
+
+    events = MacroEvent.objects.fields(
+        'start_date',
+        'victims__name', 'victims__alt_name', 'victims__county_of_lynching',
+        'victims__alleged_crime', 'victims__date_of_lynching', 'victims__brundage__name',
+        'victims__brundage__county_of_lynching',
+        'victims__brundage__alleged_crime',
+        'victims__brundage__date_of_lynching',
+        ).all()
+
+    return render(request, 'events/list_events.html', {
+        'events': events,
+    })
 
 def search(request):
     '''Search for a term in macro events, and provide a list of matching

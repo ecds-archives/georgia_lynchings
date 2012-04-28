@@ -1,0 +1,16 @@
+{% extends "page_base.html" %}
+
+{% block head-title %}List{% endblock %}
+
+{% block content-title %}Lynchings in Georgia{{ title }}{% endblock %}
+
+{% block content-body %}
+    {% for event in events %}
+       <div><a href="{% url events:detail event.id %}">
+        Lynching{{ event.victims|pluralize }} of
+       {% for victim in event.victims %}
+            {{ victim.primary_name|default:"Unknown" }}{% if not forloop.last %}, {% endif %}
+       {% endfor %}</a>
+       </div>
+    {% endfor %}
+{% endblock %}
