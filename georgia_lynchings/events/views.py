@@ -53,11 +53,17 @@ def detail(request, row_id):
     try:
         event = MacroEvent.objects.get(row_id)
     except ObjectDoesNotExist:
-        raise Http404
+        raise Http404 # Raise 404 if no MacroEvent with that ID in the triplestore
+
     victim_names = None
+    map_markers = []
     if event.victims:
         victim_names = [victim.primary_name for victim in event.victims]
         county_names = set([victim.primary_county for victim in event.victims])
+        for county in county_names: # Used for map panel markers
+            geo = geo_coordinates.countymap.get(county, None)
+            if geo:
+                map_markers.append({"county": county, "lat": geo['latitude'], "long": geo['longitude']})
         dates = sorted(set([victim.primary_lynching_date for victim in event.victims]))
         if len(dates) > 1:
             dates = [dates[0], dates[-1]]
@@ -71,6 +77,7 @@ def detail(request, row_id):
         'county_names': county_names,
         'dates': sorted(dates),
         'articles': articles,
+        'map_markers': map_markers,
     })
 
 def home(request):

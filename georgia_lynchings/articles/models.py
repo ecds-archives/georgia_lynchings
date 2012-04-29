@@ -44,7 +44,7 @@ class Article(models.Model):
     """
     help = {
         'title': 'Title of news article.',
-        'creator': 'Article Author name(s), seperate by colon if multipel.',
+        'creator': 'Article Author name(s), seperate by colon if multiple.',
         'subject': '',
         'description':  'Description about the article itself.',
         'publisher': 'Title of the newspaper article was published in.',

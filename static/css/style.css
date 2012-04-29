@@ -1,5 +1,7 @@
 /* ===== Initializr Styles =====================================================
-   Author: Jonathan Verrecchia - vereki.com/initializr/responsive-template
+   Modified by:  Scott Turnbull
+   based on:
+    Author: Jonathan Verrecchia - vereki.com/initializr/responsive-template
    ========================================================================== */
 
 body{ font:14px/24px Georgia, Helvetica, Helvetica Neue, Arial; }
@@ -9,6 +11,10 @@ body{ font:14px/24px Georgia, Helvetica, Helvetica Neue, Arial; }
 	margin:0 3%;
 }
 
+aside a {
+    color: #508e52;
+    text-decoration: none;
+}
 /* ===================
     ALL: Black Green
    =================== */
@@ -29,6 +35,41 @@ body{ font:14px/24px Georgia, Helvetica, Helvetica Neue, Arial; }
 
 ::-moz-selection { background: #000000; color: #fff; text-shadow: none; }
 ::selection      { background: #000000; color: #fff; text-shadow: none; }
+
+/*
+   ==============
+   Aside Block
+   ==============
+*/
+aside div.article_block {
+    display: block;
+    /* border: 1px solid green; */
+    padding: 10px 0;
+    margin: 5px 0;
+    font-size: 85%;
+    clear: both;
+}
+
+aside div.article_block img {
+    margin-right: 10px;
+}
+
+/*
+   ===============
+    Summary Block
+   ===============
+*/
+.factlist {
+    padding: .5em 1em;
+    color: #f5f5f5;
+    background-color: #404040;
+    background-size: 100%;
+    border-radius: 22px;
+}
+.factlist h2 {
+    margin: 0;
+    margin-top: .5em;
+}
 
 /* ==============
     MOBILE: Menu
@@ -73,7 +114,10 @@ nav a:hover{
 
 #main aside{
 	color:white;
-	padding:0px 5% 10px;
+	padding: 0px 5% 10px;
+}
+#main aside.articles {
+    padding: 0px 2% 10px;
 }
 
 #footer-container footer{
@@ -177,6 +221,20 @@ nav a:hover{
 		width:1026px; /* 1140px - 10% for margins */
 		margin:0 auto;
 	}
+}
+
+/*
+   ======================
+   Map Canvas Stuff
+   ======================
+*/
+#victim_map {
+    display: block;
+    clear: both;
+    padding-top: 1em;
+}
+#map_canvas {
+    height: 200px;
 }
 
 /* =============================================================================

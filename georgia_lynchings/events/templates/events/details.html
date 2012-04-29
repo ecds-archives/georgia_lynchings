@@ -2,6 +2,22 @@
 
 {% block head-title %}{{ victim_names|join:", "|default:event.id }}{% endblock %}
 
+{% block head-scripts %}
+        {{ block.super }}
+<script type="text/javascript"
+        src="http://maps.googleapis.com/maps/api/js?key=AIzaSyD3iM2lzxphBo5JWGKuv4mvLtUUGXnuu7E&sensor=false">
+</script>
+<script type="text/javascript" src="{{ STATIC_URL }}/js/victim_map_display.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        initializeMap();
+        {% for marker in map_markers %}
+        addMarker(new google.maps.LatLng({{ marker.lat }}, {{marker.long }}));
+        {% endfor %}
+    });
+</script>
+{% endblock %}
+
 {% block content-title %}
     Lynching{{ victim_names|pluralize }} of {{ victim_names|join:", "}}
     {% if dates %}
@@ -10,15 +26,31 @@
 {% endblock %}
 
 {% block content-body %}
-    <div id="victim_list"><strong>Victims</strong>
-    {% for victim in event.victims %}
-        {% include "events/snippets/victim_summary.html" %}
-    {% endfor %}
+    <div id="victim_list" class="factlist">
+        <h2>Victims</h2>
+        {% for victim in event.victims %}
+            {% include "events/snippets/victim_summary.html" %}
+        {% endfor %}
     </div>
 
-<div class="articles">
-    {% for article in articles %}
-        {% include "articles/snippets/article_block.html" %}
-    {% endfor %}
-</div>
+{% endblock %}
+
+{% block aside %}
+<aside class="articles">
+    <section id="news_articles">
+        <header>
+            <h3>Newspaper Articles</h3>
+        </header>
+        {% for article in articles %}
+            {% include "articles/snippets/article_block.html" %}
+        {% endfor %}
+    </section>
+    <section
+    <section id="victim_map">
+        <header>
+            <h3>County Location{{ event.victims|pluralize }}</h3>
+        </header>
+        <div id="map_canvas"></div>
+    </section>
+</aside>
 {% endblock %}
