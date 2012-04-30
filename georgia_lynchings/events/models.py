@@ -2,15 +2,11 @@ import logging
 from datetime import datetime
 
 from django.db.models import permalink
-from rdflib import Variable
 
-from georgia_lynchings import query_bank
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
     ReversedRdfPropertyField, ChainedRdfPropertyField, UnionRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
 from georgia_lynchings.rdf.ns import scxn, ssxn, sxcxcxn, ix_mbd, dcx
-from georgia_lynchings.rdf.sparql import SelectQuery
-from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
 logger = logging.getLogger(__name__)
 
@@ -36,193 +32,6 @@ class MacroEvent(ComplexObject):
     # themselves to simplify syntax. For example, see Event.macro_event,
     # below, which adds an "events" property to MacroEvent with its
     # reverse_field_name.
-
-    def index_data(self):
-        '''Return a dictionary of index terms for this macro event.
-        `sunburnt <http://opensource.timetric.com/sunburnt/>`_ expects a
-        dictionary whose keys are solr field names and whose values are the
-        values to index for those terms. These values can be single values
-        or lists. Lists will be indexed in solr as multi-valued fields.
-        '''
-        data = super(MacroEvent, self).index_data().copy()
-
-        # FIXME: get this info from model properties and querysets instead
-        # of hand-maintained query_bank queries
-        
-        # victims new format (mutliple victims and assoc. properties)
-        data['victim_uri'] = []        
-        data['victim_name_brundage'] = []
-        data['victim_county_brundage'] = []
-        data['victim_lynchingdate_brundage'] = []
-        data['victim_race_brundage'] = []
-        data['victim_allegedcrime_brundage'] = []
-        # NOTE: victim age as qualitative_age and exact_age are available
-        victim_rows = self.get_victim_data()
-        if len(victim_rows) > 1: 
-            logger.debug("Multiple [%d] Victims for event[%s]" % (len(victim_rows), victim_rows[0]['macro']))
-        for victim_row in victim_rows:
-            if 'victim' in victim_row:
-                data['victim_uri'].append(victim_row['victim'])            
-            if 'vname_brdg' in victim_row:
-                data['victim_name_brundage'].append(victim_row['vname_brdg'])
-            if 'vcounty_brdg' in victim_row:
-                data['victim_county_brundage'].append(victim_row['vcounty_brdg'])
-            if 'vlydate_brdg' in victim_row:
-                data['victim_lynchingdate_brundage'].append(victim_row['vlydate_brdg'])
-            if 'vrace_brdg' in victim_row:
-                data['victim_race_brundage'].append(victim_row['vrace_brdg'])
-            if 'victim_allegedcrime_brundage' in victim_row:
-                data['victim_allegedcrime_brundage'].append(victim_row['victim_allegedcrime_brundage'])
-
-        if self.start_date:
-            data['min_date'] = self.start_date
-        if self.end_date:
-            data['max_date'] = self.end_date
-
-        details = self.get_details()
-        if details:
-            data = dict(data.items() + details.items())            
-
-        cities = self.get_cities()
-        if cities:
-            data['city'] = cities            
-
-        data['triplet_label'] = [row['trlabel'] for row in self.get_triplets()]
-
-        # for self, get all its participants, and prepopulate several fields as
-        # part of the query. use these to populate participant index_data
-        participants = self.objects.events.triplets.participants.fields(
-                'actor_name', 'last_name', 'qualitative_age', 'race', 'gender', 'residence')
-        data['participant_uri'] = [part.uri for part in participants]
-        data['participant_last_name'] = [part.last_name for part in participants if part.last_name]
-        data['participant_qualitative_age'] = [part.qualitative_age for part in participants if part.qualitative_age]
-        data['participant_race'] = [part.race for part in participants if part.race]
-        data['participant_gender'] = [part.gender for part in participants if part.gender]
-        data['participant_actor_name'] = [part.actor_name for part in participants if part.actor_name]
-        data['participant_residence'] = [part.residence for part in participants if part.residence]
-
-        return data
-
-    # DEPRECATED. Used only by index_data. If you need cities, use
-    # QuerySets.
-    def get_cities(self):
-        '''Get all cities associated with this macro event.
-
-        :rtype: a list of city names associated with this macro event,
-                expressed as :class:`rdflib.Literal` objects (a subclass of
-                ``unicode``)
-        '''
-
-        query=query_bank.events['cities']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                                       
-        # return the list of cities
-        return [result['city'] for result in resultSet]
-        
-    # DEPRECATED. Used only by index_data. If you need these details, then
-    # get them from the object. If you want to query them all at once, use
-    # QuerySets.
-    def get_details(self):
-        '''Get all details associated with this macro event.
-
-        :rtype: a mapping list of the type 
-                It has the following bindings:               
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `event`: the uri of the event associated with this article                  
-                  * `evlabel`: the event label
-                  * `event_type`: the event type
-                  * `outcome`: the name of the outcome                  
-                  * `reason`: the name of the reason
-        '''                
-        query=query_bank.events['details']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})
-
-        detailResult={}
-        # return a unique list of event_types, reasons and outcomes
-        for item in ['event_type', 'reason', 'outcome']:
-            try:
-                detailResult[item] = set([result[item] for result in resultSet])
-            except:
-                logger.debug("%s is not defined for macro event %s" % (item, self.uri.n3()))
-
-        # return the list of cities
-        return detailResult  
-        
-    # DEPRECATED. Used only by index_data(). If you need triplets, then use
-    # self.objects.events.triplets.
-    def get_triplets(self):
-        '''Get the semantic triplets related to this macro event.
-
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It returns one row per triplet associated with this Macro
-                Event, with the following bindings:
-                  * `triplet`: the URI of the triplet
-                  * `trlabel`: the label of the triplet
-                  * `event`: the URI of the Event containing the triplet
-                  * `evlabel`: the label of that Event
-                  * `melabel`: the label of this Macro Event
-
-                The matches are ordered by `event` and case-folded
-                `trlabel`.
-        '''
-        query=query_bank.events['triplets']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                                       
-        return resultSet
-
-        
-    # DEPRECATED. Used only by index_data(). If you need information about
-    # victims then loop through self.victims. If you want to query it more
-    # efficiently, use self.objects.victims.fields(...)
-    def get_victim_data(self):
-        '''Get the victim data related to this macro event.
-
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.rdf.sparqlstore.SparqlStore.query`.
-                It returns one row per victim associated with this Macro
-                Event, with the following bindings:              
-                  * `vname_brdg`: the (Brundage) name of the Victim
-                  * `vcounty_brdg`: the (Brundage) county of the Victim
-                  * `vallegedcrime_brdg`: the (Brundage) alleged crime of the Victim
-                  * `vlydate_brdg`: the (Brundage) lynching date of the Victim
-                  * `vrace_brdg`: the (Brundage) race of the Victim                                                                       
-                  * `victim`: the URI of the Victim
-                  * `macro`: the URI of this Macro Event
-        '''
-        store = SparqlStore()
-        resultSet = store.query(sparql_query=get_victim_query(), 
-                             initial_bindings={'macro': self.uri.n3()})
-        return resultSet        
-    
-# DEPRECATED. Used only by MacroEvent.get_victim_data(). Use QuerySets to
-# generate queries programmatically.
-def get_victim_query():
-    '''Get the query to retrieve victim information.
-
-    :rtype: a unicode string of the SPARQL query
-
-    '''
-    q = SelectQuery(results=['macro', 'victim', 'vname_brdg', \
-        'vlydate_brdg', 'vcounty_brdg', 'victim_allegedcrime_brundage'])
-    q.append((Variable('macro'), sxcxcxn.Victim, Variable('victim')))
-    q.append((Variable('victim'), sxcxcxn.Victim_Brundage, Variable('victim_Brundage')))   
-    q.append((Variable('victim_Brundage'), ssxn.Date_of_lynching_Brundage, \
-        Variable('vlydate_brdg')), optional=True)
-    q.append((Variable('victim_Brundage'), ssxn.County_of_lynching_Brundage, \
-        Variable('vcounty_brdg')), optional=True)
-    q.append((Variable('victim_Brundage'), ssxn.Alleged_crime_Brundage, \
-        Variable('victim_allegedcrime_brundage')), optional=True)
-    q.append((Variable('victim_Brundage'), ssxn.Name_of_victim_Brundage, \
-        Variable('vname_brdg')), optional=True)
-    q.append((Variable('victim_Brundage'), ssxn.Race_Brundage, \
-        Variable('vrace_brdg')), optional=True)
-
-    return unicode(q)  
 
 
 class Event(ComplexObject):
@@ -394,16 +203,6 @@ class Victim(ComplexObject):
                                            result_type=MacroEvent,
                                            reverse_field_name='victims')
 
-    # FIXME: do we need to index victims? pretty sure we're not searching
-    # them.
-    def index_data(self):
-        data = super(Victim, self).index_data().copy()
-
-        macro_event = self.macro_event
-        if macro_event:
-            data['macro_event_uri'] = macro_event.uri
-
-        return data
 
     def _all_values(self, *property_names):
         '''Get all values for `property_names` on this object and any
