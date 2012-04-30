@@ -186,9 +186,13 @@ var foo = null;
            margin: 5px;
        }
        
-	   div#details a img.close {
-		   width:20px;
+	   div#details img.close {
+		   float: right;
+           margin: 5px;
+           width:20px;
 		   height:20px;
+           cursor: hand;
+           cursor: pointer;
 	   }
 	   
 	   #details #detail-content {
@@ -230,9 +234,7 @@ var foo = null;
                 <div id="map">Loading Map</div>
             </div>
             <div id="details" class="clearfix">
-				<a href="javascript:TimeMapItem.closeInfoWindowBasic();">
-					<img class="close" src="{{ STATIC_URL }}images/close.png">
-				</a>
+				<img class="close" src="{{ STATIC_URL }}images/close.png">
 				<div id="detail-content">
 				</div>	
                 <div class="clearfix"></div>
