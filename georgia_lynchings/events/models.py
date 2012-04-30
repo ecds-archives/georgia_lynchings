@@ -1,10 +1,7 @@
-from collections import defaultdict
 import logging
-from urllib import quote
 from datetime import datetime
 
 from django.db.models import permalink
-from django.template.defaultfilters import slugify
 from rdflib import Variable
 
 from georgia_lynchings import query_bank
@@ -106,54 +103,8 @@ class MacroEvent(ComplexObject):
 
         return data
 
-    # methods for wrapping a MacroEvent around a URI and querying utility
-    # data about it. For now these methods have hard-coded SPARQL, but we
-    # hope in time to be able to generate these queries from the RDF
-    # properties above.
-
-    # TODO: consider moving the PDF documents to /static/documents so that it can work with runserver and apache
-    # DEPRECATED. Not sure if this logic belongs in events or articles, but
-    # it should be returning other models, not dictionaries of data. using
-    # QuerySets (via self.objects) for sparql queries or django query sets
-    # (Articles.objects) for traditional django models will accomplish this.
-    def get_articles(self, clean=True):
-        '''Get all articles associated with this macro event, along with the
-        particular events that the articles are attached to.
-
-        :param clean: when True(default) will modify docpath and add docpath_link to make results more html friendly.
-
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:
-
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `event`: the uri of the event associated with this article
-                  * `evlabel`: the event label
-                  * `dd`: the uri of the article
-                  * `docpath`: a relative path to the document data, if clean=True it is changed to the filename only
-                  * `docpath_link`:  only present when clean=True, relative path to the document that is quoted and
-                    all back slashes have been changed to forward slashes
-
-                The matches are ordered by `event` and `docpath`.
-        '''
-
-        query=query_bank.events['articles']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})
-        # return the dictionary resultset of the query
-
-        if clean:
-            for result in resultSet:
-                # Clean up data, add "n/a" if value does not exist
-                if 'docpath' in result.keys():
-                    # TODO find a better way to do this
-                    result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
-                    result['docpath'] = result['docpath'][10:]
-        return resultSet
-        
-    # DEPRECATED. Used only by deprecated events.details and by index_data.
-    # If you need cities, use QuerySets.
+    # DEPRECATED. Used only by index_data. If you need cities, use
+    # QuerySets.
     def get_cities(self):
         '''Get all cities associated with this macro event.
 
@@ -169,41 +120,9 @@ class MacroEvent(ComplexObject):
         # return the list of cities
         return [result['city'] for result in resultSet]
         
-    # DEPRECATED. Used only by deprecated events.details and by index_data.
-    # If you need date ranges, use QuerySets.
-    def get_date_range(self):
-        '''Get minimum and maximum date range associated with this macro event.
-
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:
-                  * `mindate`: the minimum date related to this event
-                  * `maxdate`: the maximum date related to this event                  
-                  * `event`: the uri of the event associated with this article                  
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `evlabel`: the event label
-
-                The matches are ordered by `event` and `docpath`.
-        '''
-
-        query=query_bank.events['date_range']
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                                       
-        # return a dictionary with min and max keys
-        if resultSet:
-            datedict = {}        
-            for result in resultSet:
-                if 'mindate' in result:
-                    datedict['mindate']=result['mindate']
-                    datedict['maxdate']=result['maxdate']
-                else: return None
-            return datedict
-        else: return None
-        
-    # DEPRECATED. Used only by deprecated events.details and by index_data.
-    # If you need these details, then get them from the object. If you want
-    # to query them all at once, use QuerySets.
+    # DEPRECATED. Used only by index_data. If you need these details, then
+    # get them from the object. If you want to query them all at once, use
+    # QuerySets.
     def get_details(self):
         '''Get all details associated with this macro event.
 
@@ -231,31 +150,9 @@ class MacroEvent(ComplexObject):
 
         # return the list of cities
         return detailResult  
-                
-    # DEPRECATED. Used only by deprecated events.details. If you need
-    # events, then use self.events. If you want to query them all at once,
-    # use QuerySets (e.g., self.objects.events)
-    def get_events(self):
-        '''Get the events associated with this macro event.
-
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:               
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `event`: the uri of the event associated with this article                  
-                  * `evlabel`: the event label
-        '''                
-        query=query_bank.events['macro']
-        ss=SparqlStore()
-        results = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})
-
-        # return the dictionary results of the details information          
-        return results
         
-    # DEPRECATED. Used only by deprecated get_triplets_by_event() (which is
-    # used by deprecated module events.details) and by index_data(). If you
-    # need triplets, then use self.objects.events.triplets.
+    # DEPRECATED. Used only by index_data(). If you need triplets, then use
+    # self.objects.events.triplets.
     def get_triplets(self):
         '''Get the semantic triplets related to this macro event.
 
@@ -278,54 +175,10 @@ class MacroEvent(ComplexObject):
                              initial_bindings={'macro': self.uri.n3()})                                       
         return resultSet
 
-    # DEPRECATED. Used only by deprecated module events.details.
-    # If you need triplets by event then loop through self.events and then
-    # through ev.triplets. If you want to query them all at once then use
-    # self.objects.events.fields(triplets)
-    def get_triplets_by_event(self):
-        triplets = self.get_triplets()
-        events = defaultdict(list)
-        for triplet in triplets:
-            events[triplet['evlabel']].append(triplet['trlabel'])
-        return events
-
-    # Get unique participant (of type subject or object) data
-    # DEPRECATED. Used only by deprecated module events.details. If you need
-    # information about statements and their participants, loop through
-    # self.objects.events.triplets.participants.
-    def get_statement_data(self, stmt_type):
-        '''Get unique data about the particpant (sentence object or subject) 
-        of statements related to this macro event.
         
-        :param stmt_type: a type of participant 'uparto' or 'uparts' for
-                unique participant subject or object.        
-
-        :rtype: a mapping list of the type returned by
-                :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-                It has the following bindings:
-                  * `fname`: fname of this actor                 
-                  * `lname`: lname of this actor 
-                  * `qualitative_age`: qualitative_age of this actor                                   
-                  * `race`: race of this actor 
-                  * `gender`: gender of this actor 
-                  * `name_of_indivd_actor`: Name of Individual Actor              
-                  * `event`: the uri of the event associated with this article                  
-                  * `melabel`: the :class:`MacroEvent` label
-                  * `evlabel`: the event label
-                  * `macro`: the macro event ID
-        '''
-
-        query=query_bank.events[stmt_type]
-        ss=SparqlStore()
-        resultSet = ss.query(sparql_query=query, 
-                             initial_bindings={'macro': self.uri.n3()})                                       
-        # return a dictionary of the resultSet
-        return resultSet        
-        
-    # DEPRECATED. Used only by deprecated module events.details and by
-    # index_data(). If you need information about victims then loop through
-    # self.victims. If you want to query it more efficiently, use
-    # self.objects.victims.fields(...)
+    # DEPRECATED. Used only by index_data(). If you need information about
+    # victims then loop through self.victims. If you want to query it more
+    # efficiently, use self.objects.victims.fields(...)
     def get_victim_data(self):
         '''Get the victim data related to this macro event.
 
@@ -345,32 +198,6 @@ class MacroEvent(ComplexObject):
         resultSet = store.query(sparql_query=get_victim_query(), 
                              initial_bindings={'macro': self.uri.n3()})
         return resultSet        
-
-# DEPRECATED. Used only by events.views.macro_events. If you need macro
-# event details, use MacroEvent.objects.all() with any .fields() you want to
-# prepopulate.
-def get_all_macro_events():
-    '''Get a list of macro events along with number of linked articles.
-
-    :rtype: a mapping list of the type returned by
-            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-            It has the following bindings:
-
-              * `macro`: the uri of the associated macro event
-              * `melabel`: the macro event label
-              * `articleTotal`: article count.
-
-    '''
-    query=query_bank.events['all']    
-    ss=SparqlStore()
-    resultSet = ss.query(sparql_query=query)
-    # create a link for the macro event articles
-    for result in resultSet:
-        row_id = result['macro'].split('#r')[1]
-        result['details_link'] = '%s/details' % row_id        
-        result['articles_link'] = '%s/articles' % row_id
-    # return the dictionary resultset of the query          
-    return resultSet
     
 # DEPRECATED. Used only by MacroEvent.get_victim_data(). Use QuerySets to
 # generate queries programmatically.
