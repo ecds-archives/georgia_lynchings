@@ -19,11 +19,6 @@ class MacroEvent(ComplexObject):
     rdf_type = scxn.Macro_Event
     'the URI of the RDF Class describing macro event objects'     
 
-    start_date = ix_mbd.mindate
-    'the earliest date associated with this macro event'
-    end_date = ix_mbd.maxdate
-    'the latest date associated with this macro event'
-    
     @permalink
     def get_absolute_url(self):
         return ('events:detail', [str(self.id)])
@@ -77,42 +72,6 @@ class SemanticTriplet(ComplexObject):
     'conjunction or subordinating phrase linking this triplet to the next'
     is_passive = ssxn.Passive_no_agent
     'does the statement use passive voice? (typically specified only if true)'
-
-    # FIXME: this property is ridiculously complicated. before we use it
-    # agat (we're not as of 2012-04-05) we need to either break it up or
-    # index it in setup-queries
-    city = ChainedRdfPropertyField(process, 
-               UnionRdfPropertyField(
-                   ChainedRdfPropertyField(
-                       sxcxcxn.Simple_process,
-                       sxcxcxn.Circumstances,
-                       sxcxcxn.Space
-                   ),
-                   ChainedRdfPropertyField(
-                       sxcxcxn.Complex_process,
-                       sxcxcxn.Simple_process,
-                       sxcxcxn.Circumstances,
-                       sxcxcxn.Space
-                   ),
-                   ChainedRdfPropertyField(
-                       sxcxcxn.Complex_process,
-                       sxcxcxn.Other_process,
-                       sxcxcxn.Simple_process,
-                       sxcxcxn.Circumstances,
-                       sxcxcxn.Space
-                   ),
-                   ChainedRdfPropertyField(
-                       sxcxcxn.Complex_process,
-                       sxcxcxn.Other_process,
-                       sxcxcxn.Nominalization,
-                       sxcxcxn.Space
-                   ),
-                   multiple=False
-               ),
-               sxcxcxn.City,
-               ssxn.City_name
-           )
-    'the city this triplet happened in'
 
     # reverse and aggregate properties
     event = ReversedRdfPropertyField(sxcxcxn.Semantic_Triplet,
