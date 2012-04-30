@@ -1,24 +1,31 @@
 TimeMapItem.openInfoWindowBasic = function() {
     console.log(this);
-    boxText = "<div class='info-window'>" + this.getInfoHtml() + "</div>";
-    var options = {
-        content: boxText,
-        disableAutoPan: false,
-        pixelOffset: new google.maps.Size(-140, -(32 + 130)),
-        boxStyle: {
-            backgroundColor: '#fff',
-            opacity: 0.85,
-            width: "280px",
-            height: "120px",
-            borderRadius: "6px"
-        },
-        infoBoxClearance: new google.maps.Size(1, 1)
-    };
-    if (TimeMap.ib) this.closeInfoWindow();
-    TimeMap.ib = new InfoBox(options);
-    TimeMap.ib.open(this.map.getMap(), this.getNativePlacemark());
+	var self = this;
+    
+	var map = $("#mapcontainer");
+	$("#details").css("height", map.height());
+	var percentWidth = 100*map.width()/map.parent().width();
+	
+	// make sure to animate only if visible
+	if (percentWidth == 100 && !$("#details").is(":visible")) {
+		map.animate({"width" : map.width() * 0.7}, 250, complete = function() {
+			
+			$("#details").show();
+		});
+	}
+	$("#detail-content").html(self.getInfoHtml());
+			
+	console.log("openwindow");
 };
 
 TimeMapItem.closeInfoWindowBasic = function() {
-    if (TimeMap.ib) TimeMap.ib.close();
+	var map = $("#mapcontainer");
+	console.log($("#details").is(":visible"));
+	var percentWidth = 100*map.width()/map.parent().width();
+	
+	// :visible check fixes timemap scrolling
+   	if (percentWidth < 100 && $("#details").is(":visible")) {
+		$("#details").hide();
+		$("#mapcontainer").animate({"width" : "100%"}, 500);
+	}
 };

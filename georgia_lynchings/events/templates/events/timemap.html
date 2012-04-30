@@ -35,11 +35,11 @@ var foo = null;
               url: "{% url events:map-victim-data %}",
               {# TimeMap infoTemplate language uses literal {{}}, so make them with templatetag #}
               infoTemplate:
-                "<div class='info-bubble'><div><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
+                "<div><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
                  <div>Date: {% templatetag openvariable %}date{% templatetag closevariable %}</div> \
                  <div>Location: {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
                  <div>Alleged Crime: {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
-                 <div><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a></div></div>"
+                 <div><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a></div>"
             }
           }
         ],
@@ -170,6 +170,34 @@ var foo = null;
        .info-window div.foo {
            margin: 5px;
        }
+       
+       div#mapcontainer {
+           float: left;
+       }
+       
+       div#details {
+           float: right;
+		   width: 30%;
+           display: none;
+       }
+	   
+       div#details a {
+           float: right;
+           margin: 5px;
+       }
+       
+	   div#details a img.close {
+		   width:20px;
+		   height:20px;
+	   }
+	   
+	   #details #detail-content {
+           margin: 5px;
+		   clear: right;
+           overflow: auto;
+           height: 80%;
+	   }
+      
    </style>
 {% endblock %}
 
@@ -199,7 +227,15 @@ var foo = null;
             <div id="timelinecontainer" />
             <div id="timeline">Loading Timeline</div>
             <div id="mapcontainer" class="clearfix">
-            <div id="map">Loading Map</div>
-        </div>
+                <div id="map">Loading Map</div>
+            </div>
+            <div id="details" class="clearfix">
+				<a href="javascript:TimeMapItem.closeInfoWindowBasic();">
+					<img class="close" src="{{ STATIC_URL }}images/close.png">
+				</a>
+				<div id="detail-content">
+				</div>	
+                <div class="clearfix"></div>
+			</div>
         </div>
 {% endblock %}
