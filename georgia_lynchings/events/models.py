@@ -603,10 +603,11 @@ class Victim(ComplexObject):
             if getattr(self, property_name, None):
                 return getattr(self, property_name)
         brundage_values = []
-        for brundage in self.brundage:
-            for property_name in property_names:
-                if getattr(brundage, property_name, None):
-                    brundage_values.append(getattr(brundage, property_name))
+        if self.brundage: # TODO check if this is proper bug fix when brundage is none.
+            for brundage in self.brundage:
+                for property_name in property_names:
+                    if getattr(brundage, property_name, None):
+                        brundage_values.append(getattr(brundage, property_name))
         if brundage_values:
             if len(brundage_values) > 1:
                 logger.info('%s: multiple Brundage values for victim %s. picking arbitrarily' %

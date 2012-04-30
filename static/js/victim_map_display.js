@@ -1,3 +1,9 @@
+/*
+Most of this code is taken from with small modifications from the
+documentation on the Google developer tutorials at
+ https://developers.google.com/maps/documentation/javascript/
+ */
+
 var map;
 var markersArray = [];
 
@@ -17,10 +23,11 @@ function initializeMap() {
         myOptions);
 }
 
-function addMarker(location) {
+function addMarker(location, markerTitle) {
     marker = new google.maps.Marker({
         position: location,
-        map: map
+        map: map,
+        title: markerTitle
     });
     markersArray.push(marker);
 }

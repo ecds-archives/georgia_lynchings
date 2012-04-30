@@ -9,7 +9,7 @@
        <div><a href="{% url events:detail event.id %}">
         Lynching{{ event.victims|pluralize }} of
        {% for victim in event.victims %}
-            {{ victim.primary_name|default:"Unknown" }}{% if not forloop.last %}, {% endif %}
+            {{ victim.primary_name|default:"Unknown Person" }}({{ victim.primary_county }}; {{ victim.primary_lynching_date }}){% if not forloop.last %}, {% endif %}
        {% endfor %}</a>
        </div>
     {% endfor %}

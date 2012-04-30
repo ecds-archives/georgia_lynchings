@@ -64,7 +64,7 @@ def detail(request, row_id):
             geo = geo_coordinates.countymap.get(county, None)
             if geo:
                 map_markers.append({"county": county, "lat": geo['latitude'], "long": geo['longitude']})
-        dates = sorted(set([victim.primary_lynching_date for victim in event.victims]))
+        dates = sorted(set([victim.primary_lynching_date for victim in event.victims if victim.primary_lynching_date]))
         if len(dates) > 1:
             dates = [dates[0], dates[-1]]
 

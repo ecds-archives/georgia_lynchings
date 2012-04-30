@@ -11,18 +11,11 @@
     <!-- floaters handle vertical centering. see index.css -->
         <h2>Prototype displays (development only)</h2>
         <ul>
-        <li><a href="{% url events:macro_events %}">macro events</a></li>
+       <li><a href="{% url events:macro_events %}">List of all Lynchings</a></li>
 
-        <li><a href="{% url events:timemap %}">Timemap</a></li>
+       <li><a href="{% url events:timemap %}">Timemap of Lynching Victims</a></li>
 
-       <li><a href="{% url articles:newspaper_articles %}">articles</a></li>
-
-       <li><form action="{% url events:search %}" method="get">
-          {{ search_form.q }}
-          <input type="submit" value="search">
-        </form></li>
-        <li><a href="{% url events:advanced_search %}">advanced search</a></li>
-        </ul>
+       </ul>
 {% endblock %}
 
 {% block aside %}
