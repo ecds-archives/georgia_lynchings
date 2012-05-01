@@ -1,4 +1,4 @@
-import logging
+import logging, os, subprocess
 from urllib import quote
 
 from django.db import models
@@ -13,22 +13,6 @@ from georgia_lynchings import query_bank
 
 logger = logging.getLogger(__name__)
 
-# DC fields as follows NOTE: remove theses
-#Title  - Title of Article
-#Creator  - Author's name (list multiple here if applicable)
-#Subject - Probably blank
-#Description - Description information or additional notes
-#Publisher - Name of Newspaper
-#Contributor  - Probably blank
-#Date  - Date story published
-#Type  - 'News Article' by default in case we add other kinds of information later.
-#Format  - Blank probably.
-#Identifier  - Blank probably but if we have DOIs later we can use that.
-#Source  - Name of archival source
-#Language - 'en' by default
-#Relation - Probably blank
-#Coverage - probably blank
-#Rights  - Text field, use however you like.
 NEWS_TYPE = 'NA'
 ENGLISH_TYPE = 'EN'
 ARTICLE_TYPES = (
@@ -37,6 +21,12 @@ ARTICLE_TYPES = (
 LANGUAGE_TYPES = (
     (ENGLISH_TYPE, 'English'),
 )
+# Predefined Image dimensions in pixels (HEIGHT, WIDTH)
+IMG_SIZE = {
+    "sm": (50, 39),
+    "med": (100, 77),
+    "lrg": (200, 154),
+}
 
 class Article(models.Model):
     """
@@ -82,6 +72,53 @@ class Article(models.Model):
 
     def __unicode__(self):
         return u"%s" % (self.title)
+
+    def _format_thumbnail_filename(self, size="med"):
+        """
+        Formats the filename for the thumbnail of a particular size for the
+        file attribute on this object.
+        """
+        if not self.file:
+            return None
+        if size not in IMG_SIZE.keys():
+            raise ValueError('Incorrect value of %s passed for size.' % size)
+        pdf_filename = os.path.basename(self.file.name)
+        root_filename = ".".join(pdf_filename.split(".")[:-1])
+        return "%s_%s.png" % (root_filename, size)
+
+    def _has_thumbnail(self, size="med"):
+        """
+        Checks to see if a corrisponding nng thumbnail exists for the file object
+        attached to this model.
+        """
+        png_file = os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR,
+                    self._format_thumbnail_filename(size))
+        return os.path.exists(png_file)
+
+    def generate_thumbnail(self, size="med", recreate=False):
+        """
+        Generates a thumbnail image from the first page of a PDF
+
+        :param size:  String.  Image dimensions to use for the thumbnail.
+        :param recreate:  Boolean. Recrete thumbnail even if one exists.
+        """
+        if size not in IMG_SIZE.keys(): # Not DRY but needed since this isn't internal
+            raise ValueError('Incorrect value of %s passed for size.' % size)
+        if not self.file:
+            return "No file exists to generate a thumbnail from."
+        if self._has_thumbnail(size) and recreate:
+            return "Thumbnail already exists."
+        article_path = '%s' % os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR)
+        cmd = ["convert",
+               "%s/%s[0]" % (settings.MEDIA_ROOT, self.file.name),
+               "-resize", "%sx%s" % (IMG_SIZE[size][1], IMG_SIZE[size][0],),
+               "%s/%s" % (article_path, self._format_thumbnail_filename(size)),
+        ]
+
+        print " ".join(cmd)
+        subprocess.call(cmd) # run it as at commandline.
+
+
 
 class PcAceDocument(RdfObject):
     """
