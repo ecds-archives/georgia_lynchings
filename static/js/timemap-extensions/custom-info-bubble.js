@@ -44,6 +44,7 @@ $(function() {
 			// make sure to animate only if visible
 			if (percent_width == 100 && !$("#details").is(":visible")) {
 				map_container.animate({"width" : Math.round(map_container.width() * 0.7)}, 250, complete = function() {
+					$("#details").width(map_container.parent().width() - map_container.width());
 					$("#details").show();
 				});
 			}
