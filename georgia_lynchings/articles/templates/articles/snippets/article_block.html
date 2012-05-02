@@ -1,6 +1,8 @@
 <div id="article_{{ article.id }}" class="article_block">
     {% if article.file %}
-        <a href="{{ MEDIA_URL }}{{ article.file }}">
+        <a href="{{ MEDIA_URL }}{{ article.file }}"
+           class="previewImageLink"
+           data-preview="{{ MEDIA_URL }}{{ article.file|make_list|slice:":-4"|join:"" }}_xlrg.png">
 
         <img src="{{ MEDIA_URL }}{{ article.file|make_list|slice:":-4"|join:"" }}_med.png" align="left"/>
     {% else %}

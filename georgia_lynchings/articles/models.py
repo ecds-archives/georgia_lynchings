@@ -21,11 +21,12 @@ ARTICLE_TYPES = (
 LANGUAGE_TYPES = (
     (ENGLISH_TYPE, 'English'),
 )
-# Predefined Image dimensions in pixels (HEIGHT, WIDTH)
+# Predefined Image dimensions in pixels (WIDTH, HEIGHT)
 IMG_SIZE = {
-    "sm": (50, 39),
-    "med": (100, 77),
-    "lrg": (200, 154),
+    "sm": (39, 50),
+    "med": (77, 100),
+    "lrg": (154, 200),
+    "xlrg": (308, 400),
 }
 
 class Article(models.Model):
@@ -111,12 +112,21 @@ class Article(models.Model):
         article_path = '%s' % os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR)
         cmd = ["convert",
                "%s/%s[0]" % (settings.MEDIA_ROOT, self.file.name),
-               "-resize", "%sx%s" % (IMG_SIZE[size][1], IMG_SIZE[size][0],),
+               "-resize", "%sx%s" % IMG_SIZE[size],
                "%s/%s" % (article_path, self._format_thumbnail_filename(size)),
         ]
 
-        print " ".join(cmd)
         subprocess.call(cmd) # run it as at commandline.
+        return 'Thumbnail generated'
+
+    def generate_all_thumbnails(self, recreate=False):
+        """
+        Generates thumbnails for all sizes in IMG_SIZE.
+
+        :param recreate:  Bool:  Overwrite exiting thumbnails.
+        """
+        for size in IMG_SIZE.keys():
+            self.generate_thumbnail(size, recreate)
 
 
 
