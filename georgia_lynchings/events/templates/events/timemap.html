@@ -35,11 +35,11 @@ var foo = null;
               url: "{% url events:map-victim-data %}",
               {# TimeMap infoTemplate language uses literal {{}}, so make them with templatetag #}
               infoTemplate:
-                "<div><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
-                 <div>Date: {% templatetag openvariable %}date{% templatetag closevariable %}</div> \
-                 <div>Location: {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
-                 <div>Alleged Crime: {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
-                 <div><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a></div>"
+                "<div class='detail-name'><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
+                 <div class='detail-date'><!--Date:--> {% templatetag openvariable %}date{% templatetag closevariable %}</div> \
+                 <div class='detail-location'><!--Location:--> {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
+                 <div class='detail-allegation'><!--Alleged Crime:--> {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
+                 <div class='read-more'><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>more info</a><div class='clearfix'></div></div>"
             }
           }
         ],

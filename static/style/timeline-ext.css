@@ -33,3 +33,20 @@ div#details img.close {
    overflow: auto;
    height: 80%; /* required for overflow to function properly */
 }
+
+#details #detail-content div {
+	margin: 5px 5px 5px 15px;
+}
+
+#details #detail-content div.detail-name {
+	margin-left:5px;
+	margin-bottom:20px;
+	font-size:16px;
+	border-bottom: 1px solid #508E52;
+}
+
+#details #detail-content div.read-more {
+	margin-top:20px;
+	margin-left:5px;
+	border-top: 1px solid #508E52;
+}
