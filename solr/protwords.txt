@@ -1,1 +1,0 @@
-# words protected from stemming and other munging

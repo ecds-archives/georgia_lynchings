@@ -10,18 +10,10 @@ The :mod:`~georgia_lynchings.events` app
 
    .. autoclass:: MacroEvent
 
-      .. automethod:: get_articles
-
 .. automodule:: georgia_lynchings.events.views
    :members:
    
 .. automodule:: georgia_lynchings.events.details
-   :members:   
-
-.. automodule:: georgia_lynchings.events.mapdata
-   :members:
-   
-.. automodule:: georgia_lynchings.events.timemap
    :members:   
 
 The :mod:`~georgia_lynchings.rdf` app
