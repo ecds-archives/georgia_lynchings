@@ -1,0 +1,35 @@
+div#timelinecontainer,
+div#mapcontainer,
+div#details {
+	background-color: #eee;
+}
+
+div#mapcontainer {
+   float: left;
+}
+       
+div#details {
+   float: right;
+   display: none;
+}
+	   
+div#details a {
+   float: right;
+   margin: 5px;
+}
+       
+div#details img.close {
+   float: right;
+   margin: 5px;
+   width:20px;
+   height:20px;
+   cursor: hand;
+   cursor: pointer;
+}
+	   
+#details #detail-content {
+   margin: 10px;
+   clear: right;
+   overflow: auto;
+   height: 80%; /* required for overflow to function properly */
+}

@@ -49,13 +49,6 @@ TEST_SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
 SPARQL_STORE_REPOSITORY = 'repository-name-goes-here'
 TEST_SPARQL_STORE_REPOSITORY = 'repository-name-goes-here'
 
-# Index the data (and access indexed data) here
-SOLR_INDEX_URL = 'http://server.example.com/solr/georgia_lynchings/'
-
-# JSON url that simulates data used to create timemap infographic.
-# See DEPLOYNOTES for "Useful developer tools"
-TIMEMAP_JSON_URL = 'http://server.example.com/georgia_lynchings/media/json/galyn_timemap.json'
-
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.

@@ -1,4 +1,4 @@
-import logging
+import logging, os, subprocess
 from urllib import quote
 
 from django.db import models
@@ -8,27 +8,9 @@ from georgia_lynchings.rdf.fields import ChainedRdfPropertyField, \
         ReversedRdfPropertyField, RdfPropertyField
 from georgia_lynchings.rdf.models import RdfObject, ComplexObject
 from georgia_lynchings.rdf.ns import dd, dxcxd, ssxn
-from georgia_lynchings.rdf.sparqlstore import SparqlStore
-from georgia_lynchings import query_bank
 
 logger = logging.getLogger(__name__)
 
-# DC fields as follows NOTE: remove theses
-#Title  - Title of Article
-#Creator  - Author's name (list multiple here if applicable)
-#Subject - Probably blank
-#Description - Description information or additional notes
-#Publisher - Name of Newspaper
-#Contributor  - Probably blank
-#Date  - Date story published
-#Type  - 'News Article' by default in case we add other kinds of information later.
-#Format  - Blank probably.
-#Identifier  - Blank probably but if we have DOIs later we can use that.
-#Source  - Name of archival source
-#Language - 'en' by default
-#Relation - Probably blank
-#Coverage - probably blank
-#Rights  - Text field, use however you like.
 NEWS_TYPE = 'NA'
 ENGLISH_TYPE = 'EN'
 ARTICLE_TYPES = (
@@ -37,6 +19,13 @@ ARTICLE_TYPES = (
 LANGUAGE_TYPES = (
     (ENGLISH_TYPE, 'English'),
 )
+# Predefined Image dimensions in pixels (WIDTH, HEIGHT)
+IMG_SIZE = {
+    "sm": (39, 50),
+    "med": (77, 100),
+    "lrg": (154, 200),
+    "xlrg": (308, 400),
+}
 
 class Article(models.Model):
     """
@@ -44,7 +33,7 @@ class Article(models.Model):
     """
     help = {
         'title': 'Title of news article.',
-        'creator': 'Article Author name(s), seperate by colon if multipel.',
+        'creator': 'Article Author name(s), seperate by colon if multiple.',
         'subject': '',
         'description':  'Description about the article itself.',
         'publisher': 'Title of the newspaper article was published in.',
@@ -82,6 +71,62 @@ class Article(models.Model):
 
     def __unicode__(self):
         return u"%s" % (self.title)
+
+    def _format_thumbnail_filename(self, size="med"):
+        """
+        Formats the filename for the thumbnail of a particular size for the
+        file attribute on this object.
+        """
+        if not self.file:
+            return None
+        if size not in IMG_SIZE.keys():
+            raise ValueError('Incorrect value of %s passed for size.' % size)
+        pdf_filename = os.path.basename(self.file.name)
+        root_filename = ".".join(pdf_filename.split(".")[:-1])
+        return "%s_%s.png" % (root_filename, size)
+
+    def _has_thumbnail(self, size="med"):
+        """
+        Checks to see if a corrisponding nng thumbnail exists for the file object
+        attached to this model.
+        """
+        png_file = os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR,
+                    self._format_thumbnail_filename(size))
+        return os.path.exists(png_file)
+
+    def generate_thumbnail(self, size="med", recreate=False):
+        """
+        Generates a thumbnail image from the first page of a PDF
+
+        :param size:  String.  Image dimensions to use for the thumbnail.
+        :param recreate:  Boolean. Recrete thumbnail even if one exists.
+        """
+        if size not in IMG_SIZE.keys(): # Not DRY but needed since this isn't internal
+            raise ValueError('Incorrect value of %s passed for size.' % size)
+        if not self.file:
+            return "No file exists to generate a thumbnail from."
+        if self._has_thumbnail(size) and recreate:
+            return "Thumbnail already exists."
+        article_path = '%s' % os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR)
+        cmd = ["convert",
+               "%s/%s[0]" % (settings.MEDIA_ROOT, self.file.name),
+               "-resize", "%sx%s" % IMG_SIZE[size],
+               "%s/%s" % (article_path, self._format_thumbnail_filename(size)),
+        ]
+
+        subprocess.call(cmd) # run it as at commandline.
+        return 'Thumbnail generated'
+
+    def generate_all_thumbnails(self, recreate=False):
+        """
+        Generates thumbnails for all sizes in IMG_SIZE.
+
+        :param recreate:  Bool:  Overwrite exiting thumbnails.
+        """
+        for size in IMG_SIZE.keys():
+            self.generate_thumbnail(size, recreate)
+
+
 
 class PcAceDocument(RdfObject):
     """
@@ -124,39 +169,3 @@ class PcAceDocument(RdfObject):
         if fpath:
             path, bslash, fname = fpath.rpartition('\\')
             return fname
-
-
-# DEPRECATED: Use PcAceDocument.objects.all() to get all articles
-def all_articles():
-    '''Get all articles associated with this macro event, along with the
-    particular events that the articles are attached to.
-
-    :rtype: a mapping list of the type returned by
-            :meth:`~georgia_lynchings.events.sparqlstore.SparqlStore.query`.
-            It has the following bindings:
-
-              * `melabel`: the :class:`MacroEvent` label
-              * `event`: the uri of the event associated with this article
-              * `evlabel`: the event label
-              * `dd`: the uri of the article
-              * `docpath`: a relative path to the document data
-
-            The matches are ordered by `event` and `docpath`.
-    '''
-
-    query=query_bank.articles['all']
-    ss=SparqlStore()
-    resultSet = ss.query(sparql_query=query)
-    if resultSet: logger.debug("\nLength of resultSet = [%d]\n" % len(resultSet))
-    else: logger.debug("\nResultSet is empty.\n")
-    for result in resultSet:
-        # Clean up data, add "n/a" if value does not exist
-        if 'docpath' not in result: result['docpath'] = 'n/a'
-        else: 
-            result['docpath_link'] = quote(result['docpath'].replace('\\', '/'))
-            result['docpath'] = result['docpath'][10:] 
-        if 'papername' not in result: result['papername'] = 'n/a'
-        if 'paperdate' not in result: result['paperdate'] = 'n/a'
-        if 'articlepage' not in result: result['articlepage'] = 'n/a'
-    # return the dictionary resultset of the query          
-    return resultSet

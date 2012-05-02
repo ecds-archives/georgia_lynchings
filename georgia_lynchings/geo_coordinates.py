@@ -1,5 +1,3 @@
-countymap={}
-
 '''
 This file contains a dictionary of geo coordinates for Georgia Counties.
 '''

@@ -8,10 +8,10 @@ from mock import patch
 from rdflib import URIRef, Literal, Namespace, BNode, Variable, RDF, RDFS
 import rdflib
 
-from georgia_lynchings.rdf.ns import ix_ebd, scxn, sxcxcxn
+from georgia_lynchings.rdf.ns import ix_mbd, scxn, sxcxcxn
 from georgia_lynchings.rdf.sparql import SelectQuery
 from georgia_lynchings.rdf.sparqlstore import SparqlStore, SparqlStoreException
-from georgia_lynchings.rdf.management.commands import run_sparql_query
+#from georgia_lynchings.rdf.management.commands import run_sparql_query
 from georgia_lynchings.rdf.fields import RdfPropertyField, \
         ReversedRdfPropertyField, ChainedRdfPropertyField
 from georgia_lynchings.rdf.models import ComplexObject
@@ -382,11 +382,11 @@ class QuerySetTest(TestCase):
 
 class NsTest(TestCase):
     def test_constructed_stmts_ns(self):
-        expected = rdflib.term.URIRef('http://galyn.example.com/constructed_statements/index/events_by_date/#mindate')
-        self.assertEqual(ix_ebd.mindate, expected)
+        expected = rdflib.term.URIRef('http://galyn.example.com/constructed_statements/index/macros_by_date/#mindate')
+        self.assertEqual(ix_mbd.mindate, expected)
 
     def test_source_file_ns(self):
-        expected = rdflib.term.URIRef('http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Event')        
+        expected = rdflib.term.URIRef('http://galyn.example.com/source_data_files/setup_xref_Complex-Complex.csv#name-Event')
         self.assertEqual(sxcxcxn.Event, expected)
         expected = rdflib.term.URIRef('http://galyn.example.com/source_data_files/setup_Complex.csv#name-Macro_Event')
-        self.assertEqual(scxn.Macro_Event, expected)               
+        self.assertEqual(scxn.Macro_Event, expected)

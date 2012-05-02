@@ -7,7 +7,6 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^articles/', include('georgia_lynchings.articles.urls', namespace="articles")),    
     url(r'^events/', include('georgia_lynchings.events.urls', namespace="events")),
     url(r'^page/', include('georgia_lynchings.simplepages.urls', namespace="simplepages")),
     url(r'^$', 'georgia_lynchings.events.views.home', name="home"),

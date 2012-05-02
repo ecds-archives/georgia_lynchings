@@ -192,10 +192,14 @@ class UnionRdfPropertyField(RdfPropertyField):
     '''
 
     def __init__(self, *props, **kwargs):
+        kwargs = kwargs.copy()
+        if 'multiple' not in kwargs:
+            kwargs['multiple'] = True
+
         props = [self._massage_property(prop) for prop in props]
 
         super_init = super(UnionRdfPropertyField, self).__init__
-        super_init(prop=None, multiple=True, **kwargs)
+        super_init(prop=None, **kwargs)
 
         self.props = props
         # TODO: is it possible to support result_type and

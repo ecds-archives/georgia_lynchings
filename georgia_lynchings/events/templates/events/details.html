@@ -1,114 +1,89 @@
 {% extends "page_base.html" %}
 
-{% block head-title %}Details: {{ title }}{% endblock %}
+{% block head-title %}{{ victim_names|join:", "|default:event.id }}{% endblock %}
 
-{% block content-title %}Details for Macro Event: {{ results.melabel }}{% endblock %}
+{% block head-scripts %}
+        {{ block.super }}
+<script type="text/javascript"
+        src="http://maps.googleapis.com/maps/api/js?key=AIzaSyD3iM2lzxphBo5JWGKuv4mvLtUUGXnuu7E&sensor=false">
+</script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/victim_map_display.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        initializeMap();
+        var latLong, markerTitle;
+        {% for marker in map_markers %}
+            latLong = new google.maps.LatLng({{ marker.lat }}, {{ marker.long }});
+            markerTitle = "{{ marker.county }} County";
+            addMarker(latLong, markerTitle);
+        {% endfor %}
+    });
+</script>
+{% endblock %}
+
+{% block content-title %}
+    Lynching{{ victim_names|pluralize }} of {{ victim_names|join:", "}}
+    {% if dates %}
+        {{ dates.0.year }}
+    {% endif %}
+{% endblock %}
 
 {% block content-body %}
-{% if results %}
-    <table summary="Details for a Macro Event {{ results.melabel }}" id="detail">
-        {% if results.melabel %}<tr><th>Macro Event Title:</th><td>{{ results.melabel }}</td></tr>{% endif %}
-        {% if results.mindate %}<tr><th>Min Date:</th><td>{{ results.mindate }}</td></tr>{% endif %}
-        {% if results.maxdate %}<tr><th>Max Date:</th><td>{{ results.maxdate }}</td></tr>{% endif %}
-        {% if results.location %}<tr><th>Cities:</th><td>{{ results.location|join:" ; " }}</td></tr>{% endif %}
-        {% if results.articleTotal > 0 %}<tr><th>Articles:</th><td>
-             <div>
-                <div class="more">View {{ results.articleTotal }} Article{{ results.articleTotal|pluralize }}</div>
-                <div class="toggle_hide">
-                    {% include "events/snippets/articles_by_macro_event.html" %}
-                </div>
-            </div></td></tr>{% endif %}
-        {% if results.event_type %}<tr><th>Type of Event:</th><td>{{ results.event_type|join:" ; " }}</td></tr>{% endif %}  
-        {% if results.reason %}<tr><th>Reason:</th><td>{{ results.reason|join:" ; " }}</td></tr>{% endif %}
-        {% if results.outcome %}<tr><th>Outcome:</th><td>{{ results.outcome|join:" ; " }}</td></tr>{% endif %}
-        {% if results.events %}
-            {% for event in results.events %} 
-              <tr>
-                <th>
-                    Event:<br/>
-                    {% if event.triplet_first %}Semantic Triplets:<br/><br/>{% endif %}       
-                </th>
-                <td>
-                    {{ event.evlabel }}<br/>                       
-                    {% if event.location %}{{ event.location }}<br/>{% endif %}  
-                    {% if event.triplet_first %}
-                    &bull;&nbsp;{{ event.triplet_first }}
-                    <div class="layer1">
-                    <div class="more">view more</div>
-                    <div class="toggle_hide">
-                      {% for triple in event.triplet_rest %}  
-                        &bull;&nbsp;{{ triple }}<br/>&nbsp;<br/>
-                      {% endfor %} </div>
-                    </div>
-                    {% endif %}            
-                </td></tr> 
-                
-                {% if event.uparto %}
-                    <tr>
-                    <th>Event<br/>{{ event.evlabel }}<br/>Participant-Objects:</th>
-                    <td>
-                        <table id="part">
-                            <tr><th>Name</th><th>Role</th><th>Gender</th><th>Race</th><th>Age</th><th>Occupation</th></tr>
-                            {% for event in event.uparto %}
-                                <tr>        
-                                <td>{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.occupation %}{{ event.occupation }}{% else %}n/a{% endif %}</td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                    </td></tr>
-                {% endif %} <!-- end if event.uparto -->
+    <div id="victim_list" class="factlist">
+        <h2>Victims</h2>
+        {% for victim in event.victims %}
+            {% include "events/snippets/victim_summary.html" %}
+        {% endfor %}
+    </div>
+{% endblock %}
 
-                {% if event.uparts %}
-                    <tr>
-                    <th>Event:{{ event.evlabel }}<br/>Participant-Subjects:</th>
-                    <td>
-                        <table id="part">
-                            <tr><th>Name</th><th>Role</th><th>Gender</th><th>Race</th><th>Age</th><th>Occupation</th></tr>
-                            {% for event in event.uparts %}
-                                <tr>        
-                                <td>{% if event.name %}{{ event.name }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.role %}{{ event.role }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.gender %}{{ event.gender }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.race %}{{ event.race }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.age %}{{ event.age }}{% else %}n/a{% endif %}</td>
-                                <td>{% if event.occupation %}{{ event.occupation }}{% else %}n/a{% endif %}</td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                    </td></tr>
-                {% endif %} <!-- end if event.uparts -->
-            {% endfor %} <!-- for event in results.events -->
-        {% endif %} <!-- end if results.events -->
-        
-        
-        {% if results.victims %}
-            <tr>
-            <th>Victims:</th>
-            <td>
-                <table id="part">
-                    <tr><th>Name</th><th>County</th><th>Alleged Crime</th><th>Lynching Date</th><th>Race</th></tr>
-                    {% for victim in results.victims %}
-                        <tr>        
-                        <td>{% if victim.name %}{{ victim.name }}{% else %}n/a{% endif %}</td>
-                        <td>{% if victim.county %}{{ victim.county }}{% else %}n/a{% endif %}</td>
-                        <td>{% if victim.alleged_crime %}{{ victim.alleged_crime }}{% else %}n/a{% endif %}</td>
-                        <td>{% if victim.lynching_date %}{{ victim.lynching_date }}{% else %}n/a{% endif %}</td>
-                        <td>{% if victim.race %}{{ victim.race }}{% else %}n/a{% endif %}</td>                                      
-                        </tr>
-                    {% endfor %} <!-- for event in results.victims -->
-                </table>
-            </td></tr>
-        {% endif %} <!-- end if results.victims -->
-        
+{% block aside %}
+<aside class="articles">
+    <section id="news_articles">
+        <header>
+            <h3>Primary Sources</h3>
+        </header>
+        {% for article in articles %}
+            {% include "articles/snippets/article_block.html" %}
+        {% endfor %}
+    </section>
+    <section
+    <section id="victim_map">
+        <header>
+            <h3>Count{{ events.victims|pluralize:"y,ies"}} of Lynching{{ event.victims|pluralize }}</h3>
+        </header>
+        <div id="map_canvas"></div>
+    </section>
+</aside>
+{% endblock %}
 
-        
-    </table>
-{% else %}
-<h1 class="main">Not Found</h1>
-{% endif %}  
+{% block endscript %}
+{{ block.super }}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery_plugins/imgpreview.full.jquery.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.previewImageLink').imgPreview({
+            srcAttr: 'data-preview',
+            containerID: 'imgPreviewWithStyles',
+            distanceFromCursor: {top:10, left:-175},
+            // When container is shown:
+            onShow: function(link){
+                // Animate link:
+                $(link).stop().animate({opacity:0.4});
+                // Reset image:
+                $('img', this).stop().css({opacity:0});
+            },
+            // When image has loaded:
+            onLoad: function(){
+                // Animate image
+                $(this).animate({opacity:1}, 300);
+            },
+            // When container hides:
+            onHide: function(link){
+                // Animate link:
+                $(link).stop().animate({opacity:1});
+            }
+        });
+    });
+</script>
 {% endblock %}

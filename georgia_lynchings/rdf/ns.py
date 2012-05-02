@@ -47,4 +47,4 @@ sxcxcxn = _source_file_ns('setup_xref_Complex-Complex.csv', id_prefix='name-')
 sxsxcx = _source_file_ns('setup_xref_Simplex-Complex.csv')
 sxsxd = _source_file_ns('setup_xref_Simplex-Document.csv')
 
-ix_ebd = _constructed_stmts_ns('events_by_date')
+ix_mbd = _constructed_stmts_ns('macros_by_date')
