@@ -7,6 +7,8 @@
   <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style/index.css">
 {% endblock %}
 
+        {% block mainclass %}{{ block.super }} sidebar{% endblock %}
+
 {% block content-body %}
     <!-- floaters handle vertical centering. see index.css -->
         <h2>Prototype displays (development only)</h2>

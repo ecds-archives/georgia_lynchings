@@ -21,6 +21,8 @@
 </script>
 {% endblock %}
 
+        {% block mainclass %}{{ block.super }} detail{% endblock %}
+
 {% block content-title %}
     Lynching{{ victim_names|pluralize }} of {{ victim_names|join:", "}}
     {% if dates %}

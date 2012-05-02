@@ -52,7 +52,7 @@
 		</header>
 	</div>
 	<div id="main-container">
-		<div id="main" class="wrapper clearfix">
+		<div id="main" class="{% block mainclass %}wrapper clearfix{% endblock %}">
 			{% block messages %}{% endblock %}
             {% block aside %}{% endblock %}
 			<article>

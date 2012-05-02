@@ -6,15 +6,33 @@
 
 body{ font:14px/24px Georgia, Helvetica, Helvetica Neue, Arial; }
 
-.wrapper{
+.wrapper {
 	/*width:95%;*/
 	margin:0 3%;
 }
 
+/*
+   ==============
+   Aside Block
+   ==============
+*/
 aside a {
     color: #508e52;
     text-decoration: none;
 }
+
+aside div.article_block {
+    display: block;
+    padding: 10px 0;
+    margin: 5px 0;
+    font-size: 85%;
+    clear: both;
+}
+
+aside div.article_block img {
+    margin-right: 10px;
+}
+
 /* ===================
     ALL: Black Green
    =================== */
@@ -35,24 +53,6 @@ aside a {
 
 ::-moz-selection { background: #000000; color: #fff; text-shadow: none; }
 ::selection      { background: #000000; color: #fff; text-shadow: none; }
-
-/*
-   ==============
-   Aside Block
-   ==============
-*/
-aside div.article_block {
-    display: block;
-    /* border: 1px solid green; */
-    padding: 10px 0;
-    margin: 5px 0;
-    font-size: 85%;
-    clear: both;
-}
-
-aside div.article_block img {
-    margin-right: 10px;
-}
 
 /*
    ===============
@@ -103,6 +103,15 @@ nav a:hover{
     background: url('images/greybackground.jpg');
 }
 
+#main.sidebar article{
+    width: 61%;
+}
+
+#main aside{
+    float:right;
+    width:28%;
+}
+
 #main{
 	padding: 10px 10px;
     background: #ffffff;
@@ -116,10 +125,12 @@ nav a:hover{
 	color:white;
 	padding: 0px 5% 10px;
 }
-#main aside.articles {
+#main.detail aside {
     padding: 0px 2% 10px;
 }
-
+#main.detail article {
+    width: 67%;
+    }
 #footer-container footer{
 	color:white;
     background: #090a0c;
@@ -202,14 +213,7 @@ nav a:hover{
     WIDE: Main
    ============ */
 
-	#main article{
-	}
-		
-	#main aside{
-		float:right;
-		width:28%;
-	}
-}
+
 
 @media only screen and (min-width: 1140px) {
 
