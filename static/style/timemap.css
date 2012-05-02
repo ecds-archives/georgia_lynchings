@@ -14,8 +14,8 @@ padding: 1em;
 }
 
 div.filters {
-  float: right;
-  width: 15%;
+  float: left;
+  /*width: 15%;*/
   padding-top: 2em;
 }
 
@@ -66,5 +66,5 @@ div#timelinecontainer{ height: 150px; }
 div#mapcontainer{ height: 250px; }
 div.mapdisplay {
     height: 450px;
-    width: 85%;
+    /*width: 85%;*/
 }
