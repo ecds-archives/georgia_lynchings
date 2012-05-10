@@ -1,5 +1,6 @@
 import logging
 from rdflib import Variable, BNode, RDF
+import uuid
 from georgia_lynchings.rdf.sparql import SelectQuery, GraphPattern, Union
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
 
@@ -43,11 +44,7 @@ class RdfPropertyField(object):
         if self.name and self.name in obj.extra_properties:
             return obj.extra_properties[self.name]
             
-        # generate a sparql query for the data we want
-        q = SelectQuery(results=['result'])
-        if hasattr(obj, 'rdf_type'):
-            q.append((Variable('obj'), RDF.type, obj.rdf_type))
-        self.add_to_query(q, Variable('obj'), Variable('result'))
+        q = self.as_sparql_query(obj)
 
         # ask the default SparqlStore for that data
         store = SparqlStore()
@@ -63,6 +60,20 @@ class RdfPropertyField(object):
                 result = bindings[0]['result']
                 return self.wrap_result(result)
         # else None
+
+    def as_sparql_query(self, obj=None):
+        '''Return a :class:`~georgia_lynchings.rdf.sparql.SelectQuery`
+        which, when bound to an object, will retrieve this field for that
+        object.
+
+        :param obj: optional object that will be bound. If specified, the
+           query will include a check for its ``rdf_type``.
+        '''
+        q = SelectQuery(results=['result'])
+        if hasattr(obj, 'rdf_type'):
+            q.append((Variable('obj'), RDF.type, obj.rdf_type))
+        self.add_to_query(q, Variable('obj'), Variable('result'))
+        return q
 
     def add_to_query(self, q, source, target):
         '''Add triples to a query graph pattern to represent this property.
@@ -167,12 +178,7 @@ class ChainedRdfPropertyField(RdfPropertyField):
         # subject of the following one.
         link_source = source
         for prop in self.props[:-1]:
-            # use a bnode here just to generate a random label for a
-            # variable. we used to use a plain bnode for link_target, but
-            # those break with chained union properties since bnodes don't
-            # connect across the union's subgraph patterns.
-            var_name = str(BNode())
-            link_target = Variable(var_name)
+            link_target = self._unique_variable()
             prop.add_to_query(q, link_source, link_target)
             # prepare for the next link
             link_source = link_target
@@ -180,6 +186,12 @@ class ChainedRdfPropertyField(RdfPropertyField):
         # And the final link just results in the original target
         prop = self.props[-1]
         prop.add_to_query(q, link_source, target)
+
+    def _unique_variable(self):
+        u = uuid.uuid4() # generate a random uuid
+        var_name = '_' + str(u).replace('-', '') # make it a valid var name
+        return Variable(var_name)
+
 
 
 class UnionRdfPropertyField(RdfPropertyField):
