@@ -112,7 +112,7 @@ def _victim_timemap_data(victim):
     date = victim.primary_lynching_date
     if date:
         # strftime can't reliably do dates before 1900
-        date_str = "%s-%s-%s" % (date.year, date.month, date.day)
+        date_str = "%04d-%02d-%02d" % (date.year, date.month, date.day)
         data['start'] = date_str
         data['options']['date'] = date_str
 
