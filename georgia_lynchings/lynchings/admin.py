@@ -11,6 +11,9 @@ class RaceAdmin(admin.ModelAdmin):
 class AccusationAdmin(admin.ModelAdmin):
     pass
 
+class PersonAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(County, CountyAdmin)
 admin.site.register(Race, RaceAdmin)
 admin.site.register(Accusation, AccusationAdmin)
