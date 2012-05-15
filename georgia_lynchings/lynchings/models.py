@@ -50,6 +50,7 @@ class County(models.Model):
         return smart_str(self.__unicode__())
 
     class Meta:
+        verbose_name_plural = "counties"
         ordering = ["label"]
 
 
@@ -74,7 +75,7 @@ class Person(models.Model):
     """
     help = {
         'pcaid': "Row number for Victim complex object in PC-ACE",
-        'name': "Most reliable full name of person.",
+        'name': "Most reliable full or display name for person.",
         'race': "Race of person.",
         'age': "Most reliable reported age of person",
     }
