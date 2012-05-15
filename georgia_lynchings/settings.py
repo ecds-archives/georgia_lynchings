@@ -98,6 +98,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'georgia_lynchings.articles',    
     'georgia_lynchings.events',
+    'georgia_lynchings.lynchings',
     'georgia_lynchings.rdf',
     'georgia_lynchings.simplepages',
 )

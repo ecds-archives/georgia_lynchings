@@ -1,16 +1,37 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
-
 from django.test import TestCase
 
+from georgia_lynchings.lynchings.models import Accusation, Race, County, Story, Person, Alias, Lynching
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+class PersonTest(TestCase):
+    def setUp(self):
+        # Test for person with a name
+        race = Race(label="african american")
+        pn = {
+            'pca_id': 934334,
+            'name': 'John Doe',
+            'race': race,
+            'gender': 'M',
+            'age': 42,
+        }
+        self.person_name = Person(**pn)
+        self.person_name.save()
+
+        # Test for person with no name.
+        pnn = {
+            'pca_id': 934335,
+            'race': race,
+            'gender': 'M',
+            'age': 42,
+            }
+        self.person_noname = Person(**pnn)
+        self.person_noname.save()
+
+    def test_pretty_name(self):
+        exp_pn = 'John Doe'
+        actual = self.person_name.pretty_name
+        self.assertEqual(exp_pn, actual)
+
+        exp_pnn = 'Unknown african american Male'
+        actual_pnn = self.person_noname.pretty_name
+        self.assertEqual(exp_pnn, actual_pnn)
+
