@@ -14,7 +14,7 @@ class Lynching(models.Model):
     """
     pass # TODO: Implement
 
-class Event(models.Model):
+class Event(models.Model): # change to lynching
     """
     Represents an invididual event
     """
