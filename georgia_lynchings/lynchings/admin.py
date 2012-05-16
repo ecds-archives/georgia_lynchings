@@ -22,7 +22,7 @@ class PersonAdmin(admin.ModelAdmin):
         }),
         ('PC-ACE Attributes', {
             'classes': ('collapse',),
-            'fields': ('pca_id',)
+            'fields': ('pca_id', 'pca_last_update')
         }),
     )
     inlines = [
@@ -36,7 +36,7 @@ class LynchingAdmin(admin.ModelAdmin):
             }),
         ('PC-ACE Attributes', {
             'classes': ('collapse',),
-            'fields': ('pca_id',)
+            'fields': ('pca_id', 'pca_last_update')
         }),
         )
     filter_horizontal = ('alternate_counties',)

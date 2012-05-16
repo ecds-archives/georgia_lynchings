@@ -62,8 +62,10 @@ class Story(models.Model):
     """
     help = {
         'pcaid': "Row number for Macro Event complex object in PC-ACE",
+        'pcalastupdate': "Datetime of the last sync with PC-Ace Data.",
     }
     pca_id = models.PositiveIntegerField(help_text=help['pcaid'], unique=True, db_index=True)
+    pca_last_update = models.DateTimeField(null=True, blank=True, editable=False, help_text=help["pcalastupdate"])
 
     class Meta:
         verbose_name_plural = "stories"
@@ -75,11 +77,13 @@ class Person(models.Model):
     """
     help = {
         'pcaid': "Row number for Victim complex object in PC-ACE",
+        "pcalastupdate": "Datetime of last update from PC-Ace",
         'name': "Most reliable full or display name for person.",
         'race': "Race of person.",
         'age': "Most reliable reported age of person",
     }
-    pca_id = models.PositiveIntegerField(help_text=help['pcaid'], unique=True, db_index=True)
+    pca_id = models.PositiveIntegerField(help_text=help['pcaid'], unique=True, db_index=True, editable=False)
+    pca_last_update = models.DateTimeField(null=True, blank=True, editable=False, help_text=help["pcalastupdate"])
     name = models.CharField(max_length=75, null=True, blank=True, help_text=help['name'])
     race = models.ForeignKey(Race, null=True, blank=True, help_text=help['race'])
     gender = models.CharField(max_length=1, null=True, blank=True, choices=GENDER_CHOICES)
@@ -128,6 +132,7 @@ class Lynching(models.Model):
     """
     help = {
         "pcaid": "Row number for victim complex object in PC-ACE",
+        "pcalastupdate": "Datetime of last update form PC-Ace Data.",
         'county': "Most reliable county of the lynching.",
         'date': "Most reliable date of lynching.",
         'victim': "Person who was Lynched.",
@@ -135,7 +140,8 @@ class Lynching(models.Model):
         'story': "The overarching event this is associated with."
         }
 
-    pca_id = models.PositiveIntegerField(help_text=help["pcaid"], unique=True, db_index=True)
+    pca_id = models.PositiveIntegerField(help_text=help["pcaid"], unique=True, db_index=True, editable=False)
+    pca_last_update = models.DateTimeField(null=True, blank=True, editable=False, help_text=help["pcalastupdate"])
     county = models.ForeignKey(County, null=True, blank=True, help_text=help["county"])
     alternate_counties = models.ManyToManyField(County, related_name="alt_counties", null=True, blank=True) # List alternate possible counties here.
     date = models.DateField(null=True, blank=True, help_text=help["date"])
