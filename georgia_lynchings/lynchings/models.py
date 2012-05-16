@@ -137,7 +137,7 @@ class Lynching(models.Model):
 
     pca_id = models.PositiveIntegerField(help_text=help["pcaid"], unique=True, db_index=True)
     county = models.ForeignKey(County, null=True, blank=True, help_text=help["county"])
-    alternate_counties = models.ManyToManyField(County, related_name="alt_counties") # List alternate possible counties here.
+    alternate_counties = models.ManyToManyField(County, related_name="alt_counties", null=True, blank=True) # List alternate possible counties here.
     date = models.DateField(null=True, blank=True, help_text=help["date"])
     victim = models.OneToOneField(Person, help_text=help["victim"])
     alleged_crime = models.ForeignKey(Accusation, null=True, blank=True, help_text=help['crime'])
