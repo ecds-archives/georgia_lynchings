@@ -95,7 +95,7 @@ class Command(NoArgsCommand):
                     return
 
             if created:
-                article.identifier = doc.uri
+                article.identifier = doc.id
                 if newspaper_name:
                     article.publisher = newspaper_name
                 if newspaper_date:

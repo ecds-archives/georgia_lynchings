@@ -1,7 +1,9 @@
 from django.contrib import admin
 
+
+from georgia_lynchings.articles.models import Article
 from georgia_lynchings.lynchings.models import County, Race, Accusation, \
-    Alias, Person, Lynching
+    Alias, Person, Lynching, Story
 
 class CountyAdmin(admin.ModelAdmin):
     pass
@@ -18,13 +20,14 @@ class AliasInline(admin.TabularInline):
 class PersonAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Personal Attributes', {
-            'fields': ('name', ('race', 'gender', 'age')),
+            'fields': ('name', ('race', 'gender', 'age'),),
         }),
         ('PC-ACE Attributes', {
             'classes': ('collapse',),
-            'fields': ('pca_id', 'pca_last_update')
+            'fields': ('pca_id', 'pca_last_update'),
         }),
     )
+    readonly_fields = ('pca_id', 'pca_last_update',) # avoids form error from including in fieldset above
     inlines = [
         AliasInline,
     ]
@@ -39,10 +42,15 @@ class LynchingAdmin(admin.ModelAdmin):
             'fields': ('pca_id', 'pca_last_update')
         }),
         )
+    readonly_fields = ('pca_id', 'pca_last_update',) # avoids form error from including in fieldset above
     filter_horizontal = ('alternate_counties',)
+
+class StoryAdmin(admin.ModelAdmin):
+    filter_horizontal = ('articles',)
 
 admin.site.register(County, CountyAdmin)
 admin.site.register(Race, RaceAdmin)
 admin.site.register(Accusation, AccusationAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Lynching, LynchingAdmin)
+admin.site.register(Story, StoryAdmin)

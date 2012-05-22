@@ -172,9 +172,12 @@ class Victim(ComplexObject):
             if getattr(self, property_name, None):
                 items.append(getattr(self, property_name))
         for property_name in property_names:
-            items.extend(getattr(brundage, property_name)
-                         for brundage in self.brundage
-                         if getattr(brundage, property_name, None))
+            try:
+                items.extend(getattr(brundage, property_name)
+                             for brundage in self.brundage
+                             if getattr(brundage, property_name, None))
+            except TypeError: # sometimes brundage is none
+                pass # keep going
         return items
 
     def _primary_value(self, *property_names):
