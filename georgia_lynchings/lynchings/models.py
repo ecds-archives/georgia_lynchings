@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.encoding import smart_str
 
+from georgia_lynchings.articles.models import Article
+
 # Tuples and classes use for controlled vocab and choices
 GENDER_CHOICES = (
     ('M', 'Male'),
@@ -66,6 +68,8 @@ class Story(models.Model):
     }
     pca_id = models.PositiveIntegerField(help_text=help['pcaid'], unique=True, db_index=True)
     pca_last_update = models.DateTimeField(null=True, blank=True, editable=False, help_text=help["pcalastupdate"])
+
+    articles = models.ManyToManyField(Article, help_text="Related Documents and Files")
 
     class Meta:
         verbose_name_plural = "stories"

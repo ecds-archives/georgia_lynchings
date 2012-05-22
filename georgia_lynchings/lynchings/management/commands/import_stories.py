@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.core.management.base import BaseCommand, CommandError
 
+from georgia_lynchings.articles.models import Article
 from georgia_lynchings.events.models import MacroEvent
 from georgia_lynchings.lynchings.models import Story
 
@@ -24,3 +25,10 @@ class Command(BaseCommand):
             if options['overwrite'] or created:
                 story.pca_last_update = datetime.now()
             story.save()
+            if event.documents:
+                for document in event.documents:
+                    try:
+                        article = Article.objects.get(identifier=document.id)
+                        story.articles.add(article)
+                    except Article.DoesNotExist:
+                        print "Cannot fine article identifier %s" % document.id

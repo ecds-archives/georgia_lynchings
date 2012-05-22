@@ -1,3 +1,4 @@
+import re
 from optparse import make_option
 from datetime import datetime
 
@@ -22,9 +23,7 @@ class Command(BaseCommand):
         victim_list = Victim.objects.all()
         for victim in victim_list:
             person = self._handle_person(victim, **options)
-            person.save()
-            #lynching = self._handle_lynching(victim, person, **options)
-            #lynching.save()
+            lynching = self._handle_lynching(victim, **options)
 
     def _handle_person(self, victim, **options):
         person, created = Person.objects.get_or_create(pca_id=victim.id)
@@ -35,7 +34,7 @@ class Command(BaseCommand):
                 race.save()
             person.race = race
         if not person.name and victim.primary_name or options['overwrite']:
-            person.name = victim.primary_name
+            person.name = unicode(victim.primary_name)
         if not person.gender and victim.gender or options['overwrite']:
             genders = ['male', 'female']
             try:
@@ -45,15 +44,75 @@ class Command(BaseCommand):
                     person.gender = 'F'
             except ValueError:
                 pass
-        # handle alias
+        person.save()
+        if victim.all_names:
+            # Get unique list of alt names not already the primary name
+            name_list = set(victim.all_names).difference(set(person.name))
+            for name in name_list:
+                alias, alias_created = Alias.objects.get_or_create(name=unicode(name), person=person)
+                alias.save()
+        person.save()
         return person
 
-    def _handle_lynching(self, victim, person, **options):
-        lynching, created = Lynching.objects.get_or_create(pca_id=victim.id)
-        # handle person
-        # handle county
+    def _handle_lynching(self, victim, **options):
+        try:
+            person = Person.objects.get(pca_id=victim.id)
+        except Person.DoesNotExist:
+            raise CommandError("Error trying to create Lynching for a Person that does not exist.")
+        story, story_created = Story.objects.get_or_create(pca_id=victim.macro_event.id)
+        if story_created or not story.pca_last_update:
+            story.pca_last_update = datetime.now()
+            story.save()
+        lynching, created = Lynching.objects.get_or_create(victim=person, pca_id=person.pca_id, story=story)
+
         # handle alleged crime
-        # handle alternate county
-        # handle story
+        if not lynching.alleged_crime and victim.primary_alleged_crime or options['overwrite'] and victim.primary_alleged_crime:
+            accusation, acc_created = Accusation.objects.get_or_create(label=victim.primary_alleged_crime)
+            lynching.alleged_crime = accusation
+
+        # handle county
+        county_list = self._handle_counties(victim)
+        if not lynching.county and county_list or options['overwrite'] and county_list:
+            lynching.county = county_list[0]
+            county_list.pop(0)
+
+        lynching.pca_last_update = datetime.now()
+        lynching.save()  # Save before adding many to many rels
+
+        # Now handle many to many relationships.
+        for county in county_list:
+            lynching.alternate_counties.add(county)     # handle alternate county
+
         return lynching
+
+    def _handle_counties(self, victim):
+        """
+        This processes the string data from the county information and tries to make a
+        sensible list from it.
+        """
+        # county is sometimes a string of multiple counties
+        word_list = []
+        county_names = self._county_names()
+        for raw_county in victim.all_counties:
+            word_list.extend(self._clean_county_string(raw_county))
+        county_list = []
+        for word in set(word_list):
+            if word in county_names and word not in county_list:
+                county_list.append(County.objects.get(label__iexact=word))
+        return county_list
+
+    def _county_names(self):
+        """
+        Gets a set of normalized county names.
+        """
+        counties = County.objects.all()
+        return set([county.label.lower() for county in counties])
+
+    def _clean_county_string(self, raw_string):
+        """
+        Processes a raw string literal to return a list of lowercase unique words.
+        """
+        return [re.sub('[^a-zA-Z]','', part).lower() for part in raw_string.split(" ")]
+
+
 
