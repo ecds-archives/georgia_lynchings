@@ -53,12 +53,11 @@ class RdfPropertyField(object):
         bindings = store.query(sparql_query=unicode(q),
                                initial_bindings=bindings)
         # and interpret and return the results
-        if bindings:
-            if self.multiple:                
-                return([self.wrap_result(b['result']) for b in bindings])
-            else:
-                result = bindings[0]['result']
-                return self.wrap_result(result)
+        if self.multiple:
+            return [self.wrap_result(b['result']) for b in bindings] 
+        elif bindings:
+            result = bindings[0]['result']
+            return self.wrap_result(result)
         # else None
 
     def as_sparql_query(self, obj=None):
