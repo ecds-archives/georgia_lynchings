@@ -62,8 +62,6 @@ class SemanticTriplet(ComplexObject):
     'the URI of the RDF Class describing semantic triplet objects'
 
     # complex fields potentially attached to a Semantic Triplet
-    process = sxcxcxn.Process
-    'the verb of the statement'
     alternative = sxcxcxn.Alternative_triplet
     'an alternate and potentially conflicting rendition of this triplet'
 
@@ -95,38 +93,75 @@ class Participant(ComplexObject):
                                        result_type=SemanticTriplet,
                                        reverse_field_name='participants')
 
-    actor_name = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
-                                         ssxn.Name_of_individual_actor)
-    last_name = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
-                                        sxcxcxn.Personal_characteristics,
+
+class Individual(ComplexObject):
+    rdf_type = scxn.Individual
+    participant = ReversedRdfPropertyField(
+                    ChainedRdfPropertyField(sxcxcxn.Actor,
+                                            RdfPropertyField(sxcxcxn.Individual,
+                                                             multiple=True)),
+                    result_type=Participant,
+                    reverse_field_name='individuals')
+
+    actor_name = ssxn.Name_of_individual_actor
+    first_name = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
+                                         sxcxcxn.First_name_and_last_name,
+                                         ssxn.First_name)
+    last_name = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
                                         sxcxcxn.First_name_and_last_name,
                                         ssxn.Last_name)
-    qualitative_age = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
-                                              sxcxcxn.Personal_characteristics,
+    qualitative_age = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
                                               sxcxcxn.Age,
                                               ssxn.Qualitative_age)
-    race = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
-                                   sxcxcxn.Personal_characteristics,
+    exact_age = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
+                                        sxcxcxn.Age,
+                                        ssxn.Numeric_value)
+    race = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
                                    ssxn.Race)
-    gender = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
-                                     sxcxcxn.Personal_characteristics,
+    gender = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
                                      ssxn.Gender)
-    residence = ChainedRdfPropertyField(sxcxcxn.Actor, sxcxcxn.Individual,
-                                        sxcxcxn.Personal_characteristics,
+    residence = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
                                         sxcxcxn.Residence, dcx.Identifier)
-    
+    type_of_actor = ChainedRdfPropertyField(sxcxcxn.Personal_characteristics,
+                                            ssxn.Type_of_actor_Adjective)
+
 
 class Participant_S(Participant):
     rdf_type = scxn.Participant_S
-    triplet_with_subject = ReversedRdfPropertyField(RdfPropertyField(sxcxcxn.Participant_S),
+    triplet_with_subject = ReversedRdfPropertyField(RdfPropertyField(sxcxcxn.Participant_S,
+                                                                     multiple=True),
                                                     result_type=SemanticTriplet,
                                                     reverse_field_name='participant_s')
 
 class Participant_O(Participant):
     rdf_type = scxn.Participant_O
-    triplet_with_object = ReversedRdfPropertyField(RdfPropertyField(sxcxcxn.Participant_O),
+    triplet_with_object = ReversedRdfPropertyField(RdfPropertyField(sxcxcxn.Participant_O,
+                                                                    multiple=True),
                                                    result_type=SemanticTriplet,
                                                    reverse_field_name='participant_o')
+
+class SimpleProcess(ComplexObject):
+    rdf_type = scxn.Simple_process
+    event = ReversedRdfPropertyField(
+                ChainedRdfPropertyField(sxcxcxn.Process,
+                                        sxcxcxn.Simple_process),
+                result_type=SemanticTriplet,
+                reverse_field_name='process'
+            )
+    
+    verbal_phrase = ssxn.Verbal_phrase
+    definite_date = ChainedRdfPropertyField(
+                        sxcxcxn.Circumstances, sxcxcxn.Time, sxcxcxn.Date,
+                        sxcxcxn.Definite_date, ssxn.Definite_date)
+    city_name = ChainedRdfPropertyField(
+                    sxcxcxn.Circumstances, sxcxcxn.Space, sxcxcxn.City,
+                    ssxn.City_name)
+    reason_name = ChainedRdfPropertyField(
+                      sxcxcxn.Circumstances, sxcxcxn.Reason,
+                      ssxn.Name_of_reason)
+    instrument_name = ChainedRdfPropertyField(
+                          sxcxcxn.Circumstances, sxcxcxn.Instrument,
+                          ssxn.Type_of_instrument)
 
 
 class Victim(ComplexObject):
