@@ -65,6 +65,10 @@ class Command(BaseCommand):
             story.save()
         lynching, created = Lynching.objects.get_or_create(victim=person, pca_id=person.pca_id, story=story)
 
+        # primary date of lynching.
+        if not lynching.date and victim.primary_lynching_date or options['overwrite']:
+            lynching.date = victim.primary_lynching_date
+
         # handle alleged crime
         if not lynching.alleged_crime and victim.primary_alleged_crime or options['overwrite'] and victim.primary_alleged_crime:
             accusation, acc_created = Accusation.objects.get_or_create(label=victim.primary_alleged_crime)

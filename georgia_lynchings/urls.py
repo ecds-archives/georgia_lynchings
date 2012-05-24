@@ -8,6 +8,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^events/', include('georgia_lynchings.events.urls', namespace="events")),
+    url(r'^lynchings/', include('georgia_lynchings.lynchings.urls', namespace="lynchings")),
     url(r'^page/', include('georgia_lynchings.simplepages.urls', namespace="simplepages")),
     url(r'^$', 'georgia_lynchings.events.views.home', name="home"),
 

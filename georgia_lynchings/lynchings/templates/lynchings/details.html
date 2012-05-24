@@ -1,0 +1,85 @@
+{% extends "page_base.html" %}
+
+{% block head-title %}{{ story }}: {{ block.super }}{% endblock %}
+
+{% block head-scripts %}
+        {{ block.super }}
+<script type="text/javascript"
+        src="http://maps.googleapis.com/maps/api/js?key=AIzaSyD3iM2lzxphBo5JWGKuv4mvLtUUGXnuu7E&sensor=false">
+</script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/victim_map_display.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        initializeMap();
+        var latLong, markerTitle;
+        {% for county in story.county_list %}
+            latLong = new google.maps.LatLng({{ county.latitude }}, {{ county.longitude }});
+            markerTitle = "{{ county.label }} County";
+            addMarker(latLong, markerTitle);
+        {% endfor %}
+    });
+</script>
+{% endblock %}
+
+        {% block mainclass %}{{ block.super }} detail{% endblock %}
+
+{% block content-title %}{{ story }}{% endblock %}
+
+{% block content-body %}
+    <div id="victim_list" class="factlist">
+        <h2>Victims</h2>
+        {% for lynching in story.lynching_set.all %}
+            {% include "lynchings/snippets/lynching_summary.html" %}
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block aside %}
+<aside class="articles">
+    <section id="news_articles">
+        <header>
+            <h3>Primary Sources</h3>
+        </header>
+        {% for article in story.articles.all %}
+            {% include "articles/snippets/article_block.html" %}
+        {% endfor %}
+    </section>
+    <section id="victim_map">
+        <header>
+            <h3>Count{{ story.county_list|pluralize:"y,ies"}} of Lynching{{ story.lynching_set.all|pluralize }}</h3>
+        </header>
+        <div id="map_canvas"></div>
+    </section>
+</aside>
+{% endblock %}
+
+{% block endscript %}
+{{ block.super }}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery_plugins/imgpreview.full.jquery.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.previewImageLink').imgPreview({
+            srcAttr: 'data-preview',
+            containerID: 'imgPreviewWithStyles',
+            distanceFromCursor: {top:10, left:-175},
+            // When container is shown:
+            onShow: function(link){
+                // Animate link:
+                $(link).stop().animate({opacity:0.4});
+                // Reset image:
+                $('img', this).stop().css({opacity:0});
+            },
+            // When image has loaded:
+            onLoad: function(){
+                // Animate image
+                $(this).animate({opacity:1}, 300);
+            },
+            // When container hides:
+            onHide: function(link){
+                // Animate link:
+                $(link).stop().animate({opacity:1});
+            }
+        });
+    });
+</script>
+{% endblock %}

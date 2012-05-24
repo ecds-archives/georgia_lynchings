@@ -1,0 +1,12 @@
+{% extends "page_base.html" %}
+
+{% block head-title %}List{% endblock %}
+
+{% block content-title %}List of Lynchings: {{ block.super }}{% endblock %}
+
+{% block content-body %}
+    {% for story in story_list %}
+       <div><a href="{% url lynchings:story_detail story.id %}">{{ story }}</a>
+       </div>
+    {% endfor %}
+{% endblock %}
