@@ -32,5 +32,8 @@
     {% if article.file %}
         </a>
     {% endif %}
+    {% if perms.change_article %}
+    [<a href="{% url admin:articles_article_change article.id %}" target="_blank">Edit Article</a>]
+    {% endif %}
 </div>
 

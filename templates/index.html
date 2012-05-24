@@ -9,13 +9,15 @@
 
         {% block mainclass %}{{ block.super }} sidebar{% endblock %}
 
+{% block content-title %}Protype displays (development only){% endblock %}
 {% block content-body %}
     <!-- floaters handle vertical centering. see index.css -->
-        <h2>Prototype displays (development only)</h2>
         <ul>
-       <li><a href="{% url events:macro_events %}">List of all Lynchings</a></li>
+       <li><a href="{% url lynchings:story_list %}">List of all Lynchings</a></li>
 
-       <li><a href="{% url events:timemap %}">Timemap of Lynching Victims</a></li>
+       <li><a href="{% url lynchings:alleged_crimes_list %}">List of Alleged Crimes</a></li>
+
+       <li><a href="{% url lynchings:timemap %}">Timemap of Lynching Victims</a></li>
 
        </ul>
 {% endblock %}

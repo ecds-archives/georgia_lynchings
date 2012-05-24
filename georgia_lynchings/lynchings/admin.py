@@ -44,6 +44,8 @@ class LynchingAdmin(admin.ModelAdmin):
         )
     readonly_fields = ('pca_id', 'pca_last_update',) # avoids form error from including in fieldset above
     filter_horizontal = ('alternate_counties',)
+    list_display = ('victim', 'date', 'county')
+    list_filter = ('county',)
 
 class StoryAdmin(admin.ModelAdmin):
     filter_horizontal = ('articles',)

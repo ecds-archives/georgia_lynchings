@@ -71,6 +71,44 @@ class Story(models.Model):
 
     articles = models.ManyToManyField(Article, help_text="Related Documents and Files")
 
+    @property
+    def pretty_string(self):
+        """
+        Returns a more descriptive string for the story.
+        """
+        string_parts = [u'Lynching of',]
+        string_parts.append(u", ".join([u"%s" % lynching.victim for lynching in self.lynching_set.all()]))
+        date_set = set([u"%s" % lynching.date.year for lynching in self.lynching_set.all() if lynching.date])
+        if date_set:
+            string_parts.append(u"in %s" % ", ".join(date_set))
+        return u" ".join(string_parts)
+
+    @property
+    def county_list(self):
+        """
+        Convienence method to generate a list of all counties.
+        """
+        county_list = []
+        for lynching in self.lynching_set.all():
+            county_list.append(lynching.county)
+            county_list.extend([county for county in lynching.alternate_counties.all()])
+        return list(set(county_list))
+
+    def date(self):
+        """
+        Best determination of date of lynching.
+        """
+        date_list = sortred([u"%s" % lynching.date.year for lynching in self.lynching_set.all() if lynching.date])
+        if date_list:
+            return date_list[-1] # return the highest date
+        return None
+
+    # String Methods
+    def __unicode__(self):
+        return u'%s' % self.pretty_string
+    def __str__(self):
+        return smart_str(self.__unicode__())
+
     class Meta:
         verbose_name_plural = "stories"
 
@@ -100,10 +138,12 @@ class Person(models.Model):
         """
         if not self.name and self.race and self.gender:
             return u'Unknown %s %s' % (self.race, self.get_gender_display())
-        return self.__unicode__()
+        return u'Unkown Person'
 
     # String Methods
     def __unicode__(self):
+        if not self.name:
+            return self.pretty_name
         return u'%s' % self.name
     def __str__(self):
         return smart_str(self.__unicode__())
@@ -152,6 +192,12 @@ class Lynching(models.Model):
     victim = models.OneToOneField(Person, help_text=help["victim"])
     alleged_crime = models.ForeignKey(Accusation, null=True, blank=True, help_text=help['crime'])
     story = models.ForeignKey(Story, help_text=help['story'])
+
+    # String Methods
+    def __unicode__(self):
+        return u'%s' % self.victim.name
+    def __str__(self):
+        return smart_str(self.__unicode__())
 
     class Meta:
         ordering = ['date',]

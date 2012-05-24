@@ -1,0 +1,12 @@
+{% extends "page_base.html" %}
+
+{% block head-title %}List{% endblock %}
+
+{% block content-title %}List of Alleged Crimes: {{ block.super }}{% endblock %}
+
+{% block content-body %}
+{% for accusation in accusation_list %}
+<div><a href="{% url lynchings:story_list_by_accusation accusation.id %}">{{ accusation }} ({{ accusation.stories}})</a>
+</div>
+{% endfor %}
+{% endblock %}

@@ -16,7 +16,7 @@ body{ font:14px/24px Georgia, Helvetica, Helvetica Neue, Arial; }
    Aside Block
    ==============
 */
-aside a {
+aside a, aside a:visited {
     color: #508e52;
     text-decoration: none;
 }
@@ -70,6 +70,11 @@ aside div.article_block img {
     margin: 0;
     margin-top: .5em;
 }
+.meta {
+    font-size: 70%;
+    font-style: italic;
+    margin-left: 2em;
+    }
 
 /* ==============
     MOBILE: Menu
