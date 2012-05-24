@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     'georgia_lynchings.events',
     'georgia_lynchings.lynchings',
     'georgia_lynchings.rdf',
+    'georgia_lynchings.reldata',
     'georgia_lynchings.simplepages',
 )
 
