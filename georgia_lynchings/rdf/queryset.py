@@ -408,14 +408,15 @@ class QuerySet(object):
         results_for_objs[target_var].append(result[target_var])
 
         for field in extra_fields:
-            result_type, context_objs = self._get_result_key(field, result)
-            if result_type not in results:
-                results[result_type] = {}
-            results_for_type = results[result_type]
-            if context_objs not in results_for_type:
-                results_for_type[context_objs] = {}
-            results_for_objs = results_for_type[context_objs]
-            results_for_objs[field] = result.get(field, None)
+            if field in result:
+                result_type, context_objs = self._get_result_key(field, result)
+                if result_type not in results:
+                    results[result_type] = {}
+                results_for_type = results[result_type]
+                if context_objs not in results_for_type:
+                    results_for_type[context_objs] = {}
+                results_for_objs = results_for_type[context_objs]
+                results_for_objs[field] = result[field]
 
     def _get_result_key(self, field, result):
         '''Get the key that will be used for this object data inside the
@@ -515,11 +516,12 @@ class QuerySet(object):
         # just wraps the data in a simple Python type.
         if subfield_name in map_plan:
             def _wrap_value(val):
-                context_subobjs = context_objs + (val,)
-                subfield_context = grouped_results[subfield_name]
-                return self._map_result(context_subobjs, subfield_context,
-                        map_plan[subfield_name], subfield.result_type,
-                        grouped_results, map_plan)
+                if val is not None:
+                    context_subobjs = context_objs + (val,)
+                    subfield_context = grouped_results[subfield_name]
+                    return self._map_result(context_subobjs, subfield_context,
+                            map_plan[subfield_name], subfield.result_type,
+                            grouped_results, map_plan)
         else:
             def _wrap_value(val):
                 return subfield.result_type(val) if subfield.result_type else val
