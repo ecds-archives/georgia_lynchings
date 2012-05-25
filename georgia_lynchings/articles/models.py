@@ -3,6 +3,7 @@ from urllib import quote
 
 from django.db import models
 from django.conf import settings
+from django.utils.encoding import smart_str
 
 from georgia_lynchings.rdf.fields import ChainedRdfPropertyField, \
         ReversedRdfPropertyField, RdfPropertyField
@@ -70,7 +71,11 @@ class Article(models.Model):
     file = models.FileField(upload_to=settings.ARTICLE_UPLOAD_DIR, help_text=file_help, null=True, blank=True)
 
     def __unicode__(self):
-        return u"%s" % (self.title)
+        if self.title and self.publisher:
+            return u"%s, %s" % (self.title, self.publisher)
+        return u"Untitled Article %s" % (self.id)
+    def __str__(self):
+        return smart_str(self.__unicode__())
 
     def _format_thumbnail_filename(self, size="med"):
         """
