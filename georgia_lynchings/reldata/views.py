@@ -16,7 +16,15 @@ class RelationsCollection(object):
     def add_single_relationship(self, subj, obj):
         subj_node = self.get_node(subj)
         obj_node = self.get_node(obj)
-        self.links[(subj_node, obj_node)] += 1
+
+        # we're treating links as undirected for now. order them so that
+        # (a, b) and (b, a) are counted together.
+        if subj_node < obj_node:
+            endpoints = (subj_node, obj_node)
+        else:
+            endpoints = (obj_node, subj_node)
+
+        self.links[endpoints] += 1
 
     def get_node(self, name):
         if name in self.nodes:

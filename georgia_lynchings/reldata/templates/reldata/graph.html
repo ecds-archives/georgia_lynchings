@@ -36,7 +36,7 @@
           .enter().append("line")
             .attr("class", "link")
             .style("stroke", "#aaa")
-            .style("stroke-width", function(d){ return d.value; } );
+            .style("stroke-width", function(d){ return d.value * 0.6; } );
 
         /* a node is a g containing a circle and text. this allows us to
          * keep the circle marker and the label together in a single element
