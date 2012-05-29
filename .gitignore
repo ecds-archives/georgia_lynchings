@@ -24,6 +24,7 @@ playspace.py
 Thumbs.db
 Icon?
 .DS_Store?
+.DS_Store
 ehthumbs.db
 .idea
 collectedmedia
