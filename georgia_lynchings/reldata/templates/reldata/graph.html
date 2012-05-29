@@ -13,6 +13,7 @@
     $(document).ready(function(){
       var width=960, height=800;
 
+      /* general settings of the force-directed graph itself */
       var force = d3.layout.force()
           .charge(-2000)
           .linkDistance(20)
@@ -22,13 +23,14 @@
           .attr("width", width)
           .attr("height", height);
 
+      /* grab the graph data */
       d3.json("{{ data_url }}", function(json) {
         force
             .nodes(json.nodes)
             .links(json.links)
             .start();
 
-        /* the link is just a line.
+        /* create the links between the nodes.
          * TODO: look into svg line markers to add direction arrows
          */
         var link = svg.selectAll("line.link")
@@ -38,9 +40,9 @@
             .style("stroke", "#aaa")
             .style("stroke-width", function(d){ return d.value * 0.6; } );
 
-        /* a node is a g containing a circle and text. this allows us to
-         * keep the circle marker and the label together in a single element
-         */
+        /* create the nodes. a node is a g containing a circle and text.
+         * this allows us to keep the circle marker and the label together
+         * in a single element */
         var node = svg.selectAll("g.node")
             .data(json.nodes)
           .enter().append("g")
