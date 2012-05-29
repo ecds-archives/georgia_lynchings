@@ -9,6 +9,9 @@ from georgia_lynchings.reldata.models import Relationship
 from georgia_lynchings.events.models import SemanticTriplet
 
 def graph(request):
+    '''Display a force-directed graph showing relationships between types of
+    people.
+    '''
     data_urls = {
         'triples': reverse('relations:graph_triple_data'),
     }
@@ -18,17 +21,26 @@ def graph(request):
 
 
 class RelationsCollection(object):
+    '''A collection for managing graph data (nodes and links)'''
+
     def __init__(self):
         self.nodes = OrderedDict()
         self.links = defaultdict(int)
 
     def add_relationship_object(self, rel):
+        '''Add all nodes and links for a single
+        :class:`~georgia_lynchings.reldata.models.Relationship to the
+        collection.
+        '''
         if rel.subject_desc and rel.object_desc:
             self.add_single_relationship(rel.subject_desc, rel.object_desc)
 
     def add_single_relationship(self, subj, obj):
-        subj_node = self.get_node(subj)
-        obj_node = self.get_node(obj)
+        '''Add the nodes and links for a single subject-object pair to the
+        collection.
+        '''
+        subj_node = self.get_node_id(subj)
+        obj_node = self.get_node_id(obj)
 
         # we're treating links as undirected for now. order them so that
         # (a, b) and (b, a) are counted together.
@@ -39,7 +51,9 @@ class RelationsCollection(object):
 
         self.links[endpoints] += 1
 
-    def get_node(self, name):
+    def get_node_id(self, name):
+        '''Get a unique integer id for the node with the given name,
+        creating one sequentially if necessary. Increment reference count.''' 
         if name in self.nodes:
             val = self.nodes[name]
             val['count'] += 1
@@ -50,6 +64,12 @@ class RelationsCollection(object):
         return val['num']
 
     def as_graph_data(self):
+        '''Translate nodes and links in this collection into lists and
+        dictionaries for easy serialization.
+
+        NB: This data is handled directly by the graph template js logic. If
+        we change it here, then we probably need to change it there, too.
+        '''
         return {
             'nodes': [{'name': name,
                        'weight': node['count']}
@@ -63,6 +83,9 @@ class RelationsCollection(object):
 
 
 def graph_data(request):
+    '''Collect data for a (force-directed) relationship graph from available
+    :class:`~georgia_lynchings.reldata.models.Relationship` data.
+    '''
     rels = RelationsCollection()
     for rel in Relationship.objects.all():
         rels.add_relationship_object(rel)
@@ -73,6 +96,9 @@ def graph_data(request):
 
 
 def graph_triple_data(request):
+    '''Collect data for a (force-directed) relationship graph from available
+    :class:`~georgia_lynchings.event.models.SemanticTriplet` data.
+    '''
     rels = RelationsCollection()
     for subj, obj in triple_subject_object_pairs():
         if subj.actor_name and obj.actor_name:
@@ -84,6 +110,9 @@ def graph_triple_data(request):
 
 
 def triple_subject_object_pairs():
+    '''Generate all subject-object pairs of all
+    :class:`~georgia_lynchings.event.models.SemanticTriplet` objects.
+    '''
     FIELDS = [
         'participant_s__individuals__actor_name',
         'participant_o__individuals__actor_name',
