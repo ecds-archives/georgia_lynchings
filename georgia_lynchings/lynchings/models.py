@@ -94,13 +94,14 @@ class Story(models.Model):
             county_list.extend([county for county in lynching.alternate_counties.all()])
         return list(set(county_list))
 
-    def date(self):
+    @property
+    def year(self):
         """
         Best determination of date of lynching.
         """
-        date_list = sortred([u"%s" % lynching.date.year for lynching in self.lynching_set.all() if lynching.date])
-        if date_list:
-            return date_list[-1] # return the highest date
+        year_list = sorted([lynching.date.year for lynching in self.lynching_set.all() if lynching.date])
+        if year_list:
+            return year_list[-1] # return the highest date
         return None
 
     # String Methods
@@ -136,9 +137,11 @@ class Person(models.Model):
         """
         Convienence method to return a descriptive string for the person
         """
+        if self.name:
+            return u'%s' % self.name
         if not self.name and self.race and self.gender:
             return u'Unknown %s %s' % (self.race, self.get_gender_display())
-        return u'Unkown Person'
+        return u'Unknown Person'
 
     # String Methods
     def __unicode__(self):
