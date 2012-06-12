@@ -10,6 +10,8 @@
      * which is copyright 2012 Mike Bostock
      */
 
+    var DATA_URL = "{{ data_url }}";
+
     $(document).ready(function(){
       var width=960, height=800;
 
@@ -24,7 +26,25 @@
           .attr("height", height);
 
       /* grab the graph data */
-      d3.json("{{ data_url }}", function(json) {
+      d3.json(DATA_URL, function(json) {
+        /* Rather than placing all nodes at 0,0, spiral them out from the
+         * center using the golden ratio. Mostly our goal here is to
+         * reduce initial erratic movement caused by placing them all on top
+         * each other at 0,0. There's nothing special about this particular
+         * algorithm besides the fact that it's been in use by plants for a
+         * few eons. */
+        var center_x = width/2;
+        var center_y = height/2;
+        var delta_radius = height / json.nodes.length / 2;
+        for (var i in json.nodes) {
+          var node = json.nodes[i];
+          var angle = 0.618 * i; // phi-1
+          var radius = i * delta_radius;
+          node.x = node.px = center_x + radius * Math.cos(angle);
+          node.y = node.py = center_y + radius * Math.sin(angle);
+        }
+
+        /* now add those nodes and links to the force layout */
         force
             .nodes(json.nodes)
             .links(json.links)
@@ -47,6 +67,7 @@
             .data(json.nodes)
           .enter().append("g")
             .attr("class", "node")
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
             .call(force.drag);
 
         node.append("circle")
@@ -75,10 +96,55 @@
         });
 
       });
+
+      /* FIXME: proof of concept only. when #testfilter is clicked, ask the
+       * server for new data, using only ones with subject_gender=female.
+       */
+      $('#testfilter').click(function(){
+        var url = DATA_URL + "?subject_gender=female";
+        d3.json(url, function(json) {
+
+          /* collect the outgoing nodes by name */
+          var old_nodes = force.nodes();
+          var node_map = {}
+          for (var i in old_nodes) {
+            var node = old_nodes[i];
+            node_map[node.name] = node;
+          }
+
+          /* transfer node location from outgoing set to the new set
+           * according to name so that the nodes stay in the same place. */
+          for (var i in json.nodes) {
+            var node = json.nodes[i];
+            if (node.name in node_map) {
+              old_node = node_map[node.name];
+              node.x = old_node.x;
+              node.y = old_node.y;
+              node.px = old_node.px;
+              node.py = old_node.py;
+            }
+          }
+
+          /* reset the force layout */
+          force
+              .nodes(json.nodes)
+              .links(json.links)
+              .start();
+
+          /* and remove outgoing links/nodes */
+          svg.selectAll("line.link")
+              .data(json.links)
+            .exit().remove();
+          svg.selectAll("g.node")
+              .data(json.nodes, function (d) { return d.name; })
+            .exit().remove();
+        });
+      });
     });
   </script>
 {% endblock %}
 
 {% block content-body %}
+  <p id=testfilter>filter</p>
   <div id=graph></div>
 {% endblock %}
