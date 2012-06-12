@@ -81,13 +81,21 @@ class RelationsCollection(object):
         }
         
 
+FILTER_FIELDS = ['subject_gender', 'subject_race',
+                 'object_gender', 'object_race']
 
 def graph_data(request):
     '''Collect data for a (force-directed) relationship graph from available
     :class:`~georgia_lynchings.reldata.models.Relationship` data.
     '''
+    rel_qs = Relationship.objects.all()
+    for field in FILTER_FIELDS:
+        value = request.GET.get(field, '')
+        if value:
+            rel_qs = rel_qs.filter(**{field: value})
+
     rels = RelationsCollection()
-    for rel in Relationship.objects.all():
+    for rel in rel_qs:
         rels.add_relationship_object(rel)
 
     result = rels.as_graph_data()
