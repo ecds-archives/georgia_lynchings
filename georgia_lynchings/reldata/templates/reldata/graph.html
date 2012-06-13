@@ -203,36 +203,15 @@
 {% endblock %}
 
 {% block content-body %}
-  <label>subject gender
-    <select name="subject_gender" class="filter">
-      <option></option>
-      <option>male</option>
-      <option>female</option>
-    </select>
-  </label>
-  <label>object gender
-    <select name="object_gender" class="filter">
-      <option></option>
-      <option>male</option>
-      <option>female</option>
-    </select>
-  </label>
-  <label>subject race
-    <select name="subject_race" class="filter">
-      <option></option>
-      <option>white</option>
-      <option>negro</option>
-      <option>colored</option>
-    </select>
-  </label>
-  <label>object race
-    <select name="object_race" class="filter">
-      <option></option>
-      <option>white</option>
-      <option>negro</option>
-      <option>colored</option>
-    </select>
-  </label>
+  {% for field_name, field, values in filters %}
+    <label>{{ field_name }}
+      <select name="{{ field }}" class="filter">
+        {% for value in values %}
+          <option>{{ value }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  {% endfor %}
   <svg id=graph width=960 height=800>
     <!-- links before nodes so that nodes are always painted on top -->
     <g id=links></g>
