@@ -19,7 +19,7 @@
   <script type="text/javascript" src="http://mbostock.github.com/d3/d3.v2.js?2.9.2"></script>
 
   <script type="text/javascript">
-    /* Based heavily on sample code from:
+    /* Originally based on sample code from:
      *   http://mbostock.github.com/d3/ex/force.html
      * which is copyright 2012 Mike Bostock
      */
@@ -35,14 +35,9 @@
                  $("#graph").attr("height")])
           .on("tick", function() { update_dom_on_tick(); });
 
-      load_graph_data(DATA_URL, force);
-
-      /* FIXME: proof of concept for live-filtering data. when this is done
-       * it should happen in response to changes in sensible ui elements,
-       * not a strawman click.
-       */
-      $('#testfilter').click(function() {
-        load_graph_data(DATA_URL + "?subject_gender=female", force);
+      get_filtered_graph_data(force);
+      $("select.filter").change(function() {
+        get_filtered_graph_data(force);
       });
     });
 
@@ -109,6 +104,17 @@
         update_links_on_data_change(json, force);
         force.start();
       });
+    }
+
+    function get_filtered_graph_data(force) {
+      var query = "?";
+      $("select.filter").each(function() {
+        if ($(this).val()) {
+          query += $(this).attr("name") + "=" + $(this).val() + "&";
+        }
+      });
+      query = query.substring(0, query.length - 1);
+      load_graph_data(DATA_URL + query, force);
     }
 
     function update_nodes_on_data_change(json, force) {
@@ -197,7 +203,36 @@
 {% endblock %}
 
 {% block content-body %}
-  <p id=testfilter>filter</p>
+  <label>subject gender
+    <select name="subject_gender" class="filter">
+      <option></option>
+      <option>male</option>
+      <option>female</option>
+    </select>
+  </label>
+  <label>object gender
+    <select name="object_gender" class="filter">
+      <option></option>
+      <option>male</option>
+      <option>female</option>
+    </select>
+  </label>
+  <label>subject race
+    <select name="subject_race" class="filter">
+      <option></option>
+      <option>white</option>
+      <option>negro</option>
+      <option>colored</option>
+    </select>
+  </label>
+  <label>object race
+    <select name="object_race" class="filter">
+      <option></option>
+      <option>white</option>
+      <option>negro</option>
+      <option>colored</option>
+    </select>
+  </label>
   <svg id=graph width=960 height=800>
     <!-- links before nodes so that nodes are always painted on top -->
     <g id=links></g>
