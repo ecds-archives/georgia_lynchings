@@ -1,5 +1,19 @@
 {% extends "page_base.html" %}
 
+{% block head-style %}
+  {{ block.super }}
+  <style type="text/css">
+    #graph .link {
+      stroke: #aaa;
+    }
+    #graph .node circle {
+      fill: #9b9;
+      stroke: #ddd;
+      stroke-width: 1.5;
+    }
+  </style>
+{% endblock %}
+
 {% block head-scripts %}
   {{ block.super }}
   <script type="text/javascript" src="http://mbostock.github.com/d3/d3.v2.js?2.9.2"></script>
@@ -13,89 +27,95 @@
     var DATA_URL = "{{ data_url }}";
 
     $(document).ready(function(){
-      var width=960, height=800;
-
       /* general settings of the force-directed graph itself */
       var force = d3.layout.force()
           .charge(-2000)
-          .linkDistance(20)
           .gravity(1)
-          .size([width, height]);
-      var svg = d3.select("#graph").append("svg")
-          .attr("width", width)
-          .attr("height", height);
+          .size([$("#graph").attr("width"),
+                 $("#graph").attr("height")])
+          .on("tick", function() { update_dom(); });
 
       /* grab the graph data */
       d3.json(DATA_URL, function(json) {
+        set_initial_node_position(json.nodes);
+        force.nodes(json.nodes)
+             .links(json.links);
+
+        var dom = update_graph_dom(json);
+        dom.nodes.call(force.drag);
+        force.start();
+      });
+
+      function set_initial_node_position(nodes) {
         /* Rather than placing all nodes at 0,0, spiral them out from the
          * center using the golden ratio. Mostly our goal here is to
          * reduce initial erratic movement caused by placing them all on top
          * each other at 0,0. There's nothing special about this particular
          * algorithm besides the fact that it's been in use by plants for a
          * few eons. */
-        var center_x = width/2;
-        var center_y = height/2;
-        var delta_radius = height / json.nodes.length / 2;
-        for (var i in json.nodes) {
-          var node = json.nodes[i];
+        var center_x = $("#graph").attr("width") / 2;
+        var center_y = $("#graph").attr("height") / 2;
+        var delta_radius = center_y / nodes.length;
+
+        for (var i in nodes) {
+          var node = nodes[i];
           var angle = 0.618 * i; // phi-1
           var radius = i * delta_radius;
           node.x = node.px = center_x + radius * Math.cos(angle);
           node.y = node.py = center_y + radius * Math.sin(angle);
         }
+      }
 
-        /* now add those nodes and links to the force layout */
-        force
-            .nodes(json.nodes)
-            .links(json.links)
-            .start();
+      function update_graph_dom(json) {
+        var svg = d3.select("#graph");
 
-        /* create the links between the nodes.
+        /* create the links between the nodes first so that they are painted
+         * under the nodes.
          * TODO: look into svg line markers to add direction arrows
          */
-        var link = svg.selectAll("line.link")
-            .data(json.links)
-          .enter().append("line")
+        var dom = {};
+        dom.lines = svg.selectAll("line.link").data(json.links)
+            .enter().append("line");
+        dom.lines
             .attr("class", "link")
-            .style("stroke", "#aaa")
-            .style("stroke-width", function(d){ return d.value * 0.6; } );
+            .style("stroke-width", function (d) {
+              return d.value * 0.6;
+            });
 
         /* create the nodes. a node is a g containing a circle and text.
          * this allows us to keep the circle marker and the label together
          * in a single element */
-        var node = svg.selectAll("g.node")
+        dom.nodes = svg.selectAll("g.node")
             .data(json.nodes)
           .enter().append("g")
-            .attr("class", "node")
-            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-            .call(force.drag);
-
-        node.append("circle")
-            .attr("r", function(d){ return d.weight/1.5 + 6; })
-            .style("fill", "#9b9")
-            .style("stroke", "#ddd")
-            .style("stroke-width", "1.5");
-      
-        node.append("text")
+            .attr("class", "node");
+        dom.nodes.append("circle")
+            .attr("r", function (d) {
+              return d.weight * 0.6 + 6;
+            });
+        dom.nodes.append("text")
             .attr("class", "label")
             .attr("dy", ".3em")
             .attr("text-anchor", "middle")
             .text(function(d) { return d.name; });
 
-        /* every tick, update the line and node locations */
-        force.on("tick", function() {
-          link.attr("x1", function(d) { return d.source.x; })
-              .attr("y1", function(d) { return d.source.y; })
-              .attr("x2", function(d) { return d.target.x; })
-              .attr("y2", function(d) { return d.target.y; });
+        return dom;
+      }
 
-          node.attr("transform", function(d) {
-            return "translate(" + d.x + "," + d.y + ")";
+      function update_dom() {
+        var svg = d3.select("#graph");
+
+        svg.selectAll("line.link")
+          .attr("x1", function (d) { return d.source.x; })
+          .attr("y1", function (d) { return d.source.y; })
+          .attr("x2", function (d) { return d.target.x; })
+          .attr("y2", function (d) { return d.target.y; });
+
+        svg.selectAll("g.node")
+          .attr("transform", function (d) {
+              return "translate(" + d.x + "," + d.y + ")";
           });
-
-        });
-
-      });
+      }
 
       /* FIXME: proof of concept only. when #testfilter is clicked, ask the
        * server for new data, using only ones with subject_gender=female.
@@ -146,5 +166,5 @@
 
 {% block content-body %}
   <p id=testfilter>filter</p>
-  <div id=graph></div>
+  <svg id=graph width=960 height=800></svg>
 {% endblock %}
