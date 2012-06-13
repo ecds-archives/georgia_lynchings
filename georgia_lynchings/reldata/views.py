@@ -2,11 +2,15 @@ from collections import defaultdict, OrderedDict
 import json
 
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render
 
 from georgia_lynchings.reldata.models import Relationship
 from georgia_lynchings.events.models import SemanticTriplet
+
+FILTER_FIELDS = ['subject_gender', 'subject_race',
+                 'object_gender', 'object_race']
 
 def graph(request):
     '''Display a force-directed graph showing relationships between types of
@@ -17,7 +21,17 @@ def graph(request):
     }
     data_name = request.GET.get('source', None)
     data_url = data_urls.get(data_name, reverse('relations:graph_data'))
-    return render(request, 'reldata/graph.html', {'data_url': data_url})
+
+    filters = []
+    for field in FILTER_FIELDS:
+        field_name = field.replace('_', ' ')
+        value_data = Relationship.objects.values(field).annotate(n=Count(field))
+        values = [v[field] for v in value_data]
+        filters.append((field_name, field, sorted(values)))
+    return render(request, 'reldata/graph.html', {
+            'data_url': data_url,
+            'filters': filters,
+        })
 
 
 class RelationsCollection(object):
@@ -82,9 +96,6 @@ class RelationsCollection(object):
                       for (key, val) in self.links.iteritems()],
         }
         
-
-FILTER_FIELDS = ['subject_gender', 'subject_race',
-                 'object_gender', 'object_race']
 
 def graph_data(request):
     '''Collect data for a (force-directed) relationship graph from available
