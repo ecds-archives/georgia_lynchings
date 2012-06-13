@@ -39,8 +39,8 @@ class RelationsCollection(object):
         '''Add the nodes and links for a single subject-object pair to the
         collection.
         '''
-        subj_node = self.get_node_id(subj)
-        obj_node = self.get_node_id(obj)
+        subj_node = (self.get_node_id(subj), subj)
+        obj_node = (self.get_node_id(obj), obj)
 
         # we're treating links as undirected for now. order them so that
         # (a, b) and (b, a) are counted together.
@@ -74,8 +74,10 @@ class RelationsCollection(object):
             'nodes': [{'name': name,
                        'weight': node['count']}
                       for name, node in self.nodes.iteritems()],
-            'links': [{'source': key[0],
-                       'target': key[1],
+            'links': [{'source': key[0][0],
+                       'source_name': key[0][1],
+                       'target': key[1][0],
+                       'target_name': key[1][1],
                        'value': val}
                       for (key, val) in self.links.iteritems()],
         }
