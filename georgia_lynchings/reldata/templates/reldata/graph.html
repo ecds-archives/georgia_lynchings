@@ -164,13 +164,13 @@
       lines
         .transition()
           .style("stroke-width", function (d) {
-            return d.value * 0.6;
+            return d.value * 0.8 + 1;
           });
       lines.enter().append("line")
           .attr("class", "link")
           .style("opacity", 0)
           .style("stroke-width", function (d) {
-            return d.value * 0.6 + 1;
+            return d.value * 0.8 + 1;
           })
         .transition()
           .duration(2000)
