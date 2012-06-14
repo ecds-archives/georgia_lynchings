@@ -2,11 +2,15 @@ from collections import defaultdict, OrderedDict
 import json
 
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render
 
 from georgia_lynchings.reldata.models import Relationship
 from georgia_lynchings.events.models import SemanticTriplet
+
+FILTER_FIELDS = ['subject_gender', 'subject_race',
+                 'object_gender', 'object_race']
 
 def graph(request):
     '''Display a force-directed graph showing relationships between types of
@@ -17,7 +21,17 @@ def graph(request):
     }
     data_name = request.GET.get('source', None)
     data_url = data_urls.get(data_name, reverse('relations:graph_data'))
-    return render(request, 'reldata/graph.html', {'data_url': data_url})
+
+    filters = []
+    for field in FILTER_FIELDS:
+        field_name = field.replace('_', ' ')
+        value_data = Relationship.objects.values(field).annotate(n=Count(field))
+        values = [v[field] for v in value_data]
+        filters.append((field_name, field, sorted(values)))
+    return render(request, 'reldata/graph.html', {
+            'data_url': data_url,
+            'filters': filters,
+        })
 
 
 class RelationsCollection(object):
@@ -39,8 +53,8 @@ class RelationsCollection(object):
         '''Add the nodes and links for a single subject-object pair to the
         collection.
         '''
-        subj_node = self.get_node_id(subj)
-        obj_node = self.get_node_id(obj)
+        subj_node = (self.get_node_id(subj), subj)
+        obj_node = (self.get_node_id(obj), obj)
 
         # we're treating links as undirected for now. order them so that
         # (a, b) and (b, a) are counted together.
@@ -74,20 +88,27 @@ class RelationsCollection(object):
             'nodes': [{'name': name,
                        'weight': node['count']}
                       for name, node in self.nodes.iteritems()],
-            'links': [{'source': key[0],
-                       'target': key[1],
+            'links': [{'source': key[0][0],
+                       'source_name': key[0][1],
+                       'target': key[1][0],
+                       'target_name': key[1][1],
                        'value': val}
                       for (key, val) in self.links.iteritems()],
         }
         
 
-
 def graph_data(request):
     '''Collect data for a (force-directed) relationship graph from available
     :class:`~georgia_lynchings.reldata.models.Relationship` data.
     '''
+    rel_qs = Relationship.objects.all()
+    for field in FILTER_FIELDS:
+        value = request.GET.get(field, '')
+        if value:
+            rel_qs = rel_qs.filter(**{field: value})
+
     rels = RelationsCollection()
-    for rel in Relationship.objects.all():
+    for rel in rel_qs:
         rels.add_relationship_object(rel)
 
     result = rels.as_graph_data()
