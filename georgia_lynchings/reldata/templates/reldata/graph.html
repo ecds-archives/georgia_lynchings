@@ -11,6 +11,8 @@
   <script type="text/javascript" src="{{ STATIC_URL }}js/graph.js"></script>
 
   <script type="text/javascript">
+    var DATA_URL = "{{ data_url }}";
+
     $(document).ready(function(){
       force = d3.layout.force()
           .charge(-2000)
@@ -19,9 +21,9 @@
                  $("#graph").attr("height")])
           .on("tick", function() { update_dom_on_tick(); });
 
-      get_filtered_graph_data(force);
+      get_filtered_graph_data(DATA_URL, force);
       $("select.filter").change(function() {
-        get_filtered_graph_data(force);
+        get_filtered_graph_data(DATA_URL, force);
       });
     });
   </script>

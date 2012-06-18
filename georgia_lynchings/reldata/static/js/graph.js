@@ -3,7 +3,6 @@
  * which is copyright 2012 Mike Bostock
  */
 
-var DATA_URL = "{{ data_url }}";
 
 /***
  * NODE POSITIONING
@@ -70,7 +69,7 @@ function load_graph_data(url, force) {
   });
 }
 
-function get_filtered_graph_data(force) {
+function get_filtered_graph_data(url, force) {
   var query = "?";
   $("select.filter").each(function() {
     if ($(this).val()) {
@@ -78,7 +77,7 @@ function get_filtered_graph_data(force) {
     }
   });
   query = query.substring(0, query.length - 1);
-  load_graph_data(DATA_URL + query, force);
+  load_graph_data(url + query, force);
 }
 
 function update_nodes_on_data_change(json, force) {
