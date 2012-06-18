@@ -4,6 +4,7 @@ import json
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.db.models import Count
 
 from georgia_lynchings.reldata.models import Relationship
 from georgia_lynchings.events.models import SemanticTriplet
@@ -18,6 +19,16 @@ def graph(request):
     data_name = request.GET.get('source', None)
     data_url = data_urls.get(data_name, reverse('relations:graph_data'))
     return render(request, 'reldata/graph.html', {'data_url': data_url})
+
+def wordcloud(request):
+    rels = Relationship.objects.exclude(subject_adjective="").\
+    values('subject_adjective').annotate(Count('subject_adjective'))
+    word_list = [{'word': rel['subject_adjective'], 'count': rel['subject_adjective__count']}
+    for rel in rels]
+
+    return render(request, 'reldata/wordle.html', {
+        'word_list': word_list,
+    })
 
 
 class RelationsCollection(object):
@@ -107,6 +118,16 @@ def graph_triple_data(request):
     result = rels.as_graph_data()
     result_s = json.dumps(result)
     return HttpResponse(result_s, content_type='application/json')
+
+def cloud_data(request):
+    '''
+    Generates json data for the wordcloud view.
+    '''
+    rels = Relationship.objects.exclude(subject_adjective="").\
+        values('subject_adjective').annotate(Count('subject_adjective'))
+    data = [{'word': rel['subject_adjective'], 'count': rel['subject_adjective__count']}
+        for rel in rels]
+    return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 def triple_subject_object_pairs():
