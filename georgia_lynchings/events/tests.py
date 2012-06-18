@@ -10,7 +10,8 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from georgia_lynchings.events.models import MacroEvent, Event, \
-    SemanticTriplet, Participant, Participant_S, Participant_O, Victim
+    SemanticTriplet, Participant, Participant_S, Participant_O, Victim, \
+    Individual
 from georgia_lynchings.rdf.ns import dcx
 from georgia_lynchings.rdf.queryset import QuerySet
 from georgia_lynchings.rdf.sparqlstore import SparqlStore
@@ -40,6 +41,7 @@ class EventsAppTest(TestCase):
         self.EVENT_ID = '552'
         self.TRIPLET_ID = '571'
         self.PARTICIPANT_ID = '584'
+        self.INDIVIDUAL_ID = '47767'
         
         self.VICTIM_E_COOPER_ID = '135239'   # Eli Cooper
         self.VICTIM_C_ROBERSON_ID = '135165' # John Henry Pinkney
@@ -84,8 +86,8 @@ class MacroEventTest(EventsAppTest):
             # if we specify .fields() and then access only those fields, the
             # values are prefetched by the initial query, and no additional
             # queries are necessary.
-            participants = list(macro.objects.events.triplets.participants.fields('gender'))
-            genders = [p.gender for p in participants]
+            individuals = list(macro.objects.events.triplets.participants.individuals.fields('gender'))
+            genders = [i.gender for i in individuals]
             self.assertEqual(len(mock_query.call_args_list), 1)
 
 
@@ -112,13 +114,15 @@ class SemanticTripletTest(EventsAppTest):
         triplet = SemanticTriplet(self.TRIPLET_ID)
 
         # participants
-        self.assertEqual(triplet.participant_s.id, '572')
-        self.assertTrue(isinstance(triplet.participant_s, Participant))
-        self.assertTrue(isinstance(triplet.participant_s, Participant_S))
+        self.assertEqual(len(triplet.participant_s), 1)
+        self.assertEqual(triplet.participant_s[0].id, '572')
+        self.assertTrue(isinstance(triplet.participant_s[0], Participant))
+        self.assertTrue(isinstance(triplet.participant_s[0], Participant_S))
 
-        self.assertEqual(triplet.participant_o.id, '584')
-        self.assertTrue(isinstance(triplet.participant_o, Participant))
-        self.assertTrue(isinstance(triplet.participant_o, Participant_O))
+        self.assertEqual(len(triplet.participant_o), 1)
+        self.assertEqual(triplet.participant_o[0].id, '584')
+        self.assertTrue(isinstance(triplet.participant_o[0], Participant))
+        self.assertTrue(isinstance(triplet.participant_o[0], Participant_O))
 
         self.assertEqual(len(triplet.participants), 2)
         self.assertEqual(triplet.participants[0].id, '572')
@@ -136,17 +140,17 @@ class SemanticTripletTest(EventsAppTest):
         self.assertEqual(triplet.macro_event.label, 'Houston')
 
 
-class ParticipantTest(EventsAppTest):
+class IndividualTest(EventsAppTest):
     def test_data_properties(self):
-        participant = Participant(self.PARTICIPANT_ID)
+        individual = Individual(self.INDIVIDUAL_ID)
 
-        self.assertEqual(participant.actor_name, 'colored')
-        self.assertEqual(participant.last_name, 'Walker')
-        self.assertEqual(participant.gender, 'male')
+        self.assertEqual(individual.actor_name, 'colored')
+        self.assertEqual(individual.last_name, 'Walker')
+        self.assertEqual(individual.gender, 'male')
 
     def test_related_object_properties(self):
-        participant = Participant(self.PARTICIPANT_ID)
-        self.assertEqual(participant.triplet.id, '571')
+        individual = Individual(self.INDIVIDUAL_ID)
+        self.assertEqual(individual.participant.id, self.PARTICIPANT_ID)
         
         
 class VictimTest(EventsAppTest):
@@ -154,9 +158,9 @@ class VictimTest(EventsAppTest):
     # now test only the ones we actually use
     def test_basic_rdf_properties(self):
         victim = Victim(self.VICTIM_E_COOPER_ID)
-        self.assertEqual(victim.victim_name, 'Eli Cooper')
-        self.assertEqual(victim.alleged_crime, 'Organizing Black Farmers')
-        self.assertEqual(victim.county_of_lynching, 'Laurens')        
+        self.assertEqual(victim.primary_name, 'Eli Cooper')
+        self.assertEqual(victim.primary_alleged_crime, 'Organizing Black Farmers')
+        self.assertEqual(victim.primary_county, 'Laurens')        
 
     def test_related_object_properties(self):
         victim = Victim(self.VICTIM_E_COOPER_ID)
@@ -169,7 +173,7 @@ class VictimTest(EventsAppTest):
     def test_macro_event_victims(self):
         # This macro event has 1 victims       
         victim1 = Victim(self.VICTIM_C_ROBERSON_ID)
-        self.assertEqual(victim1.victim_name, 'Curry Roberson')
+        self.assertEqual(victim1.primary_name, 'Curry Roberson')
 
         macro = MacroEvent(self.PULASKI_MACRO_ID)
         self.assertEqual(victim1.id, macro.victims[0].id)                       
@@ -183,24 +187,20 @@ class ViewsTest(EventsAppTest):
         
         expected, got = 200, macro_events_response.status_code
         self.assertEqual(expected, got, 'Expected %s status code, got %s' % (expected, got))
-        self.assertGreater(len(macro_events_response.context['results']), 325, 
-            'Expected len is greater than 325 but returned %s for results' % (len(macro_events_response.context['results']))) 
+        context_events = macro_events_response.context['events']
+        self.assertGreater(len(list(context_events)), 325, 
+            'Expected len is greater than 325 but returned %s for results' % (len(list(context_events)))) 
           
         # test type of macro event label, should be literal
-        self.assertTrue(isinstance(macro_events_response.context['results'][0]['melabel'], Literal),
+        self.assertTrue(isinstance(macro_events_response.context['events'][0].label, Literal),
                         'Expected melabel type Literal')
         # test value of macro event label  for first item     
-        expected, got = macro_events_response.context['results'][0]['melabel'][:7], u'Houston'
+        expected, got = macro_events_response.context['events'][0].label[:7], u'Houston'
         msg = 'Expected macro event label [%s] but returned [%s] for results' % (expected, got)
         self.assertEqual(expected, got, msg)
         
-        # test value of article count for first item       
-        expected, got = macro_events_response.context['results'][0]['articleTotal'], u'3'
-        msg = 'Expected macro event article count [%s] but returned [%s] for results' % (expected, got)
-        self.assertEqual(expected, got, msg)
-
-    def test_map_json(self, mock_solr_interface):
-        json_url = reverse('events:timemap_victim_data')
+    def test_map_json(self):
+        json_url = reverse('events:map-victim-data')
 
         # make sure url returns correctly
         response = self.client.get(json_url)
