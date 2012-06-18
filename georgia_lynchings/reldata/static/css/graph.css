@@ -1,0 +1,8 @@
+#graph .link {
+  stroke: #aaa;
+}
+#graph .node circle {
+  fill: #9b9;
+  stroke: #ddd;
+  stroke-width: 1.5;
+}
