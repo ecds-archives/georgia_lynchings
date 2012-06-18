@@ -103,6 +103,7 @@ INSTALLED_APPS = (
     'georgia_lynchings.demographics',
     'georgia_lynchings.reldata',
     'georgia_lynchings.simplepages',
+    'south',
 )
 
 # The URI root for all internally-defined namespaces used by this
