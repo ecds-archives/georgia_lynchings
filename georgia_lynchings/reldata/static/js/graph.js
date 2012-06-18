@@ -8,6 +8,8 @@
  * NODE POSITIONING
  */
 
+var colors20 = d3.scale.category20c();
+
 /* transfer node location from outgoing set to the new set
  * according to name so that the nodes stay in the same place. */
 function init_node_locations(dest, src) {
@@ -97,7 +99,8 @@ function update_nodes_on_data_change(json, force) {
     .transition()
       .duration(500)
       .style("opacity", 1);
-  enter_nodes.append("circle");
+  enter_nodes.append("circle")
+      .style("fill", function (d) { return colors20(d.weight); })
   enter_nodes.append("text")
       .attr("class", "label")
       .attr("dy", ".3em")
