@@ -20,7 +20,7 @@ Template snippet use to display summary information about a lynching victim.
         {% if perms.change_person %}
             edit: [<a href="{% url admin:lynchings_person_change lynching.victim.id %}" target="_blank">Person</a>]
             [<a href="{% url admin:lynchings_lynching_change lynching.id %}" target="_blank">Lynching</a>] 
-            [<a href="{% url admin:lynchings_county_change lynching.county.id %}" target="_blank">County</a>]
+            [<a href="{% url admin:demographics_county_change lynching.county.id %}" target="_blank">County</a>]
         {% endif %}
     </div>
 </div>
