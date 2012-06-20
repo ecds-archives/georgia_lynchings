@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.encoding import smart_str
 
 from georgia_lynchings.articles.models import Article
+from georgia_lynchings.demographics.models import County
 
 # Tuples and classes use for controlled vocab and choices
 GENDER_CHOICES = (
@@ -36,25 +37,6 @@ class Race(models.Model):
         return u'%s' % self.label
     def __str__(self):
         return smart_str(self.__unicode__())
-
-class County(models.Model):
-    """
-    Class to represent county demographic and geospacial information.
-    """
-    label = models.CharField(max_length=50, help_text="Name of County.", unique=True, db_index=True)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-
-    # String Methods
-    def __unicode__(self):
-        return u'%s' % self.label
-    def __str__(self):
-        return smart_str(self.__unicode__())
-
-    class Meta:
-        verbose_name_plural = "counties"
-        ordering = ["label"]
-
 
 # Classes to represent forked data models for PC-ACE Complex objects.
 class Story(models.Model):
@@ -189,12 +171,14 @@ class Lynching(models.Model):
 
     pca_id = models.PositiveIntegerField(help_text=help["pcaid"], unique=True, db_index=True, editable=False)
     pca_last_update = models.DateTimeField(null=True, blank=True, editable=False, help_text=help["pcalastupdate"])
-    county = models.ForeignKey(County, null=True, blank=True, help_text=help["county"])
-    alternate_counties = models.ManyToManyField(County, related_name="alt_counties", null=True, blank=True) # List alternate possible counties here.
     date = models.DateField(null=True, blank=True, help_text=help["date"])
     victim = models.OneToOneField(Person, help_text=help["victim"])
     alleged_crime = models.ForeignKey(Accusation, null=True, blank=True, help_text=help['crime'])
     story = models.ForeignKey(Story, help_text=help['story'])
+
+    #County Info
+    county = models.ForeignKey(County,  null=True, blank=True, help_text=help["county"])
+    alternate_counties = models.ManyToManyField(County, related_name="alternate_counties", null=True, blank=True)
 
     # String Methods
     def __unicode__(self):

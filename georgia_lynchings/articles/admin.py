@@ -4,7 +4,7 @@ from georgia_lynchings.articles.models import Article
 class ArticleAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Standard Information', {
-            'fields': ('title', 'creator', ('publisher', 'date', 'coverage',),
+            'fields': (('title', 'featured'), 'creator', ('publisher', 'date', 'coverage',),
                        'rights', ('identifier', 'relation',), 'file'),
         }),
         ('Optional Information', {

@@ -5,7 +5,7 @@ from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 
-from georgia_lynchings.lynchings.models import Story, Person, Lynching, County, Accusation
+from georgia_lynchings.lynchings.models import Story, Person, Lynching, Accusation
 
 def story_detail(request, story_id):
     """
@@ -77,7 +77,7 @@ def _story_timemap_data(story):
     try:
         county = story.county_list[0]
         if county:
-            data['options']['county'] = county.label
+            data['options']['county'] = county.name
             data['point'] = {
                 'lat': county.latitude,
                 'lon': county.longitude,
