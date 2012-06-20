@@ -2,11 +2,9 @@ from django.contrib import admin
 
 
 from georgia_lynchings.articles.models import Article
-from georgia_lynchings.lynchings.models import County, Race, Accusation, \
+from georgia_lynchings.lynchings.models import Race, Accusation, \
     Alias, Person, Lynching, Story
 
-class CountyAdmin(admin.ModelAdmin):
-    pass
 
 class RaceAdmin(admin.ModelAdmin):
     pass
@@ -50,7 +48,6 @@ class LynchingAdmin(admin.ModelAdmin):
 class StoryAdmin(admin.ModelAdmin):
     filter_horizontal = ('articles',)
 
-admin.site.register(County, CountyAdmin)
 admin.site.register(Race, RaceAdmin)
 admin.site.register(Accusation, AccusationAdmin)
 admin.site.register(Person, PersonAdmin)

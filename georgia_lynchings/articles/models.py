@@ -48,6 +48,7 @@ class Article(models.Model):
         'relation': 'URI of event this article references.',
         'coverage': 'Page number(s) of the article if known.',
         'rights': 'Rights information to display about the article.',
+        'featured': 'Feature this article preferrentially.',
     }
     # Standard Dublin Core Fields
     title = models.CharField(max_length=255, help_text=help['title'], null=True, blank=True)
@@ -69,6 +70,9 @@ class Article(models.Model):
     # Fields dealing with File objects and their permissions.
     file_help = "PDF file representing the article.  DO NOT UPLOAD FILES WE DO NOT HAVE THE RIGHTS TO USE."
     file = models.FileField(upload_to=settings.ARTICLE_UPLOAD_DIR, help_text=file_help, null=True, blank=True)
+
+    # Used to help Sort Featured or preferred articles.
+    featured = models.BooleanField(default=False, help_text=help['featured'])
 
     def __unicode__(self):
         if self.title and self.publisher:
@@ -130,6 +134,9 @@ class Article(models.Model):
         """
         for size in IMG_SIZE.keys():
             self.generate_thumbnail(size, recreate)
+
+    class Meta:
+        ordering = ('featured', '-file', 'date', 'publisher')
 
 
 
