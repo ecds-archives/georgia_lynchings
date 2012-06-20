@@ -5,8 +5,9 @@ from datetime import datetime
 from django.core.management.base import BaseCommand, CommandError
 
 from georgia_lynchings.events.models import Victim
+from georiga_lynchings.demographics.models import County
 from georgia_lynchings.lynchings.models import Person, Lynching, Story, Race, \
-    County, Alias, Accusation
+    Alias, Accusation
 
 class Command(BaseCommand):
     help = "Imports Macro Event information from the PC-ACE rdf triplestore info."
@@ -102,7 +103,7 @@ class Command(BaseCommand):
         county_list = []
         for word in set(word_list):
             if word in county_names and word not in county_list:
-                county_list.append(County.objects.get(label__iexact=word))
+                county_list.append(County.objects.get(name__iexact=word))
         return county_list
 
     def _county_names(self):
@@ -110,7 +111,7 @@ class Command(BaseCommand):
         Gets a set of normalized county names.
         """
         counties = County.objects.all()
-        return set([county.label.lower() for county in counties])
+        return set([county.name.lower() for county in counties])
 
     def _clean_county_string(self, raw_string):
         """

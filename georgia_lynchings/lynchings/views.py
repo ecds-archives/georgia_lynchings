@@ -6,6 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 
 from georgia_lynchings.lynchings.models import Story, Person, Lynching, Accusation
+from georgia_lynchings.demographics.models import County
 
 def story_detail(request, story_id):
     """
@@ -46,6 +47,28 @@ def alleged_crimes_list(request):
 
     return render(request, 'lynchings/alleged_crimes.html', {
         'accusation_list': accusation_list,
+    })
+
+def county_list(request):
+    """
+    Returns a list of counties.
+    """
+    counties = County.objects.all().annotate(lynching_count=Count('lynching'), alt_count=Count('alternate_counties'))
+
+    return render(request, 'lynchings/county_list.html', {
+        'counties': counties,
+        'title': "List of all Georgia Counties",
+    })
+
+def county_detail(request, county_id):
+    """
+    Returns a particular county.
+    """
+    county = get_object_or_404(County, id=county_id)
+
+    return render(request, 'lynchings/county_details.html', {
+        'county': county,
+        'title': 'Lynchings in %s County' % county.name,
     })
 
 def timemap(request):
