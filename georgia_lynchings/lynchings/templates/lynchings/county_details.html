@@ -1,0 +1,11 @@
+{% extends "page_base.html" %}
+
+{% block head-title %}List of Georgia Counties: {{ block.super }}{% endblock %}
+
+{% block content-title %}{{ title }}{% endblock %}
+
+{% block content-body %}
+<div>
+    <a href="{% url lynchings:county_detail county.id %}">{{ county }} {{ county.lynchings_set.all|length }}</a>
+</div>
+{% endblock %}
