@@ -27,23 +27,26 @@ def story_list(request):
 
     return render(request, 'lynchings/list_events.html', {
         'story_list': story_list,
+        'title': "All Lynchings",
     })
 
 def story_list_by_accusation(request, accusation_id):
     """
     Returns a list of lynchings based on the accusations that lead to the event.
     """
-    story_list = Story.objects.filter(lynching__alleged_crime__id=accusation_id)
+    crime = get_object_or_404(Accusation, id=accusation_id)
+    story_list = Story.objects.filter(lynching__alleged_crime=crime).distinct()
 
     return render(request, 'lynchings/list_events.html', {
         'story_list': story_list,
+        'title': "Lynchings After an Accusation of %s" % crime.label,
     })
 
 def alleged_crimes_list(request):
     """
     Returns a list of alleged crimes with counts for number of related lynhcings.
     """
-    accusation_list = Accusation.objects.annotate(stories=Count('lynching__pk'))
+    accusation_list = Accusation.objects.exclude(lynching__isnull=True).annotate(stories=Count('lynching__pk'))
 
     return render(request, 'lynchings/alleged_crimes.html', {
         'accusation_list': accusation_list,
@@ -78,8 +81,7 @@ def county_detail(request, county_id):
         Q(lynching__county=county) | Q(lynching__alternate_counties=county)
     ).distinct()
 
-    return render(request, 'lynchings/county_details.html', {
-        'county': county,
+    return render(request, 'lynchings/list_events.html', {
         'title': 'Lynchings in %s County' % county.name,
         'story_list': story_list,
     })
