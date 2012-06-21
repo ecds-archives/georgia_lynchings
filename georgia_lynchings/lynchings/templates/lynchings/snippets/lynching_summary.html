@@ -7,13 +7,13 @@ Template snippet use to display summary information about a lynching victim.
             {{ lynching.victim }}
         </span></strong>
         {% if lynching.county %}
-            lynched in {{ lynching.county }} County
+            lynched in <a href="{% url lynchings:county_detail lynching.county.id %}">{{ lynching.county }}</a> County
         {% endif %}
         {% if lynching.date %}
             on {{ lynching.date|date:"l, F jS Y" }}
         {% endif %}
         {% if lynching.alleged_crime %}
-            after being accused of {{ lynching.alleged_crime }}
+            after being accused of <a href="{% url lynchings:story_list_by_accusation lynching.alleged_crime.id %}">{{ lynching.alleged_crime }}</a>
         {% endif %}
         </div>
     <div class="meta">
