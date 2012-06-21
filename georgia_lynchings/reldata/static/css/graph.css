@@ -1,8 +1,14 @@
 #graph .link {
   stroke: #aaa;
 }
+#graph .link.selected {
+  stroke: #0a0;
+}
 #graph .node circle {
-  fill: #9b9;
   stroke: #ddd;
   stroke-width: 1.5;
+}
+#graph .node.selected circle {
+  stroke: #0c0;
+  stroke-width: 3;
 }
