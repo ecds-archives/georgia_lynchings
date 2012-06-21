@@ -5,7 +5,11 @@
 {% block content-title %}{{ title }}{% endblock %}
 
 {% block content-body %}
-<div>
-    <a href="{% url lynchings:county_detail county.id %}">{{ county }} {{ county.lynchings_set.all|length }}</a>
-</div>
+        {% for story in story_list %}
+            <div>
+                <a href="{% url lynchings:story_detail story.id %}">{{ story }}</a>
+            </div>
+        {% empty %}
+            <div>No events were identified in this county between 1870 and 1930.</div>
+        {% endfor %}
 {% endblock %}

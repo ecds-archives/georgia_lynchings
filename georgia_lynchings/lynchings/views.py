@@ -1,7 +1,7 @@
 import json
 
 from django.http import Http404, HttpResponse
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 
@@ -53,11 +53,19 @@ def county_list(request):
     """
     Returns a list of counties.
     """
-    counties = County.objects.all().annotate(lynching_count=Count('lynching'), alt_count=Count('alternate_counties'))
+    counties = County.objects.all() #.annotate(lynching_count=Count('lynching__story'), alt_count=Count('alternate_counties__story'))
+    counties_list = []
+    for county in counties: # Multiple field referces makes annotation unlikely, hacking a join.
+        tpl = ( county,
+                Story.objects.filter(
+                    Q(lynching__county=county) | Q(lynching__alternate_counties=county)
+                ).distinct().count()
+        )
+        counties_list.append(tpl)
 
     return render(request, 'lynchings/county_list.html', {
-        'counties': counties,
         'title': "List of all Georgia Counties",
+        'counties_list': counties_list,
     })
 
 def county_detail(request, county_id):
@@ -66,9 +74,14 @@ def county_detail(request, county_id):
     """
     county = get_object_or_404(County, id=county_id)
 
+    story_list = Story.objects.filter(
+        Q(lynching__county=county) | Q(lynching__alternate_counties=county)
+    ).distinct()
+
     return render(request, 'lynchings/county_details.html', {
         'county': county,
         'title': 'Lynchings in %s County' % county.name,
+        'story_list': story_list,
     })
 
 def timemap(request):
