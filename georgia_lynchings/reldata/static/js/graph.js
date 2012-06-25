@@ -137,7 +137,7 @@ function update_links_on_data_change(json, force) {
       .classed("link", true)
       .style("opacity", 0)
       .style("stroke-width", function (d) {
-        return d.value * 0.8 + 1;
+        return Math.sqrt(d.value) * 1.25;
       })
     .transition()
       .duration(2000)
@@ -170,13 +170,36 @@ function update_dom_on_tick() {
 /***
  * NODE SELECTION
  */
-function select_node(n) {
+function select_node(d) {
+  console.log(d);
   d3.selectAll("#nodes .node")
     .classed("selected", false);
   d3.select(this).classed("selected", true);
 
   d3.selectAll("#links .link")
     .classed("selected", function(link) {
-      return link.source == n || link.target == n;
+      return link.source == d || link.target == d;
     });
+
+  // FIXME: hardcoded url here. should find some way to pass it in.
+  var events_url = '/relations/graph/events/?participant=' + d.name;
+  $.get(events_url, function(events) {
+    update_sidebar_events(d, events)
+  });
+}
+
+function update_sidebar_events(node_data, events) {
+  var html = "<p><em>" + node_data.name + "</em> appears as an actor " +
+             "description " + node_data.weight + " times in the following " +
+             events.length + " stories:</p>";
+  html += "<ul>";
+  for (i in events) {
+    var ev_html = '<li><a href="' + events[i].url + '">' +
+                  events[i].name + '</a> ' +
+                  '<span class="matches">(' + events[i].appearances + ')</span></li>';
+    html += ev_html;
+  }
+  html += "</ul>";
+
+  $("#graph_infobar_content").html(html);
 }
