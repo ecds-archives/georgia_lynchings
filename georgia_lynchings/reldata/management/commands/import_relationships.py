@@ -4,6 +4,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from georgia_lynchings.reldata.models import Relationship
+from georgia_lynchings.lynchings.models import Story
 
 class Command(BaseCommand):
     help = 'Import relationship data from a CSV report file.'
@@ -39,7 +40,7 @@ class Command(BaseCommand):
     # there's a one-to-one mapping between csv fields and Relationship
     # fields, we give them the same names.
     FIELD_NAMES = [
-        'triplet_id',
+        'story', 'triplet_id',
 
         'subject_id', 'subject_desc', 'subject_first_name', 'subject_last_name',
         'subject_gender', 'subject_race', 'subject_age_desc', 'subject_exact_age',
@@ -94,6 +95,16 @@ class Command(BaseCommand):
         '''
         return val or ''
 
+    def parse_story(self, val):
+        '''
+        The ``story`` is represented in the input as a PC-ACE id of a
+        :class:`~georgia_lynchings.events.models.MacroEvent`. These map
+        one-to-one to :class:`~georgia_lynchgins.lynchings.models.Story`
+        objects, so parse this by looking up the related Story.
+        '''
+        if val:
+            return Story.objects.get(pca_id=int(val))
+
     def parse_triplet_id(self, val):
         'The ``triplet_id`` is an integer field.'
         if val:
@@ -117,7 +128,7 @@ class Command(BaseCommand):
     def parse_process_date(self, val):
         'The ``process_date`` is a date field.'
         if val:
-            dt = datetime.datetime.strptime(val, '%m/%d/%Y')
+            dt = datetime.datetime.strptime(val, '%Y-%m-%d')
             return dt.date()
 
     def parse_object_id(self, val):
