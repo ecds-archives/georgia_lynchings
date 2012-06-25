@@ -3,6 +3,48 @@
 {% block head-style %}
   {{ block.super }}
   <link rel="stylesheet" href="{{ STATIC_URL }}css/graph.css">
+  <style>
+    {% comment %}
+      FIXME: interim location for easy proof-of-concept cycling. real css
+      does not belong here.
+    {% endcomment %}
+    #graph_container {
+      position: relative;
+      border: 1px solid #ccc;
+      height: 800px;
+    }
+    #graph_infobar {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      height: 100%;
+      width: 8px;
+      overflow: hidden;
+    }
+    #graph_resize_bar {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      height: 100%;
+      width: 8px;
+      background-color: #ccc;
+    }
+    #graph_infobar_content_container {
+      position:absolute;
+      top: 0px;
+      left: 8px;
+      height: 100%;
+      width: 212px;
+    }
+    #graph_infobar_content {
+      padding: 5px 5px 5px 5px;
+      height: 790px;
+      overflow-y: hidden;
+    }
+    #graph_infobar_content h2 {
+      margin-top: 5px;
+    }
+  </style>
 {% endblock %}
 
 {% block head-scripts %}
@@ -25,6 +67,27 @@
       $("select.filter").change(function() {
         get_filtered_graph_data(DATA_URL, force);
       });
+
+      {% comment %}
+        FIXME: interim location for easy proof-of-concept cycling. much of
+        this will need to be moved to a good static js location before we're
+        done.
+      {% endcomment %}
+      $("#graph_resize_bar").click(function(){
+        var COLLAPSED_WIDTH = 8;
+        var EXPANDED_WIDTH = 220;
+        var infobar = $("#graph_infobar");
+        var content = $("#graph_infobar_content");
+        if (infobar.width() == COLLAPSED_WIDTH) {
+          var newWidth = EXPANDED_WIDTH;
+          var newOverflow = "scroll";
+        } else {
+          var newWidth = COLLAPSED_WIDTH;
+          var newOverflow = "hidden";
+        }
+        content.css("overflow-y", newOverflow);
+        infobar.animate({"width": newWidth});
+      });
     });
   </script>
 {% endblock %}
@@ -39,11 +102,50 @@
       </select>
     </label>
   {% endfor %}
-  <svg id=graph width=960 height=800>
-    <!-- links before nodes so that nodes are always painted on top -->
-    <g id=links></g>
-    <g id=nodes></g>
-  </svg>
+  <div id=graph_container>
+    <svg id=graph width=960 height=800>
+      <!-- links before nodes so that nodes are always painted on top -->
+      <g id=links></g>
+      <g id=nodes></g>
+    </svg>
+    <div id=graph_infobar>
+      <div id=graph_resize_bar></div>
+      <div id=graph_infobar_content_container>
+        <div id=graph_infobar_content>
+          <h2>Lorem ipsum</h2>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc
+          eget metus est. Vestibulum lacinia libero augue. Vestibulum sed
+          tortor mauris. Nulla nec diam ante, ut fringilla elit. Curabitur
+          cursus bibendum libero id hendrerit. Nam eleifend nisl ut quam
+          adipiscing consectetur pellentesque risus auctor. Praesent ante
+          tellus, mollis auctor aliquam non, auctor vitae orci. Cras blandit
+          lobortis mauris nec placerat. Lorem ipsum dolor sit amet,
+          consectetur adipiscing elit. Maecenas blandit ligula at dolor
+          imperdiet vulputate aliquam est porta. Praesent fermentum, nisi sit
+          amet sollicitudin semper, felis libero porta sem, vitae scelerisque
+          nisi tortor eu tellus. Donec eu magna auctor sem laoreet semper sed
+          a velit. Cras iaculis nibh a nisl cursus eget commodo enim
+          ultricies. Maecenas mattis tempor lorem, vitae tempus risus
+          adipiscing vitae. Cras dui erat, fermentum non imperdiet vel,
+          aliquet at ipsum.</p>
+          <p>Nullam auctor quam eu nunc tincidunt at consectetur felis
+          pellentesque. Suspendisse potenti. Pellentesque habitant morbi
+          tristique senectus et netus et malesuada fames ac turpis egestas.
+          Phasellus quis turpis augue, non imperdiet est. Suspendisse et
+          lectus id purus condimentum gravida. Aliquam erat volutpat.
+          Vestibulum sollicitudin sollicitudin orci, id fermentum leo
+          adipiscing ac. Vivamus rutrum lorem a eros hendrerit tempus.
+          Pellentesque at ipsum vel ante bibendum consequat id non nibh. Cras
+          justo neque, ultricies ac tincidunt ut, tempor ac dolor. Ut neque
+          justo, pellentesque in rhoncus sit amet, porta quis mi. Morbi tempus
+          congue metus at porta. Sed malesuada vehicula risus in condimentum.
+          Morbi in lacus in diam fermentum tristique. Etiam mattis est nec
+          justo viverra et condimentum ipsum posuere. Aliquam eget mauris
+          pharetra dui varius egestas vitae a lacus.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 <article>
     <header>
         <h3>Network Map</h3>
