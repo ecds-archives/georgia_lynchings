@@ -2,13 +2,14 @@ from collections import defaultdict, OrderedDict
 import json
 
 from django.core.urlresolvers import reverse
-from django.db.models import Count
-from django.http import HttpResponse
+from django.db.models import Count, Q
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.db.models import Count
 
-from georgia_lynchings.reldata.models import Relationship
 from georgia_lynchings.events.models import SemanticTriplet
+from georgia_lynchings.lynchings.models import Story
+from georgia_lynchings.reldata.models import Relationship
 
 FILTER_FIELDS = ['subject_gender', 'subject_race',
                  'object_gender', 'object_race']
@@ -166,3 +167,25 @@ def triple_subject_object_pairs():
                 for s in ps.individuals:
                     for o in po.individuals:
                         yield (s, o)
+
+
+def event_lookup(request):
+    if 'participant' not in request.GET:
+        msg = "Event search requires search terms. Current recognized " + \
+              "search terms are: participant"
+        return HttpResponseBadRequest(msg)
+
+    qs = Story.objects.all()
+
+    participant = request.GET.get('participant')
+    if participant:
+        qs = qs.filter(Q(relationship__subject_desc=participant) |
+                       Q(relationship__object_desc=participant))
+
+    qs = qs.annotate(appearances=Count('id')) \
+           .order_by('-appearances')
+    data = [{ 'url': s.get_absolute_url(),
+              'name': unicode(s),
+              'appearances': s.appearances,
+            } for s in qs]
+    return HttpResponse(json.dumps(data), content_type='application/json')
