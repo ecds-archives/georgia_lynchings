@@ -1,4 +1,5 @@
 from django.db import models
+from georgia_lynchings.lynchings.models import Story
 
 class Relationship(models.Model):
     """
@@ -17,6 +18,7 @@ class Relationship(models.Model):
     that changes, then it may be sensible to normalize the schema.
     """
     help = {
+        'story': 'The Story this relationship comes from',
         'triplet_id': 'Row number for Semantic Triplet PC-ACE object for this data',
 
         'subject_id': 'Row number for Individual PC-ACE object for a subject of this triplet',
@@ -41,6 +43,8 @@ class Relationship(models.Model):
         'object_gender': 'Gender of this object individual (not normalized)',
         'object_race': 'Race of this object individual (not normalized)',
     }
+
+    story = models.ForeignKey(Story, blank=True, null=True, help_text=help['story'])
     triplet_id = models.PositiveIntegerField(db_index=True, help_text=help['triplet_id'])
 
     subject_id = models.PositiveIntegerField(blank=True, null=True, db_index=True, help_text=help['subject_id'])
