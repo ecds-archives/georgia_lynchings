@@ -175,17 +175,23 @@ def event_lookup(request):
               "search terms are: participant"
         return HttpResponseBadRequest(msg)
 
-    qs = Story.objects.all()
+    qs = Story.objects.distinct()
 
     participant = request.GET.get('participant')
     if participant:
         qs = qs.filter(Q(relationship__subject_desc=participant) |
                        Q(relationship__object_desc=participant))
 
-    qs = qs.annotate(appearances=Count('id')) \
-           .order_by('-appearances')
+    # TODO: tons of queries here. ought to find a way to do the bulk of this
+    # work in a single query. it should be possible--maybe with
+    # annotations/aggregations? in particular, if a relationship includes
+    # the query term twice, the output needs to count that relationship
+    # twice in the appearances count.
     data = [{ 'url': s.get_absolute_url(),
               'name': unicode(s),
-              'appearances': s.appearances,
+              'appearances': len(s.relationship_set.filter(subject_desc=participant)) + \
+                             len(s.relationship_set.filter(object_desc=participant))
             } for s in qs]
-    return HttpResponse(json.dumps(data), content_type='application/json')
+    sorted_data = sorted(data, key=lambda s:s['appearances'], reverse=True)
+    return HttpResponse(json.dumps(sorted_data),
+                        content_type='application/json')
