@@ -62,7 +62,8 @@
   <script type="text/javascript" src="{{ STATIC_URL }}js/graph.js"></script>
 
   <script type="text/javascript">
-    var DATA_URL = "{{ data_url }}";
+    var URLS = {"data": "{{ data_url }}",
+                "events": "{{ event_url }}"};
 
     $(document).ready(function(){
       force = d3.layout.force()
@@ -72,9 +73,9 @@
                  $("#graph").attr("height")])
           .on("tick", function() { update_dom_on_tick(); });
 
-      get_filtered_graph_data(DATA_URL, force);
+      get_filtered_graph_data(URLS, force);
       $("select.filter").change(function() {
-        get_filtered_graph_data(DATA_URL, force);
+        get_filtered_graph_data(URLS, force);
       });
 
       $("#graph_resize_bar").click(toggle_sidebar);

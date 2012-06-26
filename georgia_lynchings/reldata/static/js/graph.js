@@ -60,18 +60,18 @@ function position_new_node(i, node, delta_radius) {
  * HANDLE DATA CHANGE
  */
 
-function load_graph_data(url, force) {
-  d3.json(url, function(json) {
+function load_graph_data(data_url, events_url, force) {
+  d3.json(data_url, function(json) {
     init_node_locations(json.nodes, force.nodes());
     force.nodes(json.nodes)
          .links(json.links);
-    update_nodes_on_data_change(json, force);
+    update_nodes_on_data_change(json, events_url, force);
     update_links_on_data_change(json, force);
     force.start();
   });
 }
 
-function get_filtered_graph_data(url, force) {
+function get_filtered_graph_data(urls, force) {
   var query = "?";
   $("select.filter").each(function() {
     if ($(this).val()) {
@@ -79,10 +79,10 @@ function get_filtered_graph_data(url, force) {
     }
   });
   query = query.substring(0, query.length - 1);
-  load_graph_data(url + query, force);
+  load_graph_data(urls.data + query, urls.events, force);
 }
 
-function update_nodes_on_data_change(json, force) {
+function update_nodes_on_data_change(json, events_url, force) {
   var nodes_group = d3.select("#nodes");
 
   /* create the nodes. a node is a g containing a circle and text.
@@ -95,7 +95,7 @@ function update_nodes_on_data_change(json, force) {
       .classed("node", true)
       .style("opacity", 0) /* transition to 1 below */
       .call(force.drag)
-      .on('click.select', select_node);
+      .on('click.select', function(d) { select_node(this, d, events_url); });
   enter_nodes
     .transition()
       .duration(500)
@@ -170,19 +170,18 @@ function update_dom_on_tick() {
 /***
  * NODE SELECTION
  */
-function select_node(d) {
+function select_node(node, d, events_url) {
   d3.selectAll("#nodes .node")
     .classed("selected", false);
-  d3.select(this).classed("selected", true);
+  d3.select(node).classed("selected", true);
 
   d3.selectAll("#links .link")
     .classed("selected", function(link) {
       return link.source == d || link.target == d;
     });
 
-  // FIXME: hardcoded url here. should find some way to pass it in.
-  var events_url = '/relations/graph/events/?participant=' + d.name;
-  $.get(events_url, function(events) {
+  var url = events_url + '?participant=' + d.name;
+  $.get(url, function(events) {
     update_sidebar_events(d, events);
     expand_sidebar();
   });

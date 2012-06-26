@@ -23,6 +23,7 @@ def graph(request):
     }
     data_name = request.GET.get('source', None)
     data_url = data_urls.get(data_name, reverse('relations:graph_data'))
+    event_url = reverse('relations:event_lookup')
 
     filters = []
     for field in FILTER_FIELDS:
@@ -32,6 +33,7 @@ def graph(request):
         filters.append((field_name, field, sorted(values)))
     return render(request, 'reldata/graph.html', {
             'data_url': data_url,
+            'event_url': event_url,
             'filters': filters,
         })
 
