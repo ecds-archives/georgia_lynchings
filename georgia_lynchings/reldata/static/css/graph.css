@@ -12,3 +12,48 @@
   stroke: #0c0;
   stroke-width: 3;
 }
+#graph_container {
+  position: relative;
+  border: 1px solid #ccc;
+  height: 800px;
+}
+#graph_infobar {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 100%;
+  width: 8px;
+  overflow: hidden;
+  background-color: #eee;
+}
+#graph_resize_bar {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 8px;
+  background-color: #ccc;
+}
+#graph_infobar_content_container {
+  position:absolute;
+  top: 0px;
+  left: 8px;
+  height: 100%;
+  width: 206px;
+}
+#graph_infobar_content {
+  padding: 5px 8px 5px 8px;
+  height: 790px;
+  overflow-y: hidden;
+}
+#graph_infobar_content h2 {
+  margin-top: 5px;
+}
+#graph_infobar_content .stories {
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+}
+#graph_infobar_content .stories li {
+  margin: 0.75em 0px 0px;
+}
