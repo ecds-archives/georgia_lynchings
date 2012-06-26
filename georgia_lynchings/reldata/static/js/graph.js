@@ -189,17 +189,22 @@ function select_node(d) {
 }
 
 function update_sidebar_events(node_data, events) {
-  var html = "<p><em>" + node_data.name + "</em> appears as an actor " +
-             "description " + node_data.value + " times in the following " +
-             events.length + " stories:</p>";
-  html += "<ul>";
+  var times = (node_data.value == 1) ? 'time' : 'times';
+  var stories = (events.length == 1) ? 'story' : 'stories';
+  var html = '<p><em>' + node_data.name + '</em> appears as an actor ' +
+             'description ' + node_data.value + ' ' + times + ' in the ' +
+             'following ' + events.length + ' ' + stories + ':</p>';
+  html += '<ul class="stories">';
   for (i in events) {
+    var matches = (events[i].appearances == 1) ? 'match' : 'matches'
     var ev_html = '<li><a href="' + events[i].url + '">' +
                   events[i].name + '</a> ' +
-                  '<span class="matches">(' + events[i].appearances + ')</span></li>';
+                  '<span class="match_count">(' +
+                    events[i].appearances + ' ' + matches +
+                  ')</span></li>';
     html += ev_html;
   }
-  html += "</ul>";
+  html += '</ul>';
 
   $("#graph_infobar_content").html(html);
 }
