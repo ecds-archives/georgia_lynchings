@@ -53,6 +53,10 @@ class Story(models.Model):
 
     articles = models.ManyToManyField(Article, help_text="Related Documents and Files")
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('lynchings:story_detail', [self.id])
+
     @property
     def pretty_string(self):
         """

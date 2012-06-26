@@ -11,7 +11,8 @@
   <script type="text/javascript" src="{{ STATIC_URL }}js/graph.js"></script>
 
   <script type="text/javascript">
-    var DATA_URL = "{{ data_url }}";
+    var URLS = {"data": "{{ data_url }}",
+                "events": "{{ event_url }}"};
 
     $(document).ready(function(){
       force = d3.layout.force()
@@ -21,10 +22,12 @@
                  $("#graph").attr("height")])
           .on("tick", function() { update_dom_on_tick(); });
 
-      get_filtered_graph_data(DATA_URL, force);
+      get_filtered_graph_data(URLS, force);
       $("select.filter").change(function() {
-        get_filtered_graph_data(DATA_URL, force);
+        get_filtered_graph_data(URLS, force);
       });
+
+      $("#graph_resize_bar").click(toggle_sidebar);
     });
   </script>
 {% endblock %}
@@ -39,11 +42,36 @@
       </select>
     </label>
   {% endfor %}
-  <svg id=graph width=960 height=800>
-    <!-- links before nodes so that nodes are always painted on top -->
-    <g id=links></g>
-    <g id=nodes></g>
-  </svg>
+  <div id=graph_container>
+    <svg id=graph width=960 height=800>
+      <!-- links before nodes so that nodes are always painted on top -->
+      <g id=links></g>
+      <g id=nodes></g>
+    </svg>
+    <div id=graph_infobar>
+      <div id=graph_resize_bar></div>
+      <div id=graph_infobar_content_container>
+        <div id=graph_infobar_content>
+          <h2>Lorem ipsum</h2>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc
+          eget metus est. Vestibulum lacinia libero augue. Vestibulum sed
+          tortor mauris. Nulla nec diam ante, ut fringilla elit. Curabitur
+          cursus bibendum libero id hendrerit. Nam eleifend nisl ut quam
+          adipiscing consectetur pellentesque risus auctor. Praesent ante
+          tellus, mollis auctor aliquam non, auctor vitae orci. Cras blandit
+          lobortis mauris nec placerat. Lorem ipsum dolor sit amet,
+          consectetur adipiscing elit. Maecenas blandit ligula at dolor
+          imperdiet vulputate aliquam est porta. Praesent fermentum, nisi sit
+          amet sollicitudin semper, felis libero porta sem, vitae scelerisque
+          nisi tortor eu tellus. Donec eu magna auctor sem laoreet semper sed
+          a velit. Cras iaculis nibh a nisl cursus eget commodo enim
+          ultricies. Maecenas mattis tempor lorem, vitae tempus risus
+          adipiscing vitae. Cras dui erat, fermentum non imperdiet vel,
+          aliquet at ipsum.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 <article>
     <header>
         <h3>Network Map</h3>
