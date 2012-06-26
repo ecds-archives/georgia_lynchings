@@ -101,7 +101,7 @@ function update_nodes_on_data_change(json, force) {
       .duration(500)
       .style("opacity", 1);
   enter_nodes.append("circle")
-      .style("fill", function (d) { return colors20(Math.ceil(d.weight / 5)); })
+      .style("fill", function (d) { return colors20(Math.ceil(d.value / 5)); })
   enter_nodes.append("text")
       .classed("label", true)
       .attr("dy", ".3em")
@@ -116,7 +116,7 @@ function update_nodes_on_data_change(json, force) {
   nodes.select("circle")
     .transition()
       .attr("r", function (d) {
-        return d.weight * 0.6 + 6;
+        return Math.sqrt(d.value) * 1.5 + 3;
       });
 }
 
@@ -131,13 +131,13 @@ function update_links_on_data_change(json, force) {
   lines
     .transition()
       .style("stroke-width", function (d) {
-        return d.value * 0.8 + 1;
+        return d.value * 0.3 + 1;
       });
   lines.enter().append("line")
       .classed("link", true)
       .style("opacity", 0)
       .style("stroke-width", function (d) {
-        return d.value * 0.8 + 1;
+        return d.value * 0.3 + 1;
       })
     .transition()
       .duration(2000)
