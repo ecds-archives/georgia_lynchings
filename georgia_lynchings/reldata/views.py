@@ -5,7 +5,6 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count, Q
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
-from django.db.models import Count
 
 from georgia_lynchings.events.models import SemanticTriplet
 from georgia_lynchings.lynchings.models import Story
