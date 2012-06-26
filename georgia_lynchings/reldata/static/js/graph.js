@@ -171,7 +171,6 @@ function update_dom_on_tick() {
  * NODE SELECTION
  */
 function select_node(d) {
-  console.log(d);
   d3.selectAll("#nodes .node")
     .classed("selected", false);
   d3.select(this).classed("selected", true);
@@ -184,7 +183,8 @@ function select_node(d) {
   // FIXME: hardcoded url here. should find some way to pass it in.
   var events_url = '/relations/graph/events/?participant=' + d.name;
   $.get(events_url, function(events) {
-    update_sidebar_events(d, events)
+    update_sidebar_events(d, events);
+    expand_sidebar();
   });
 }
 
@@ -202,4 +202,30 @@ function update_sidebar_events(node_data, events) {
   html += "</ul>";
 
   $("#graph_infobar_content").html(html);
+}
+
+/***
+ * SIDEBAR
+ */
+
+var SIDEBAR_COLLAPSED_WIDTH = 8;
+var SIDEBAR_EXPANDED_WIDTH = 220;
+
+function toggle_sidebar() {
+  var infobar = $("#graph_infobar");
+  if (infobar.width() == SIDEBAR_COLLAPSED_WIDTH) {
+    expand_sidebar();
+  } else {
+    collapse_sidebar();
+  }
+}
+
+function collapse_sidebar() {
+  $("#graph_infobar_content").css("overflow-y", "hidden");
+  $("#graph_infobar").animate({"width": SIDEBAR_COLLAPSED_WIDTH});
+}
+
+function expand_sidebar() {
+  $("#graph_infobar_content").css("overflow-y", "scroll");
+  $("#graph_infobar").animate({"width": SIDEBAR_EXPANDED_WIDTH});
 }

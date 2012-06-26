@@ -68,26 +68,7 @@
         get_filtered_graph_data(DATA_URL, force);
       });
 
-      {% comment %}
-        FIXME: interim location for easy proof-of-concept cycling. much of
-        this will need to be moved to a good static js location before we're
-        done.
-      {% endcomment %}
-      $("#graph_resize_bar").click(function(){
-        var COLLAPSED_WIDTH = 8;
-        var EXPANDED_WIDTH = 220;
-        var infobar = $("#graph_infobar");
-        var content = $("#graph_infobar_content");
-        if (infobar.width() == COLLAPSED_WIDTH) {
-          var newWidth = EXPANDED_WIDTH;
-          var newOverflow = "scroll";
-        } else {
-          var newWidth = COLLAPSED_WIDTH;
-          var newOverflow = "hidden";
-        }
-        content.css("overflow-y", newOverflow);
-        infobar.animate({"width": newWidth});
-      });
+      $("#graph_resize_bar").click(toggle_sidebar);
     });
   </script>
 {% endblock %}
