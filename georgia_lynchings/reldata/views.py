@@ -98,7 +98,7 @@ class RelationsCollection(object):
         '''
         return {
             'nodes': [{'name': name,
-                       'weight': node['count']}
+                       'value': node['count']}
                       for name, node in self.nodes.iteritems()],
             'links': [{'source': key[0][0],
                        'source_name': key[0][1],
