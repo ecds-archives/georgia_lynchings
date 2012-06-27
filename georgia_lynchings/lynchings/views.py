@@ -1,12 +1,12 @@
 import json
 
 from django.http import Http404, HttpResponse
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum, Avg
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 
 from georgia_lynchings.lynchings.models import Story, Person, Lynching, Accusation
-from georgia_lynchings.demographics.models import County
+from georgia_lynchings.demographics.models import County, Population
 
 def story_detail(request, story_id):
     """
@@ -14,9 +14,31 @@ def story_detail(request, story_id):
     """
     story = get_object_or_404(Story, pk=story_id)
 
+    population_list, closest_cencus, state_averages = None, None, None
+    if story.year:
+        closest_cencus = (story.year/10)*10 # parens un-needed but can't help myself.
+        if story.year%10 > 5 and story.year < 1930:
+            closest_cencus = closest_cencus + 10
+
+        population_list = Population.objects.filter(county__in=story.county_list, year=closest_cencus)
+        state_averages = Population.objects.filter(year=closest_cencus).aggregate(
+            total=Sum('total'),
+            white=Sum('white'),
+            black=Sum('black'),
+            ilterate_blacks=Sum('iltr_black'),
+            iliterate_whites=Sum('iltr_white'),
+            county_avg_total=Sum('total'),
+            county_avg_white=Sum('white'),
+            county_avg_black=Sum('black'),
+            county_avg_ilterate_blacks=Sum('iltr_black'),
+            county_avg_iliterate_whites=Sum('iltr_white'),
+        )
 
     return render(request, 'lynchings/details.html',{
         'story': story,
+        'population_list': population_list,
+        'state_averages': state_averages,
+        'cencus_year': closest_cencus,
         })
 
 def story_list(request):

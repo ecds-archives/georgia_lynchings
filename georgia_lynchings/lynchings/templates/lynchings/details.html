@@ -21,34 +21,54 @@
 </script>
 {% endblock %}
 
-        {% block mainclass %}{{ block.super }} detail{% endblock %}
+        {% block mainclass %}{{ block.super }} with_aside{% endblock %}
 
 {% block content-title %}{{ story }}{% endblock %}
 
 {% block content-body %}
-    <div id="victim_list" class="factlist">
-        <h2>Victims</h2>
+    <section id="victim_list" class="factlist">
+        <header><h2>Details of Victim{{ story.lynching_set.all|pluralize}}</h2></header>
         {% for lynching in story.lynching_set.all %}
-            {% include "lynchings/snippets/lynching_summary.html" %}
+                {% include "lynchings/snippets/lynching_summary.html" %}
         {% endfor %}
-    </div>
+    </section>
+
+    <section id="news_articles">
+        <header>
+            <h2>Articles</h2>
+        </header>
+        {% for article in story.articles.all %}
+           {% include "articles/snippets/article_block.html" %}
+        {% endfor %}
+    </section>
 {% endblock %}
 
 {% block aside %}
-<aside class="articles">
-    <section id="news_articles">
-        <header>
-            <h3>Primary Sources</h3>
-        </header>
-        {% for article in story.articles.all %}
-            {% include "articles/snippets/article_block.html" %}
-        {% endfor %}
-    </section>
+<aside>
     <section id="victim_map">
         <header>
             <h3>Count{{ story.county_list|pluralize:"y,ies"}} of Lynching{{ story.lynching_set.all|pluralize }}</h3>
         </header>
         <div id="map_canvas"></div>
+    </section>
+    <section id="demographics">
+
+        <head>
+            <h3>{{ cencus_year|default:"" }} Cencus Information</h3>
+        </head>
+        {% for population in population_list %}
+            <article>
+                <header>{{ population.county.name }} County</header>
+                <ul>
+                    <li>Pop: {{ population.total }}; black: {{ population.black }}/white: {{ population.white }}</li>
+                    <li>Illiteracy: {{ population.iltr_black|add:population.iltr_white }}; black: {{ population.iltr_black}}/white: {{ population.iltr_white }}</li>
+                </ul>
+            </article>
+        {% empty %}
+            <article>
+                <em>No Cencus Information Available.</em>
+            </article>
+        {% endfor %}
     </section>
 </aside>
 {% endblock %}
