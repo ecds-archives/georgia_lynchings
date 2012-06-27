@@ -33,6 +33,7 @@ class Command(BaseCommand):
         """
 
         FETCH_FIELDS = [
+            'macro_event',
             'participant_s__individuals__actor_name',
             'participant_s__individuals__first_name',
             'participant_s__individuals__last_name',
@@ -60,6 +61,8 @@ class Command(BaseCommand):
         :meth:`triplet_rows`.
         """
         return [# grouped as in triplet_rows() below
+                # macro event
+                'Macro Event ID',
                 # triplet
                 'Sentence ID',
                 # participant_s 
@@ -87,6 +90,8 @@ class Command(BaseCommand):
                     for po in triplet.participant_o:
                         for o in po.individuals:
                             yield [# grouped as in header_row() above
+                                   # macro event
+                                   triplet.macro_event.id,
                                    # triplet
                                    triplet.id,
                                    # participant_s

@@ -2,13 +2,13 @@ from collections import defaultdict, OrderedDict
 import json
 
 from django.core.urlresolvers import reverse
-from django.db.models import Count
-from django.http import HttpResponse
+from django.db.models import Count, Q
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
-from django.db.models import Count
 
-from georgia_lynchings.reldata.models import Relationship
 from georgia_lynchings.events.models import SemanticTriplet
+from georgia_lynchings.lynchings.models import Story
+from georgia_lynchings.reldata.models import Relationship
 
 FILTER_FIELDS = ['subject_gender', 'subject_race',
                  'object_gender', 'object_race']
@@ -22,6 +22,7 @@ def graph(request):
     }
     data_name = request.GET.get('source', None)
     data_url = data_urls.get(data_name, reverse('relations:graph_data'))
+    event_url = reverse('relations:event_lookup')
 
     filters = []
     for field in FILTER_FIELDS:
@@ -31,6 +32,7 @@ def graph(request):
         filters.append((field_name, field, sorted(values)))
     return render(request, 'reldata/graph.html', {
             'data_url': data_url,
+            'event_url': event_url,
             'filters': filters,
         })
 
@@ -97,7 +99,7 @@ class RelationsCollection(object):
         '''
         return {
             'nodes': [{'name': name,
-                       'weight': node['count']}
+                       'value': node['count']}
                       for name, node in self.nodes.iteritems()],
             'links': [{'source': key[0][0],
                        'source_name': key[0][1],
@@ -166,3 +168,31 @@ def triple_subject_object_pairs():
                 for s in ps.individuals:
                     for o in po.individuals:
                         yield (s, o)
+
+
+def event_lookup(request):
+    if 'participant' not in request.GET:
+        msg = "Event search requires search terms. Current recognized " + \
+              "search terms are: participant"
+        return HttpResponseBadRequest(msg)
+
+    qs = Story.objects.distinct()
+
+    participant = request.GET.get('participant')
+    if participant:
+        qs = qs.filter(Q(relationship__subject_desc=participant) |
+                       Q(relationship__object_desc=participant))
+
+    # TODO: tons of queries here. ought to find a way to do the bulk of this
+    # work in a single query. it should be possible--maybe with
+    # annotations/aggregations? in particular, if a relationship includes
+    # the query term twice, the output needs to count that relationship
+    # twice in the appearances count.
+    data = [{ 'url': s.get_absolute_url(),
+              'name': unicode(s),
+              'appearances': len(s.relationship_set.filter(subject_desc=participant)) + \
+                             len(s.relationship_set.filter(object_desc=participant))
+            } for s in qs]
+    sorted_data = sorted(data, key=lambda s:s['appearances'], reverse=True)
+    return HttpResponse(json.dumps(sorted_data),
+                        content_type='application/json')
