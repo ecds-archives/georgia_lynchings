@@ -55,18 +55,18 @@
 		<div id="main" class="{% block mainclass %}wrapper clearfix{% endblock %}">
 			{% block messages %}{% endblock %}
             {% block aside %}{% endblock %}
-			<article>
+			<article id="main_article">
                 {% block content-header %}
-				<header>
+				<header id="main_header">
 					<h1>{% block content-title %}{% endblock %}</h1>
 					{% block content-subtitle %}{% endblock %}
 				</header>
                 {% endblock %}
                 {% block content-area %}
-				<section>
+                <section id="main_section">
 					{% block content-body %}
                     {% endblock %}
-				</section>
+                </section>
                 {% endblock %}
 
 				{% block content-footer %}{% endblock %}

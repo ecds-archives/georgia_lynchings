@@ -106,6 +106,9 @@ INSTALLED_APPS = (
     'south',
 )
 
+SKIP_SOUTH_TESTS = True
+SOUTH_TESTS_MIGRATE = False
+
 # The URI root for all internally-defined namespaces used by this
 # application.
 APPLICATION_RDF_NS_ROOT = 'http://galyn.example.com/'
