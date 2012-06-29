@@ -2,14 +2,14 @@
   stroke: #aaa;
 }
 #graph .link.selected {
-  stroke: #0a0;
+  stroke: #ff4500;
 }
 #graph .node circle {
   stroke: #ddd;
   stroke-width: 1.5;
 }
 #graph .node.selected circle {
-  stroke: #0c0;
+  stroke: #ff4500;
   stroke-width: 3;
 }
 #graph_container {

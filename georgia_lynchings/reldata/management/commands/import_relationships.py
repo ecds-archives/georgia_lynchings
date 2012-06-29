@@ -8,6 +8,7 @@ from georgia_lynchings.lynchings.models import Story
 
 class Command(BaseCommand):
     help = 'Import relationship data from a CSV report file.'
+    args = "<filename>"
 
     option_list = BaseCommand.option_list + (
         make_option('--wipe',
