@@ -166,6 +166,9 @@ nav a:hover{
     background: #090a0c;
 	padding: 10px 10px;
 }
+#footer-container footer img {
+  float: left;
+}
 
 /*
    ===============
