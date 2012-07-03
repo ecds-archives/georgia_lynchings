@@ -5,12 +5,12 @@ class ArticleAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Standard Information', {
             'fields': (('title', 'featured'), 'creator', ('publisher', 'date', 'coverage',),
-                       'rights', ('identifier', 'relation',), 'file'),
+                'description', 'rights', ('identifier', 'relation',), 'source', 'file'),
         }),
         ('Optional Information', {
             'classes': ('collapse',),
-            'fields': ('subject','description','contributor', 'type', 'format',
-                       'source', 'language'),
+            'fields': ('subject','contributor', 'type', 'format',
+                       'language'),
         }),
     )
     list_display = ('id', 'title', 'publisher', 'date', 'file') # id used since all others are not required
