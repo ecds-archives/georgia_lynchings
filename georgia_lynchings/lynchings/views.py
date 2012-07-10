@@ -14,14 +14,14 @@ def story_detail(request, story_id):
     """
     story = get_object_or_404(Story, pk=story_id)
 
-    population_list, closest_cencus, state_averages = None, None, None
+    population_list, closest_census, state_averages = None, None, None
     if story.year:
-        closest_cencus = (story.year/10)*10 # parens un-needed but can't help myself.
+        closest_census = (story.year/10)*10 # parens un-needed but can't help myself.
         if story.year%10 > 5 and story.year < 1930:
-            closest_cencus = closest_cencus + 10
+            closest_census = closest_census + 10
 
-        population_list = Population.objects.filter(county__in=story.county_list, year=closest_cencus)
-        state_averages = Population.objects.filter(year=closest_cencus).aggregate(
+        population_list = Population.objects.filter(county__in=story.county_list, year=closest_census)
+        state_averages = Population.objects.filter(year=closest_census).aggregate(
             total=Sum('total'),
             white=Sum('white'),
             black=Sum('black'),
@@ -38,7 +38,7 @@ def story_detail(request, story_id):
         'story': story,
         'population_list': population_list,
         'state_averages': state_averages,
-        'cencus_year': closest_cencus,
+        'census_year': closest_census,
         })
 
 def story_list(request):
