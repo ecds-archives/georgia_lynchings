@@ -105,6 +105,7 @@ def county_detail(request, county_id):
 
     return render(request, 'lynchings/list_events.html', {
         'title': 'Lynchings in %s County' % county.name,
+        'county': county,
         'story_list': story_list,
     })
 

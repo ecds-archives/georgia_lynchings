@@ -55,3 +55,33 @@ class Population(models.Model):
 
     class Meta:
         ordering = ["county__name", "year"]
+
+    @property
+    def literate_white(self):
+        if self.white is not None and self.iltr_white is not None:
+            return self.white - self.iltr_white
+
+    @property
+    def literate_black(self):
+        if self.black is not None and self.iltr_black is not None:
+            return self.black - self.iltr_black
+
+    @property
+    def percent_white(self):
+        if self.white is not None and self.total:
+            return float(self.white) / float(self.total) * 100.0
+
+    @property
+    def percent_black(self):
+        if self.black is not None and self.total:
+            return float(self.black) / float(self.total) * 100.0
+
+    @property
+    def white_percent_literate(self):
+        if self.literate_white is not None and self.white:
+            return float(self.literate_white) / float(self.white) * 100.0
+
+    @property
+    def black_percent_literate(self):
+        if self.literate_black is not None and self.black:
+            return float(self.literate_black) / float(self.black) * 100.0

@@ -2,6 +2,11 @@
 
 {% block head-title %}{{ title }}: {{ block.super }}{% endblock %}
 
+{% block head-style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/demographics.css">
+{% endblock %}
+
 {% block content-title %}{{ title|default:"List of Lynchings" }}{% endblock %}
 
 {% block content-body %}
@@ -9,4 +14,45 @@
        <div><a href="{% url lynchings:story_detail story.id %}">{{ story }}</a>
        </div>
     {% endfor %}
+{% endblock %}
+
+{% block aside %}
+<aside>
+    <section id="demographics">
+        <header>
+            <h3>Census Information</h3>
+        </header>
+
+        {% for pop in county.population_set.all %}
+            <div class="popdata">
+                <div class="year">{{ pop.year }}</div>
+                {% if pop.total %}
+                    <div class="popdetails">
+                        <span class="popnum">{{ pop.total }}</span> people.
+                        {% if pop.white and pop.black %}
+                            <span class="popnum">{{ pop.white }}</span>
+                                (<span class="poppct">{{ pop.percent_white|stringformat:"0.1f"}}%</span>) white;
+                            <span class="popnum">{{ pop.black }}</span>
+                                (<span class="poppct">{{ pop.percent_black|stringformat:"0.1f"}}%</span>) black.
+                        {% else %}
+                            <span class="unavailable">Racial statistics unavailable.</span>
+                        {% endif %}
+                    </div>
+                    <div class="popdetails">
+                        {% if pop.literate_white and pop.literate_black %}
+                            <span class="popnum">{{ pop.literate_white }}</span>
+                                (<span class="poppct">{{ pop.white_percent_literate|stringformat:"0.1f" }}%</span>) whites literate;
+                            <span class="popnum">{{ pop.literate_black }}</span>
+                                (<span class="poppct">{{ pop.black_percent_literate|stringformat:"0.1f" }}%</span>) blacks literate.
+                        {% else %}
+                            <span class="unavailable">Literacy statistics unavailable.</span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="unavailable">Census data unavailable</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </section>
+</aside>
 {% endblock %}
