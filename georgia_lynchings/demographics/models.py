@@ -31,7 +31,7 @@ class County(models.Model):
 
 class Population(models.Model):
     """
-    Cencus data from particular counties in particular years.
+    Census data from particular counties in particular years.
     """
     county = models.ForeignKey(County, help_text="County that data is for.")
     year = models.PositiveIntegerField(choices=YEAR_CHOICES,
@@ -49,12 +49,22 @@ class Population(models.Model):
 
     # String Methods
     def __unicode__(self):
-        return u'%s Cencus for %s County' % (self.year, self.county)
+        return u'%s Census for %s County' % (self.year, self.county)
     def __str__(self):
         return smart_str(self.__unicode__())
 
     class Meta:
         ordering = ["county__name", "year"]
+
+    @classmethod
+    def statewide_totals_for_year(cls, year):
+        fields = ['total', 'white', 'black', 'iltr_white', 'iltr_black']
+        totals = cls.objects.filter(year=year).aggregate(
+                **dict([(f, models.Sum(f)) for f in fields]))
+        return cls(**totals)
+
+    def statewide_totals(self):
+        return self.statewide_totals_for_year(self.year)
 
     @property
     def literate_white(self):
