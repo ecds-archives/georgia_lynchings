@@ -54,7 +54,7 @@
     <section id="demographics">
 
         <head>
-            <h3>{{ cencus_year|default:"" }} Cencus Information</h3>
+            <h3>{{ census_year|default:"" }} Census Information</h3>
         </head>
         {% for population in population_list %}
             <article>
@@ -66,7 +66,7 @@
             </article>
         {% empty %}
             <article>
-                <em>No Cencus Information Available.</em>
+                <em>No Census Information Available.</em>
             </article>
         {% endfor %}
     </section>

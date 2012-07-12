@@ -103,11 +103,16 @@ class Article(models.Model):
                     self._format_thumbnail_filename(size))
         return os.path.exists(png_file)
 
-    def generate_thumbnail(self, size="med", recreate=False):
+    def generate_thumbnail(self, size="med", fill_and_crop=None, recreate=False):
         """
         Generates a thumbnail image from the first page of a PDF
 
         :param size:  String.  Image dimensions to use for the thumbnail.
+        :param fill_and_crop: Boolean. If True, expand the original image to 
+            fill the thumbnail size completely, cropping any overflow. If 
+            False, limit expansion to the thumbnail dimensions, possibly
+            leaving empty space on the bottom or right. Defaults to False for
+            `xlrg`, True otherwise.
         :param recreate:  Boolean. Recrete thumbnail even if one exists.
         """
         if size not in IMG_SIZE.keys(): # Not DRY but needed since this isn't internal
@@ -116,13 +121,25 @@ class Article(models.Model):
             return "No file exists to generate a thumbnail from."
         if self._has_thumbnail(size) and recreate:
             return "Thumbnail already exists."
-        article_path = '%s' % os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR)
-        cmd = ["convert",
-               "%s/%s[0]" % (settings.MEDIA_ROOT, self.file.name),
-               "-resize", "%sx%s" % IMG_SIZE[size],
-               "%s/%s" % (article_path, self._format_thumbnail_filename(size)),
-        ]
+        # xlrg, by default, grows no bigger than its box, while other sizes 
+        # fill the box completely and crop excess
+        if fill_and_crop is None:
+            fill_and_crop = (size != 'xlrg')
 
+        article_path = '%s' % os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR)
+
+        if fill_and_crop:
+            conversions = ["-resize", "%sx%s^" % IMG_SIZE[size],
+                           "-extent", "%sx%s" % IMG_SIZE[size]]
+        else:
+            conversions = ["-resize", "%sx%s" % IMG_SIZE[size]]
+
+        cmd = ["convert",
+               "%s/%s[0]" % (settings.MEDIA_ROOT, self.file.name)] + \
+              conversions + \
+              ["%s/%s" % (article_path, self._format_thumbnail_filename(size))]
+
+        logger.debug(cmd)
         subprocess.call(cmd) # run it as at commandline.
         return 'Thumbnail generated'
 
@@ -133,7 +150,7 @@ class Article(models.Model):
         :param recreate:  Bool:  Overwrite exiting thumbnails.
         """
         for size in IMG_SIZE.keys():
-            self.generate_thumbnail(size, recreate)
+            self.generate_thumbnail(size, recreate=recreate)
 
     class Meta:
         ordering = ('featured', '-file', 'date', 'publisher')
