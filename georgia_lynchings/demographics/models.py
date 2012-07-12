@@ -31,7 +31,7 @@ class County(models.Model):
 
 class Population(models.Model):
     """
-    Cencus data from particular counties in particular years.
+    Census data from particular counties in particular years.
     """
     county = models.ForeignKey(County, help_text="County that data is for.")
     year = models.PositiveIntegerField(choices=YEAR_CHOICES,
@@ -49,9 +49,49 @@ class Population(models.Model):
 
     # String Methods
     def __unicode__(self):
-        return u'%s Cencus for %s County' % (self.year, self.county)
+        return u'%s Census for %s County' % (self.year, self.county)
     def __str__(self):
         return smart_str(self.__unicode__())
 
     class Meta:
         ordering = ["county__name", "year"]
+
+    @classmethod
+    def statewide_totals_for_year(cls, year):
+        fields = ['total', 'white', 'black', 'iltr_white', 'iltr_black']
+        totals = cls.objects.filter(year=year).aggregate(
+                **dict([(f, models.Sum(f)) for f in fields]))
+        return cls(**totals)
+
+    def statewide_totals(self):
+        return self.statewide_totals_for_year(self.year)
+
+    @property
+    def literate_white(self):
+        if self.white is not None and self.iltr_white is not None:
+            return self.white - self.iltr_white
+
+    @property
+    def literate_black(self):
+        if self.black is not None and self.iltr_black is not None:
+            return self.black - self.iltr_black
+
+    @property
+    def percent_white(self):
+        if self.white is not None and self.total:
+            return float(self.white) / float(self.total) * 100.0
+
+    @property
+    def percent_black(self):
+        if self.black is not None and self.total:
+            return float(self.black) / float(self.total) * 100.0
+
+    @property
+    def white_percent_literate(self):
+        if self.literate_white is not None and self.white:
+            return float(self.literate_white) / float(self.white) * 100.0
+
+    @property
+    def black_percent_literate(self):
+        if self.literate_black is not None and self.black:
+            return float(self.literate_black) / float(self.black) * 100.0
