@@ -1,0 +1,4 @@
+# Convienence file to initiate all the pip install files.
+-r pip-install-req.txt
+-r pip-install-opt.txt
+-r pip-dev-req.txt
