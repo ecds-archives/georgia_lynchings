@@ -33,6 +33,7 @@ ADMIN_MEDIA_PREFIX = '%s/static/admin/' % SUB_URL
 # Use this to override the default media directory setting in settings.py
 # Recommend you do this in production so it points outside the django project
 # root so no files are overritten.  Uncomment the two lines below if needed.
+# import os
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # MEDIA_ROOT = os.path.join(BASE_DIR, '../..', 'media')
 

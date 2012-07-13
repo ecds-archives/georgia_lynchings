@@ -5,7 +5,7 @@ from datetime import datetime
 from django.core.management.base import BaseCommand, CommandError
 
 from georgia_lynchings.events.models import Victim
-from georiga_lynchings.demographics.models import County
+from georgia_lynchings.demographics.models import County
 from georgia_lynchings.lynchings.models import Person, Lynching, Story, Race, \
     Alias, Accusation
 
