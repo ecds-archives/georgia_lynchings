@@ -1,0 +1,17 @@
+<p>
+{% if article.creator %}
+{{ article.creator }}
+{% endif %}
+{% if article.title %}
+"{{ article.title }},"
+{% endif %}
+{% if article.publisher %}
+<em>{{ article.publisher }}</em>
+{% endif %}
+{% if article.date %}
+{{ article.date|date:"j F Y" }}.
+{% endif %}
+{% if article.coverage %}
+p{{ article.coverage }}.
+{% endif %}
+</p>

@@ -35,10 +35,14 @@
 
     <section id="news_articles">
         <header>
-            <h2>Articles</h2>
+            <h2>News Articles</h2>
         </header>
         {% for article in story.articles.all %}
-           {% include "articles/snippets/article_block.html" %}
+            {% if not article.file %}
+                {% include "articles/snippets/article_block_nofile.html" %}
+            {% else %}
+                {% include "articles/snippets/article_block.html" %}
+            {% endif %}
         {% endfor %}
     </section>
 {% endblock %}
