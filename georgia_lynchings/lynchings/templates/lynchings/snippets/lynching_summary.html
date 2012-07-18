@@ -3,7 +3,7 @@ Template snippet use to display summary information about a lynching victim.
 {% endcomment %}
 <article id="victim_{{ lynching.id }}" class="victim">
     <p>
-        <strong></strong><span alt="{{ lynching.victim.alias_set.all|join:", " }}">
+        <strong><span alt="{{ lynching.victim.alias_set.all|join:", " }}">
             {{ lynching.victim }} was lynched
         </span></strong>
         {% if lynching.county %}
