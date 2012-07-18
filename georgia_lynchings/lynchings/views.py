@@ -86,7 +86,8 @@ def county_list(request):
                     Q(lynching__county=county) | Q(lynching__alternate_counties=county)
                 ).distinct().count()
         )
-        counties_list.append(tpl)
+        if tpl[1] > 0:
+            counties_list.append(tpl)
 
     return render(request, 'lynchings/county_list.html', {
         'title': "List of all Georgia Counties",
