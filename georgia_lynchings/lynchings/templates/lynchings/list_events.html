@@ -19,8 +19,9 @@
 {% endblock %}
 
 
-{% if county %}
-    {% block aside %}
+
+{% block aside %}
+    {% if county %}
     <aside>
         <section id="demographics">
             <header>
@@ -73,5 +74,6 @@
             {% endfor %}
         </section>
     </aside>
-    {% endblock %}
-{% endif %}
+    {% endif %}
+{% endblock %}
+
