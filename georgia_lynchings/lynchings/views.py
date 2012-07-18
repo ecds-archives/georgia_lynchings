@@ -69,9 +69,14 @@ def alleged_crimes_list(request):
     Returns a list of alleged crimes with counts for number of related lynhcings.
     """
     accusation_list = Accusation.objects.exclude(lynching__isnull=True).annotate(stories=Count('lynching__pk'))
-
+    # hacky way to render multiple columns.
+    try:
+        slice_at = len(accusation_list)/2
+    except ValueError:
+        slice_at = 0
     return render(request, 'lynchings/alleged_crimes.html', {
         'accusation_list': accusation_list,
+        'slice_at': slice_at,
     })
 
 def county_list(request):

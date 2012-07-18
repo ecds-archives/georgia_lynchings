@@ -6,16 +6,19 @@
 
 {% block content-body %}
 	<section class="crimelist">
-		{% for accusation in accusation_list %}
-			<div>
-				<a href="{% url lynchings:story_list_by_accusation accusation.id %}">{{ accusation }} ({{ accusation.stories}})</a>
-			</div>
-			{{ forloop.counter|add:forloop.counter }} count
-			{% if }
-		{% empty %}
-			<div class="empty">
-				No list of allege crimes were returned.  It's likely data is being reloaded but if you continue to see this message please contact an administrator.
-			</div>
-		{% endfor %}
+		<div class="listcolumn">
+			{% for accusation in accusation_list %}
+				<div>
+					<a href="{% url lynchings:story_list_by_accusation accusation.id %}">{{ accusation }} ({{ accusation.stories}})</a>
+				</div>
+				{% if forloop.counter == slice_at %}
+					</div><div class="listcolumn">
+				{% endif %}
+			{% empty %}
+				<div class="empty">
+					No list of allege crimes were returned.  It's likely data is being reloaded but if you continue to see this message please contact an administrator.
+				</div>
+			{% endfor %}
+		</div>
 	</section>
 {% endblock %}
