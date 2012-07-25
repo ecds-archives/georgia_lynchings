@@ -5,11 +5,11 @@ class ArticleAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Standard Information', {
             'fields': (('title', 'featured'), 'creator', ('publisher', 'date', 'coverage',),
-                'description', 'rights', ('identifier', 'relation',), 'source', 'file'),
+                'description', ('identifier', 'relation',), 'source', 'file'),
         }),
         ('Optional Information', {
             'classes': ('collapse',),
-            'fields': ('subject','contributor', 'type', 'format',
+            'fields': ('subject','rights', 'contributor', 'type', 'format',
                        'language'),
         }),
     )
