@@ -99,24 +99,83 @@ class Story(models.Model):
     class Meta:
         verbose_name_plural = "stories"
 
-class Person(models.Model):
+class Lynching(models.Model):
     """
-    Class to represent data about a person involved in a lynching.
-    PC-ACE Complex Object:  Victim (partial)
+    Class to represent a connected sequence of events for an overall lynching.
+    
     """
     help = {
-        'pcaid': "Row number for Victim complex object in PC-ACE",
-        "pcalastupdate": "Datetime of last update from PC-Ace",
-        'name': "Most reliable full or display name for person.",
-        'race': "Race of person.",
-        'age': "Most reliable reported age of person",
+        'pcaid': "Row number for Macro Event complex object in PC-ACE",
+        'pcalastupdate': "Datetime of the last sync with PC-Ace Data.",
     }
-    pca_id = models.PositiveIntegerField(help_text=help['pcaid'], unique=True, db_index=True, editable=False)
+    pca_id = models.PositiveIntegerField(help_text=help['pcaid'], unique=True, db_index=True)
     pca_last_update = models.DateTimeField(null=True, blank=True, editable=False, help_text=help["pcalastupdate"])
-    name = models.CharField(max_length=75, null=True, blank=True, help_text=help['name'])
-    race = models.ForeignKey(Race, null=True, blank=True, help_text=help['race'])
-    gender = models.CharField(max_length=1, null=True, blank=True, choices=GENDER_CHOICES)
-    age = models.PositiveIntegerField(null=True, blank=True, help_text=help['age'])
+
+    articles = models.ManyToManyField(Article, help_text="Related Documents and Files")
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('lynchings:lynching_detail', [self.id])
+
+    @property
+    def pretty_string(self):
+        """
+        Returns a more descriptive string for the story.
+        """
+        string_parts = [u'Lynching of',]
+        string_parts.append(u", ".join([u"%s" % victim for victim in self.victim_set.all()]))
+        date_set = set([u"%s" % victim.date.year for victim in self.victim_set.all() if victim.date])
+        if date_set:
+            string_parts.append(u"in %s" % ", ".join(date_set))
+        return u" ".join(string_parts)
+
+    @property
+    def county_list(self):
+        """
+        Convienence method to generate a list of all counties.
+        """
+        return list(set([victim.county for victim in self.victim_seta.all()]))
+
+    @property
+    def year(self):
+        """
+        Best determination of date of lynching.
+        """
+        year_list = sorted([victim.date.year for victim in self.victim_set.all() if victim.date])
+        if year_list:
+            return year_list[-1] # return the highest date
+        return None
+
+    # String Methods
+    def __unicode__(self):
+        return u'%s' % self.pretty_string
+    def __str__(self):
+        return smart_str(self.__unicode__())
+
+class Victim(models.Model):
+    """
+    Represents an individual person who was lynched and the details of that attack.
+
+    NOTE:  The corrisponding row headers are added as comments after each field.
+    """
+    help = {
+        'lynching': 'Lynching this victim is associated with.',
+        'name': 'Full name of victim.',
+        'race': 'Race.',
+        'sex': 'Gender.',
+        'date': 'Date of Lynching.',
+        'detailed_reason': '',
+        'accusation': '', # many to many
+        'county': 'County of Lynching',
+    }
+    lynching = models.ForeignKey(Lynching, help_text=help['lynching'], null=True, blank=True) # ID Macro Event
+    name = models.CharField(max_length=75, help_text=help['name'], null=True, blank=True) # Name of Victim (Beck)
+    race = models.ForeignKey(Race, null=True, blank=True) # Race (Beck)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True) # Sex (Beck)
+    date = models.DateField(help_text=help['date'], null=True, blank=True) # Lynching date (Beck)
+    detailed_reason = models.TextField(help_text=help['detailed_reason'], null=True, blank=True) # Reason (Beck)
+    accusation = models.ManyToManyField(Accusation, null=True, blank=True) # Reason Aggregate Code 1
+    county = models.ForeignKey(County, null=True, blank=True) # County of Lynching (Beck)
 
     @property
     def pretty_name(self):
@@ -136,60 +195,3 @@ class Person(models.Model):
         return u'%s' % self.name
     def __str__(self):
         return smart_str(self.__unicode__())
-
-    class Meta:
-        verbose_name_plural = "people"
-
-class Alias(models.Model):
-    """
-    Alternative names or aliases used by people.
-    PC-ACE Model:  Victim partial
-    """
-    help = {
-        'name': "Other or alternative name used.",
-        'person': "Person the alias applies to"
-    }
-    name = models.CharField(max_length=75, help_text=help['name'])
-    person = models.ForeignKey(Person, help_text=help['person'])
-
-    # String Methods
-    def __unicode__(self):
-        return u'%s' % self.name
-    def __str__(self):
-        return smart_str(self.__unicode__())
-
-class Lynching(models.Model):
-    """
-    Represents an invididual lynchning.
-    PC-ACE Complex Object:  Victim (partial data used) see Person for more
-    """
-    help = {
-        "pcaid": "Row number for victim complex object in PC-ACE",
-        "pcalastupdate": "Datetime of last update form PC-Ace Data.",
-        'county': "Most reliable county of the lynching.",
-        'date': "Most reliable date of lynching.",
-        'victim': "Person who was Lynched.",
-        'crime': "Crime the victim was accused of.",
-        'story': "The overarching event this is associated with."
-        }
-
-    pca_id = models.PositiveIntegerField(help_text=help["pcaid"], unique=True, db_index=True, editable=False)
-    pca_last_update = models.DateTimeField(null=True, blank=True, editable=False, help_text=help["pcalastupdate"])
-    date = models.DateField(null=True, blank=True, help_text=help["date"])
-    victim = models.OneToOneField(Person, help_text=help["victim"])
-    alleged_crime = models.ForeignKey(Accusation, null=True, blank=True, help_text=help['crime'])
-    story = models.ForeignKey(Story, help_text=help['story'])
-
-    #County Info
-    county = models.ForeignKey(County,  null=True, blank=True, help_text=help["county"])
-    alternate_counties = models.ManyToManyField(County, related_name="alternate_counties", null=True, blank=True)
-
-    # String Methods
-    def __unicode__(self):
-        return u'%s' % self.victim.name
-    def __str__(self):
-        return smart_str(self.__unicode__())
-
-    class Meta:
-        ordering = ['date',]
-
