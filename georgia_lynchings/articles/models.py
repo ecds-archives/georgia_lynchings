@@ -26,6 +26,7 @@ IMG_SIZE = {
     "med": (77, 100),
     "lrg": (154, 200),
     "xlrg": (308, 400),
+    "page": (500, 649),
 }
 
 class Article(models.Model):
@@ -103,7 +104,7 @@ class Article(models.Model):
                     self._format_thumbnail_filename(size))
         return os.path.exists(png_file)
 
-    def generate_thumbnail(self, size="med", fill_and_crop=None, recreate=False):
+    def generate_thumbnail(self, size="med", fill_and_crop=None, recreate=False, singlepage=True):
         """
         Generates a thumbnail image from the first page of a PDF
 
@@ -134,8 +135,12 @@ class Article(models.Model):
         else:
             conversions = ["-resize", "%sx%s" % IMG_SIZE[size]]
 
+        page = "[0]" # Generates first page only.
+        if singlepage:
+            page = "" # Generates images for all pages with '-#' format.
+
         cmd = ["convert",
-               "%s/%s[0]" % (settings.MEDIA_ROOT, self.file.name)] + \
+               "%s/%s%s" % (settings.MEDIA_ROOT, self.file.name, page)] + \
               conversions + \
               ["%s/%s" % (article_path, self._format_thumbnail_filename(size))]
 
