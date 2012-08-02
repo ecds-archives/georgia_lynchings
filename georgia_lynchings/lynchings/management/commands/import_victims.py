@@ -1,123 +1,133 @@
-import re
+import re, csv
 from optparse import make_option
 from datetime import datetime
 
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.encoding import smart_unicode, smart_str
 
-from georgia_lynchings.events.models import Victim
 from georgia_lynchings.demographics.models import County
-from georgia_lynchings.lynchings.models import Person, Lynching, Story, Race, \
-    Alias, Accusation
+from georgia_lynchings.lynchings.models import Lynching, Victim, Race, Accusation
 
 class Command(BaseCommand):
-    help = "Imports Macro Event information from the PC-ACE rdf triplestore info."
+    help = "Imports Victim data from the CSV export produced from PCAce.  Ignores first row as fieldnames."
+    args = "<filename>"
+
+    fieldnames = ('event_id', 'date_raw', 'name', 'race_raw', 'gender_raw', 'detailed_reason', 'accusation_raw', 'county_raw')
 
     option_list = BaseCommand.option_list + (
-        make_option('--overwrite',
-            action='store_true',
-            dest='overwrite',
-            default=False,
-            help='Overwrite data in forked model with original data from PC-Ace'),
+        make_option('--silent',
+                action='store_true',
+                dest='silent',
+                help='Skips user input for the wipe of all victim data before loading input file.'
+            ),
         )
 
     def handle(self, *args, **options):
-        victim_list = Victim.objects.all()
-        for victim in victim_list:
-            person = self._handle_person(victim, **options)
-            lynching = self._handle_lynching(victim, **options)
+        if not args:
+            raise CommandError("No import file specificed!")
+        reader = self._init_reader(args)
+        self._confirm_wipe(options.get('silent')) # Safty Step to confirm wipe of data.
+        self._insert_count = 0
+        for row in reader:
+            self._handle_row(row)
+        print "Inserted %s Victims from the input file." % self._insert_count
 
-    def _handle_person(self, victim, **options):
-        person, created = Person.objects.get_or_create(pca_id=victim.id)
-        person.pca_last_update = datetime.now()
-        if not person.race and victim.race or options['overwrite']:
-            race, race_created = Race.objects.get_or_create(label=victim.race)
-            if race_created:
-                race.save()
-            person.race = race
-        if not person.name and victim.primary_name or options['overwrite']:
-            person.name = unicode(victim.primary_name)
-        if not person.gender and victim.gender or options['overwrite']:
-            genders = ['male', 'female']
-            try:
-                if genders.index(victim.gender.lower()) == 0:
-                    person.gender = 'M'
-                else:
-                    person.gender = 'F'
-            except ValueError:
-                pass
-        person.save()
-        if victim.all_names:
-            # Get unique list of alt names not already the primary name
-            name_list = set(victim.all_names).difference(set(person.name))
-            for name in name_list:
-                alias, alias_created = Alias.objects.get_or_create(name=unicode(name), person=person)
-                alias.save()
-        person.save()
-        return person
+    def _confirm_wipe(self, silent):
+        """Step to require users to confirm the wipe of victims before proceeding."""
+        if not silent:
+            input_msg = "CONFIRM YOU WISH TO PROCEED WITH A FULL WIPE AND RELOAD OF ALL VICTIM DATA? (Y/n)"
+            user_input = raw_input(input_msg + ': ')
+            if user_input.lower() not in ['y', 'yes']:
+                raise CommandError("User Aborted Data Import!  No data was changed.")
+            print "Wiping %s Victims from the database." % Victim.objects.all().count()
+            Victim.objects.all().delete()
 
-    def _handle_lynching(self, victim, **options):
+    def _init_reader(self, *args):
+        """Open the input file and return the reader object."""
+
         try:
-            person = Person.objects.get(pca_id=victim.id)
-        except Person.DoesNotExist:
-            raise CommandError("Error trying to create Lynching for a Person that does not exist.")
-        story, story_created = Story.objects.get_or_create(pca_id=victim.macro_event.id)
-        if story_created or not story.pca_last_update:
-            story.pca_last_update = datetime.now()
-            story.save()
-        lynching, created = Lynching.objects.get_or_create(victim=person, pca_id=person.pca_id, story=story)
+            filename = "%s" % args[0]
+            f = open(filename, 'rb')
+            reader = csv.DictReader(f, fieldnames=self.fieldnames)
+            reader.next()
+            return reader
+        except IOError as e:
+            raise CommandError("Unable to find file %s" % filename)
 
-        # primary date of lynching.
-        if not lynching.date and victim.primary_lynching_date or options['overwrite']:
-            lynching.date = victim.primary_lynching_date
+    def _handle_row(self, row):
+        """
+        Processes a single row from the input file.
 
-        # handle alleged crime
-        if not lynching.alleged_crime and victim.primary_alleged_crime or options['overwrite'] and victim.primary_alleged_crime:
-            accusation, acc_created = Accusation.objects.get_or_create(label=victim.primary_alleged_crime)
-            lynching.alleged_crime = accusation
+        :param row:  Dict of a single raw input row.
+        """
+        data = {
+            'name': smart_unicode(row['name'], errors='ignore'),
+            'detailed_reason': smart_unicode(row['detailed_reason'], errors='ignore'),
+        }
+        data['lynching'], created = Lynching.objects.get_or_create(pca_id=row['event_id'])
+        data['race'] = self._get_race(row['race_raw'])
+        data['gender'] = self._get_gender(row['gender_raw'])
+        data['county'] = self._get_county(row['county_raw'])
+        victim = Victim(**data)
+        victim.save()
+        self._handle_accusation(victim, row['accusation_raw'])
+        self._insert_count += 1
 
-        # handle county
-        county_list = self._handle_counties(victim)
-        if not lynching.county and county_list or options['overwrite'] and county_list:
-            lynching.county = county_list[0]
-            county_list.pop(0)
+    def _get_race(self, race_raw):
+        """
+        Tries to approximate a match of race from current values or creates one if no match found.
+        """
+        if not race_raw:
+            return None
+        race_text = race_raw.strip(' \t\n\r')
+        try:
+            race = Race.objects.get(label__iexact=race_text)
+        except Race.DoesNotExist:
+            race = Race(label=race_text)
+            race.save()
+        return race
 
-        lynching.pca_last_update = datetime.now()
-        lynching.save()  # Save before adding many to many rels
+    def _get_gender(self, gender_raw):
+        """
+        Tries to match the sex listed in the input string to one of our gender options.
+        """
+        if not gender_raw:
+            return None
+        gender = gender_raw.strip(' \t\n\r')
+        if gender.lower() in ['male', 'man', 'boy', 'men']:
+            return 'M'
+        if gender.lower() in ['female', 'woman', 'girl']:
+            return 'F'
+        return None
 
-        # Now handle many to many relationships.
-        for county in county_list:
-            lynching.alternate_counties.add(county)     # handle alternate county
+    def _handle_accusation(self, victim, accusation_raw):
+        """
+        Tries to approximate a match of the accusation from the current values or creates one if no match found.
+        """
+        if not accusation_raw:
+            return None
+        accusation_text = accusation_raw.strip(' \t\n\r')
+        try:
+            accusation = Accusation.objects.get(label__iexact=accusation_text)
+        except Accusation.DoesNotExist:
+            accusation = Accusation(label=accusation_text)
+            accusation.save()
+        victim.accusation.add(accusation)
 
-        return lynching
-
-    def _handle_counties(self, victim):
+    def _get_county(self, county_raw):
         """
         This processes the string data from the county information and tries to make a
-        sensible list from it.
+        sensible match from it.
         """
-        # county is sometimes a string of multiple counties
-        word_list = []
-        county_names = self._county_names()
-        for raw_county in victim.all_counties:
-            word_list.extend(self._clean_county_string(raw_county))
-        county_list = []
-        for word in set(word_list):
-            if word in county_names and word not in county_list:
-                county_list.append(County.objects.get(name__iexact=word))
-        return county_list
-
-    def _county_names(self):
-        """
-        Gets a set of normalized county names.
-        """
-        counties = County.objects.all()
-        return set([county.name.lower() for county in counties])
-
-    def _clean_county_string(self, raw_string):
-        """
-        Processes a raw string literal to return a list of lowercase unique words.
-        """
-        return [re.sub('[^a-zA-Z]','', part).lower() for part in raw_string.split(" ")]
+        if not county_raw:
+            return None
+        county_name = county_raw.strip(' \t\n\r')
+        try:
+            county = County.objects.get(name__iexact=county_name)
+            return county
+        except County.DoesNotExist:
+            print "County named %s not found in list!" % county_name
+            return None
 
 
 
