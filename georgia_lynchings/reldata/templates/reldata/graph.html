@@ -16,8 +16,8 @@
 
     $(document).ready(function(){
       force = d3.layout.force()
-          .charge(-2000)
-          .gravity(1)
+          .charge(-8000)
+          .gravity(2)
           .size([$("#graph").attr("width"),
                  $("#graph").attr("height")])
           .on("tick", function() { update_dom_on_tick(); });
@@ -33,11 +33,11 @@
 {% endblock %}
 
 {% block content-body %}
-  {% for field_name, field, values in filters %}
-    <label>{{ field_name }}
-      <select name="{{ field }}" class="filter">
-        {% for value in values %}
-          <option>{{ value }}</option>
+  {% for filter in filters %}
+    <label>{{ filter.label }}
+      <select name="{{ filter.http_name }}" class="filter">
+        {% for value in filter.values %}
+          <option value="{{ value.value }}">{{ value.label }}</option>
         {% endfor %}
       </select>
     </label>

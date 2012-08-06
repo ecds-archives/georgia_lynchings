@@ -89,7 +89,7 @@ function update_nodes_on_data_change(json, events_url, force) {
    * this allows us to keep the circle marker and the label together
    * in a single element */
   var nodes = nodes_group.selectAll("g.node")
-      .data(json.nodes, function (d) { return d.name; });
+      .data(json.nodes, function (d) { return d.actor_id; });
   /* enter nodes */
   var enter_nodes = nodes.enter().append("g")
       .classed("node", true)
@@ -116,7 +116,7 @@ function update_nodes_on_data_change(json, events_url, force) {
   nodes.select("circle")
     .transition()
       .attr("r", function (d) {
-        return Math.sqrt(d.value) * 1.5 + 3;
+        return Math.sqrt(d.value) * .3 + 3;
       });
 }
 
@@ -126,18 +126,18 @@ function update_links_on_data_change(json, force) {
   /* TODO: look into svg line markers to add direction arrows */
   var lines = links_group.selectAll("line.link")
       .data(json.links, function (d) {
-          return d.source_name + "|" + d.target_name;
+          return d.source_id + "|" + d.target_id;
       });
   lines
     .transition()
       .style("stroke-width", function (d) {
-        return d.value * 0.3 + 1;
+        return Math.sqrt(d.value) * 0.3 + 1;
       });
   lines.enter().append("line")
       .classed("link", true)
       .style("opacity", 0)
       .style("stroke-width", function (d) {
-        return d.value * 0.3 + 1;
+        return Math.sqrt(d.value) * 0.3 + 1;
       })
     .transition()
       .duration(2000)
@@ -180,7 +180,7 @@ function select_node(node, d, events_url) {
       return link.source == d || link.target == d;
     });
 
-  var url = events_url + '?participant=' + d.name;
+  var url = events_url + '?participant=' + d.actor_id;
   $.get(url, function(events) {
     update_sidebar_events(d, events);
     expand_sidebar();
