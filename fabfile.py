@@ -1,11 +1,16 @@
 from fabric.api import env, local, prefix, put, sudo, task, \
      require, puts, cd, run, abort, lcd
-from fabric.colors import green, red, cyan
+from fabric.colors import green, red, cyan, yellow
 from fabric.contrib import files
 from fabric.context_managers import cd, hide, settings
 import georgia_lynchings
 import os
 import re
+
+'''
+Recommended usage:
+$ fab -H servername test doc git_source push_source rm_old_builds
+'''
 
 # default settings
 env.remote_path = '/var/www/galyn'
