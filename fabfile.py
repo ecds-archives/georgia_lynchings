@@ -9,7 +9,7 @@ import re
 
 '''
 Recommended usage:
-$ fab -H servername test doc git_source push_source rm_old_builds
+$ fab -H servername deploy
 '''
 
 # default settings
@@ -32,7 +32,7 @@ def git_source(rev='HEAD'):
     '''Create a tarball of the git source tree.
 
     Arguments:
-      rev: a git commit identifer, defaults to HEAD
+      rev: (optional) a git commit identifer, defaults to HEAD
     '''
 
     # if not a released version, use revision tag
@@ -102,6 +102,32 @@ def push_source():
                     puts(output)
                 else:
                     puts(green('No differences between current and previous localsettings.py'))
+
+
+@task
+def push_live():
+    '''Update the live website to use the new current deployment.'''
+    if not files.exists('%(remote_path)s/current' % env):
+        abort("Current software is not linked. Can't make it live.")
+
+    with cd(env.remote_path):
+        sudo('rm -f live', user=env.remote_acct)
+        sudo('ln -sf $(readlink current) live', user=env.remote_acct)
+    sudo('apache2ctl -t')
+    sudo('service apache2 restart')
+
+
+@task
+def deploy():
+    '''Fully build and test the project, then push the software to the
+    configured server and update the live site to use it.
+    '''
+    test()
+    doc()
+    git_source()
+    push_source()
+    push_live()
+    rm_old_builds()
 
 
 @task
