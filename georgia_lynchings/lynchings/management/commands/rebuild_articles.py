@@ -14,18 +14,22 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
     	reader = self._init_reader(args)
-        new_ids = set()
-        article_event_ids = set()
         for row in reader:
-            new_ids.add(int(row['article_id']))
-            article_event_ids.add(int(row['event_id']))
-    	old_ids = set([int(article.identifier) for article in Article.objects.all()])
-        print "There are %s old IDs not found in the new set." % len(new_ids.difference(old_ids))
-        print "There are %s new IDs" % len(old_ids.difference(new_ids))
-    	
-        event_ids = set([lynching.pca_id for lynching in Lynching.objects.all()])
-        print "%s Lynchings have no articles associated." % len(event_ids.difference(article_event_ids))
-        print "%s articles have no Lynchings related to them." % len(article_event_ids.difference(article_event_ids))
+            self._handle_row(row)
+
+    def _handle_row(self, row):
+        """
+        Handles data from an individual row in the import file.
+        """
+        try: 
+            lynching = Lynching.objects.get(pca_id=row['event_id'])
+            try:
+                article = Article.objects.get(identifier=row['article_id'])
+                lynching.articles.add(article)
+            except Article.DoesNotExist:
+                print("No Article with PCAce ID %s" % row["article_id"])
+        except Lynching.DoesNotExist:
+            print("No Lynching for PCAce ID %s Found!" % row['event_id'])
 
     def _init_reader(self, *args):
         """Open the input file and return the reader object."""

@@ -26,7 +26,7 @@ IMG_SIZE = {
     "med": (77, 100),
     "lrg": (154, 200),
     "xlrg": (308, 400),
-    "page": (500, 649),
+    "page": (670, 870),
 }
 
 class Article(models.Model):
@@ -104,7 +104,7 @@ class Article(models.Model):
                     self._format_thumbnail_filename(size))
         return os.path.exists(png_file)
 
-    def generate_thumbnail(self, size="med", fill_and_crop=None, recreate=False, singlepage=True):
+    def generate_thumbnail(self, size="med", fill_and_crop=None, recreate=False, singlepage=True, dryrun=False):
         """
         Generates a thumbnail image from the first page of a PDF
 
@@ -127,7 +127,7 @@ class Article(models.Model):
         if fill_and_crop is None:
             fill_and_crop = (size != 'xlrg')
 
-        article_path = '%s' % os.path.join(settings.MEDIA_ROOT, settings.ARTICLE_UPLOAD_DIR)
+        article_path = '%s' % os.path.join(settings.STATIC_ROOT, settings.ARTICLE_IMAGES_DIR)
 
         if fill_and_crop:
             conversions = ["-resize", "%sx%s^" % IMG_SIZE[size],
@@ -136,31 +136,44 @@ class Article(models.Model):
             conversions = ["-resize", "%sx%s" % IMG_SIZE[size]]
 
         page = "[0]" # Generates first page only.
-        if singlepage:
+        if not singlepage:
             page = "" # Generates images for all pages with '-#' format.
 
         cmd = ["convert",
                "%s/%s%s" % (settings.MEDIA_ROOT, self.file.name, page)] + \
               conversions + \
               ["%s/%s" % (article_path, self._format_thumbnail_filename(size))]
-
         logger.debug(cmd)
-        subprocess.call(cmd) # run it as at commandline.
-        return 'Thumbnail generated'
+        if not dryrun:
+            subprocess.call(cmd) # run it as at commandline.
+        return 'Generated Image: %s' % self._format_thumbnail_filename(size)
 
-    def generate_all_thumbnails(self, recreate=False):
+    def generate_all_thumbnails(self, recreate=False, dryrun=False):
         """
         Generates thumbnails for all sizes in IMG_SIZE.
 
         :param recreate:  Bool:  Overwrite exiting thumbnails.
         """
+        result = []
         for size in IMG_SIZE.keys():
-            self.generate_thumbnail(size, recreate=recreate)
+            sp = True
+            if size == 'page':
+                sp = False
+            result.append(self.generate_thumbnail(size, recreate=recreate, singlepage=sp, dryrun=dryrun))
+        return result
+
+    def base_filename(self):
+        """
+        Returns the base filename of the associaed file.  Convienence method for
+        use with matching derivative files.
+        """
+        full_name = os.path.basename(self.file.name)
+        if full_name:
+            return "%s" % full_name.split(".")[0]
+        return None
 
     class Meta:
         ordering = ('featured', '-file', 'date', 'publisher')
-
-
 
 class PcAceDocument(RdfObject):
     """
