@@ -2,6 +2,7 @@ from fabric.api import env, local, prefix, put, sudo, task, \
      require, puts, cd, run, abort, lcd
 from fabric.colors import green, red, cyan, yellow
 from fabric.contrib import files
+from fabric.contrib.console import confirm
 from fabric.context_managers import cd, hide, settings
 import georgia_lynchings
 import os
@@ -180,6 +181,7 @@ def rm_old_builds(noinput=False):
             # get directory listing sorted by modification time (single-column for splitting)
             dir_listing = sudo('ls -t1', user=env.remote_acct)
             # get current and previous links so we don't remove either of them
+            live = sudo('readlink live', user=env.remote_acct) if files.exists('live') else None
             current = sudo('readlink current', user=env.remote_acct) if files.exists('current') else None
             previous = sudo('readlink previous', user=env.remote_acct) if files.exists('previous') else None
 
@@ -187,13 +189,13 @@ def rm_old_builds(noinput=False):
         dir_items = [n.strip() for n in dir_listing.split('\n')]
         # regex based on how we generate the build directory:
         #   project name, numeric version, optional pre/dev suffix, optional revision #
-        build_dir_regex = r'^georgia_lynchings-[0-9.]+(-[A-Za-z0-9_-]+)?(-r[0-9a-f]+)?$' % env
+        build_dir_regex = r'^galyn-[0-9.]+(-[A-Za-z0-9_-]+)?(-r[0-9a-f]+)?$' % env
         build_dirs = [item for item in dir_items if re.match(build_dir_regex, item)]
         # by default, preserve the 3 most recent build dirs from deletion
         rm_dirs = build_dirs[3:]
-        # if current or previous for some reason is not in the 3 most recent,
+        # if live, current, or previous for some reason is not in the 3 most recent,
         # make sure we don't delete it
-        for link in [current, previous]:
+        for link in [live, current, previous]:
             if link in rm_dirs:
                 rm_dirs.remove(link)
 
