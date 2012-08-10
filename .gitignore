@@ -20,7 +20,7 @@
 # Specific Files to ignore #
 ############################
 georgia_lynchings/localsettings.py
-georgia_lyncings/articles/static/articleimages/*.png
+georgia_lynchings/articles/static/articleimages/*.png
 playspace.py
 Thumbs.db
 Icon?
