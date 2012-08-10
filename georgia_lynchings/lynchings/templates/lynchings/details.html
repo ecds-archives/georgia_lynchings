@@ -1,6 +1,6 @@
 {% extends "page_base.html" %}
 
-{% block head-title %}{{ story }}: {{ block.super }}{% endblock %}
+{% block head-title %}{{ lynching }}: {{ block.super }}{% endblock %}
 
 {% block head-scripts %}
         {{ block.super }}
@@ -12,7 +12,7 @@
     $(document).ready(function() {
         initializeMap();
         var latLong, markerTitle;
-        {% for county in story.county_list %}
+        {% for county in lynching.county_list %}
             latLong = new google.maps.LatLng({{ county.latitude }}, {{ county.longitude }});
             markerTitle = "{{ county.label }} County";
             addMarker(latLong, markerTitle);
@@ -23,13 +23,13 @@
 
         {% block mainclass %}{{ block.super }} with_aside{% endblock %}
 
-{% block content-title %}{{ story }}{% endblock %}
+{% block content-title %}{{ lynching }}{% endblock %}
 
 {% block content-body %}
     <section id="victim_list" class="factlist">
-        <header><h2>Details of Victim{{ story.lynching_set.all|pluralize}}</h2></header>
-        {% for lynching in story.lynching_set.all %}
-                {% include "lynchings/snippets/lynching_summary.html" %}
+        <header><h2>Details of Victim{{ lynching.victim_set.all|pluralize}}</h2></header>
+        {% for victim in lynching.victim_set.all %}
+                {% include "lynchings/snippets/victim_summary.html" %}
         {% endfor %}
     </section>
 
@@ -37,7 +37,7 @@
         <header>
             <h2>News Articles</h2>
         </header>
-        {% for article in story.articles.all %}
+        {% for article in lynching.articles.all %}
             {% if not article.file %}
                 {% include "articles/snippets/article_block_nofile.html" %}
             {% else %}
@@ -51,7 +51,7 @@
 <aside>
     <section id="victim_map">
         <header>
-            <h3>Count{{ story.county_list|pluralize:"y,ies"}} of Lynching{{ story.lynching_set.all|pluralize }}</h3>
+            <h3>Count{{ lynching.county_list|pluralize:"y,ies"}} of Lynching{{ lynching.victim_set.all|pluralize }}</h3>
         </header>
         <div id="map_canvas"></div>
     </section>

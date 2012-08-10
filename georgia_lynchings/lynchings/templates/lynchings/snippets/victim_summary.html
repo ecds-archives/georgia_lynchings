@@ -1,0 +1,28 @@
+{% comment %}
+Template snippet use to display summary information about a lynching victim.
+{% endcomment %}
+<article id="victim_{{ victim.id }}" class="victim">
+    <p>
+        <strong>{{ victim }} was lynched</strong>
+        {% if victim.county %}
+            in <a href="{% url lynchings:county_detail victim.county.id %}">{{ victim.county }}</a> County
+        {% endif %}
+        {% if victim.date %}
+            on {{ victim.date|date:"l, F jS Y" }}
+        {% endif %}
+        {% if victim.accusation %}
+            after being accused of 
+            {% for accusation in victim.accusation.all %}
+                <a href="{% url lynchings:lynching_list_by_accusation accusation.id %}">{{ accusation }}</a>
+            {% endfor %}
+        {% endif %}
+    </p>
+    <div class="meta">
+        {% if perms.change_victim %}
+            edit: [<a href="{% url admin:lynchings_victim_change victim.id %}" target="_blank">Victim</a>]
+            {% if victim.county %}
+                [<a href="{% url admin:demographics_county_change victim.county.id %}" target="_blank">County</a>]
+            {% endif %}
+        {% endif %}
+    </div>
+</article>

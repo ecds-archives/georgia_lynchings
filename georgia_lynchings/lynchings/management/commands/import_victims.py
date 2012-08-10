@@ -35,12 +35,15 @@ class Command(BaseCommand):
     def _confirm_wipe(self, silent):
         """Step to require users to confirm the wipe of victims before proceeding."""
         if not silent:
-            input_msg = "CONFIRM YOU WISH TO PROCEED WITH A FULL WIPE AND RELOAD OF ALL VICTIM DATA? (Y/n)"
+            input_msg = """CONFIRM YOU WISH TO PROCEED WITH A FULL WIPE AND RELOAD OF \
+                        ALL VICTIM, RACE and ACCUSATION DATA? (Y/n)"""
             user_input = raw_input(input_msg + ': ')
             if user_input.lower() not in ['y', 'yes']:
                 raise CommandError("User Aborted Data Import!  No data was changed.")
             print "Wiping %s Victims from the database." % Victim.objects.all().count()
             Victim.objects.all().delete()
+            Accusation.objects.all().delete()
+            Race.objects.all().delete()
 
     def _init_reader(self, *args):
         """Open the input file and return the reader object."""
@@ -68,6 +71,7 @@ class Command(BaseCommand):
         data['race'] = self._get_race(row['race_raw'])
         data['gender'] = self._get_gender(row['gender_raw'])
         data['county'] = self._get_county(row['county_raw'])
+        data['date'] = self._handle_date(row['date_raw'])
         victim = Victim(**data)
         victim.save()
         self._handle_accusation(victim, row['accusation_raw'])
@@ -100,6 +104,18 @@ class Command(BaseCommand):
             return 'F'
         return None
 
+    def _handle_date(self, date_string):
+        """
+        Returns a date object parsed from date_string.
+        """
+        try:
+            fmt = "%m/%d/%Y"# mm/dd/yyyy
+            date = datetime.strptime(date_string.strip(), fmt)
+            return date
+        except ValueError:
+            #print("Could not parse date from string %s" % date_string)
+            return None
+        
     def _handle_accusation(self, victim, accusation_raw):
         """
         Tries to approximate a match of the accusation from the current values or creates one if no match found.

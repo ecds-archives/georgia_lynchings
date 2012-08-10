@@ -134,7 +134,7 @@ class Lynching(models.Model):
         """
         Convienence method to generate a list of all counties.
         """
-        return list(set([victim.county for victim in self.victim_seta.all()]))
+        return list(set([victim.county for victim in self.victim_set.all()]))
 
     @property
     def year(self):

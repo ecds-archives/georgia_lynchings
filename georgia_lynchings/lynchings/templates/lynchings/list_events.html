@@ -10,8 +10,8 @@
 {% block content-title %}{{ title|default:"List of Lynchings" }}{% endblock %}
 
 {% block content-body %}
-    {% for story in story_list %}
-       <div><a href="{% url lynchings:story_detail story.id %}">{{ story }}</a>
+    {% for lynching in lynching_list %}
+       <div><a href="{% url lynchings:lynching_detail lynching.id %}">{{ lynching }}</a>
        </div>
     {% empty %}
     <p>No Lynchings were found for this view.</p>

@@ -66,7 +66,7 @@
 		<div class="listcolumn">
 			{% for accusation in accusation_list %}
 				<div>
-					<a href="{% url lynchings:story_list_by_accusation accusation.id %}" data-weight="{{ accusation.stories }}">{{ accusation }} ({{ accusation.stories}})</a>
+					<a href="{% url lynchings:lynching_list_by_accusation accusation.id %}" data-weight="{{ accusation.victim_count }}">{{ accusation }} ({{ accusation.victim_count }})</a>
 				</div>
 				{% if forloop.counter == slice_at %}
 					</div><div class="listcolumn">
@@ -90,7 +90,7 @@
 				<div id="tags">
 					<ul class="weighted" id="weightTags">
 						{% for accusation in accusation_list %}
-							<li><a href="{% url lynchings:story_list_by_accusation accusation.id %}" data-weight="{% widthratio accusation.stories 40 20 %}">
+							<li><a href="{% url lynchings:lynching_list_by_accusation accusation.id %}" data-weight="{% widthratio accusation.victim_count 25 5 %}">
 								{{ accusation }}
 							</a></li>
 						{% endfor %}

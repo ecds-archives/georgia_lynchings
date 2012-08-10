@@ -5,9 +5,9 @@
 {% block content-title %}{{ title }}{% endblock %}
 
 {% block content-body %}
-{% for county, count in counties_list %}
+{% for county in counties_list %}
 <div>
-    <a href="{% url lynchings:county_detail county.id %}">{{ county }} ({{ count }} events)</a>
+    <a href="{% url lynchings:county_detail county.id %}">{{ county }} ({{ county.victim_count }} victims)</a>
 </div>
 {% endfor %}
 {% endblock %}
