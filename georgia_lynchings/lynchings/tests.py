@@ -4,84 +4,113 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
 
-from georgia_lynchings.lynchings.models import Accusation, Race, County, Story, Person, Alias, Lynching
+from georgia_lynchings.lynchings.models import Accusation, Race, \
+    County, Victim, Lynching
 
-class PersonTest(TestCase):
+accusation1 = {'label': 'Test Crime'}
+race1 = {'label': "test race"}
+named_victim = {
+    'name': 'Test Victim',
+    'gender': 'M',
+    'date': date(1893, 02, 18),
+    'detailed_reason':  'Is there ever one?'
+}
+unnamed_victim = {
+    'gender': 'M',
+    'date': date(1893, 02, 18),
+    'detailed_reason':  'Is there ever one?'
+}
+
+class AccusationTest(TestCase):
+
     def setUp(self):
-        # Test for person with a name
-        race = Race(label="african american")
+        self.acc = Accusation(label=accusation1["label"])
+        self.acc.save()
+
+    def test_string(self):
+        expected = "Test Crime"
+        self.assertEqual(expected, "%s" % self.acc)
+
+class RaceTest(TestCase):
+
+    def setUp(self):
+        self.race = Race(label=race1['label'])
+        self.race.save()
+
+    def test_string(self):
+        expected = "test race"
+        self.assertEqual(expected, "%s" % self.race)
+
+class LynchingTest(TestCase):
+    fixtures = ['demographics.json',]
+
+    def setUp(self):
+        # Setup other related objects
+        county = County.objects.get(name="Decatur")
+        acc = Accusation(**accusation1)
+        acc.save()
+        race = Race(**race1)
         race.save()
 
-        # Test for person with no name.
-        prsn = {
-            'pca_id': 934335,
-            'race': race,
-            'age': 42,
-            }
-        self.person = Person(**prsn)
-        self.person.save()
+        #Lynching
+        self.lynching = Lynching(pca_id="22394")
+        self.lynching.save()
 
-    def test_pretty_name(self):
+        # Named Victim
+        self.victim1 = Victim(**named_victim)
+        self.victim1.save()
+        self.victim1.county = county
+        self.victim1.accusation.add(acc)
+        self.victim1.race = race
+        self.victim1.lynching = self.lynching
+        self.victim1.save()
 
-        self._name_tester(self.person, 'Unknown Person')
-
-        self.person.gender = 'M'
-        self.person.save()
-        self._name_tester(self.person, 'Unknown african american Male')
-
-        self.person.name = 'John Doe'
-        self.person.save()
-        self._name_tester(self.person, 'John Doe')
-
-    def _name_tester(self, person, exp_name):
-        self.assertEqual(exp_name, person.pretty_name)
-
-class StoryTest(TestCase):
-
-    fixtures = ['test_lynchings.json']
+        # Unnamed Victim
+        self.victim2 = Victim(**unnamed_victim)
+        self.victim2.save()
+        self.victim2.county = county
+        self.victim2.accusation.add(acc)
+        self.victim2.race = race
+        self.victim2.lynching = self.lynching
+        self.victim2.save()
 
     def test_pretty_string(self):
-        story = Story.objects.get(pk=2)
-        exp = 'Lynching of Unknown Person, Unknown race 1 Female in 1907, 1899'
-        lynching = Lynching.objects.get(pk=2)
-        lynching.date = date(1907, 7, 3)
-        lynching.save()
-        self.assertEqual(exp, story.pretty_string)
-
+        expected = "Lynching of Test Victim, Unknown test race Male in 1893"
+        self.assertEqual(expected, self.lynching.pretty_string)
 
     def test_county_list(self):
-        story = Story.objects.get(pk=2)
-        self.assertEqual(len(story.county_list), 5)
+        expected = "Decatur"
+        county_names = [county.name for county in self.lynching.county_list]
+        self.assertTrue(expected in county_names)
 
     def test_year(self):
-        story = Story.objects.get(pk=2)
-        self.assertEqual(story.year, 1899)
-        lynching = Lynching.objects.get(pk=2)
-        lynching.date = date(1907, 7, 3)
-        lynching.save()
-        self.assertEqual(story.year, 1907)
+        expected = 1893
+        self.assertEqual(expected, self.lynching.year)
+        self.victim2.date = date(1923, 02, 10)
+        self.victim2.save()
+        self.assertEqual(1923, self.lynching.year)
 
-
-class StoryDetailViewTest(TestCase):
-    """
-    The Story detail view has a lot going on in it which makes it worth it's own
-    test class.
-    """
-    fixtures = ['demographics.json', 'test_lynchings.json']
+class VictimTest(TestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.victim = Victim()
+        self.victim.save()
 
-    def test_response(self):
-        """
-        Quick method to test all stories give a valid 200 or 404 response.
-        """
-        story_list = Story.objects.all()
-        for story in story_list:
-            exp = 500
-            url = reverse('lynchings:story_detail', args=[story.id,])
-            response = self.client.get(url)
-            actual = response.status_code
-            self.assertEqual(exp, actual, "Expected status code %s but returned %s for url" % (exp, actual, url))
+    def test_pretty_name(self):
+        # Test no name at all
+        self.assertEqual("Unknown Person", self.victim.pretty_name)
+        # Add gender
+        self.victim.gender = 'M'
+        self.victim.save()
+        self.assertEqual("Unknown Person", self.victim.pretty_name)
+        # Add Race, should change.
+        race = Race(label="Test Race")
+        self.victim.race = race
+        self.victim.save()
+        self.assertEqual("Unknown Test Race Male", self.victim.pretty_name)
+        # Add actual name
+        self.victim.name = "Test Name"
+        self.victim.save()
+        self.assertEqual("Test Name", self.victim.pretty_name)
 
 
