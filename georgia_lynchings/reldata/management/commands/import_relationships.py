@@ -3,7 +3,7 @@ import datetime
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from georgia_lynchings.reldata.models import Relationship
+from georgia_lynchings.reldata import models
 from georgia_lynchings.lynchings.models import Story
 
 class Command(BaseCommand):
@@ -41,16 +41,8 @@ class Command(BaseCommand):
     # there's a one-to-one mapping between csv fields and Relationship
     # fields, we give them the same names.
     FIELD_NAMES = [
-        'story', 'triplet_id',
-
-        'subject_id', 'subject_desc', 'subject_first_name', 'subject_last_name',
-        'subject_gender', 'subject_race', 'subject_age_desc', 'subject_exact_age',
-        'subject_adjective',
-
-        'process_id', 'process_desc', 'process_date', 'process_city', 'process_reason',
-        'process_instrument',
-
-        'object_id', 'object_desc', 'object_gender', 'object_race',
+        'story_id', 'event_id', 'sequence_id', 'triplet_id',
+        'subject', 'action', 'object',
     ]
 
     def set_input_source(self, args):
@@ -58,7 +50,7 @@ class Command(BaseCommand):
 
         if args:
             in_file_name = args[0]
-            in_file = open(in_file_name)
+            in_file = open(in_file_name, 'rU')
         else:
             import sys
             in_file = sys.stdin
@@ -71,7 +63,7 @@ class Command(BaseCommand):
         objects from the database.
         '''
 
-        Relationship.objects.all().delete()
+        models.Relation.objects.all().delete()
 
     def handle_row(self, row):
         '''
@@ -80,59 +72,19 @@ class Command(BaseCommand):
         object representing the row.
         '''
 
-        object_properties = {}
-        for key, val in row.iteritems():
-            process = getattr(self, 'parse_' + key,
-                              self.parse_default_field)
-            object_properties[key] = process(val)
+        object_properties = {
+            'story_id': int(row['story_id']),
+            'event_id': int(row['event_id']),
+            'sequence_id': int(row['sequence_id']),
+            'triplet_id': int(row['triplet_id']),
 
-        rel = Relationship(**object_properties)
+            'subject': models.Actor.objects.get_or_create(description=row['subject'])[0]
+                            if row['subject'] else None,
+            'action': models.Action.objects.get_or_create(description=row['action'])[0]
+                            if row['action'] else None,
+            'object': models.Actor.objects.get_or_create(description=row['object'])[0]
+                            if row['object'] else None,
+        }
+
+        rel = models.Relation(**object_properties)
         rel.save()
-
-    def parse_default_field(self, val):
-        '''
-        By default, represent all field values as strings, replacing missing
-        (``None``) values with empty strings.
-        '''
-        return val or ''
-
-    def parse_story(self, val):
-        '''
-        The ``story`` is represented in the input as a PC-ACE id of a
-        :class:`~georgia_lynchings.events.models.MacroEvent`. These map
-        one-to-one to :class:`~georgia_lynchgins.lynchings.models.Story`
-        objects, so parse this by looking up the related Story.
-        '''
-        if val:
-            return Story.objects.get(pca_id=int(val))
-
-    def parse_triplet_id(self, val):
-        'The ``triplet_id`` is an integer field.'
-        if val:
-            return int(val)
-
-    def parse_subject_id(self, val):
-        'The ``subject_id`` is an integer field.'
-        if val:
-            return int(val)
-
-    def parse_subject_exact_age(self, val):
-        'The ``subject_exact_age`` is an integer field.'
-        if val:
-            return int(val)
-
-    def parse_process_id(self, val):
-        'The ``process_id`` is an integer field.'
-        if val:
-            return int(val)
-
-    def parse_process_date(self, val):
-        'The ``process_date`` is a date field.'
-        if val:
-            dt = datetime.datetime.strptime(val, '%Y-%m-%d')
-            return dt.date()
-
-    def parse_object_id(self, val):
-        'The ``object_id`` is an integer field.'
-        if val:
-            return int(val)
