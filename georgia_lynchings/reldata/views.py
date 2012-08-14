@@ -58,7 +58,7 @@ def graph(request):
         })
 
 def wordcloud(request):
-    rels = Relationship.objects.exclude(subject_adjective="").\
+    rels = Relation.objects.exclude(subject_adjective="").\
     values('subject_adjective').annotate(Count('subject_adjective'))
     word_list = [{'word': rel['subject_adjective'], 'count': rel['subject_adjective__count']}
     for rel in rels]
