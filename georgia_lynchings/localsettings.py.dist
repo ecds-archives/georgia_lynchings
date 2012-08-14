@@ -43,13 +43,6 @@ ADMIN_MEDIA_PREFIX = '%s/static/admin/' % SUB_URL
 # LOGIN_REDIRECT_URL = '%s/' % SUB_URL
 # LOGOUT_URL = '%s/accounts/logout/' % SUB_URL'
 
-# Access URL for the Sesame triplestore - used by SPARQL queries
-SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
-TEST_SPARQL_STORE_API = 'http://server.name.goes.here/openrdf-sesame/'
-# Sesame Triplestore Repository name
-SPARQL_STORE_REPOSITORY = 'repository-name-goes-here'
-TEST_SPARQL_STORE_REPOSITORY = 'repository-name-goes-here'
-
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -69,6 +62,9 @@ SITE_ID = 1
 # relative to the MEDIA_ROOT setting of the app.  For more information see
 # https://docs.djangoproject.com/en/dev/topics/http/file-uploads/
 ARTICLE_UPLOAD_DIR = 'files' # i.e. 'files'
+# Used for the location under the STATIC_ROOT where generated thumbnails and page
+# images will go.
+ARTICLE_IMAGES_DIR = 'articleimages'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = ''
