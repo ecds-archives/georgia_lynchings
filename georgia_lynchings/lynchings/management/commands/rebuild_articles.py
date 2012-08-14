@@ -7,8 +7,8 @@ from georgia_lynchings.articles.models import Article
 from georgia_lynchings.lynchings.models import Lynching
 
 class Command(BaseCommand):
-    help = "Imports Victim data from the CSV export produced from PCAce.  Ignores first row as fieldnames."
-
+    help = "Related articles to lynchings by the PCA Identifier in th import file."
+    args = "<filename>"
     fieldnames = ('event_id', 'article_id', 'filename', 'victim_name')
 
 
