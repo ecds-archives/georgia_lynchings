@@ -3,6 +3,18 @@
 Installation
 ============
 
+#. Place the project source into an appriopriate directory.
+#. Create a 'sitemedia' folder outside the project root and configure
+   localsettings.py to point to it as appropriate.  This is for any 
+   static media and will be the target of the 'collectstatic'
+   command.
+#. Create a 'media' directory outside the project root and configure
+   localsettings and settings as appropriate. This is for article
+   uploads as part of the articles.models.Article class.
+#. Execute './manage.py syncdb' from the appropriate directory and env.
+#. Execute '.manage.py migrate' from the appropriate directory and env.
+#. Configure apache as needed for the application.
+
 Software dependencies
 ---------------------
 
@@ -10,48 +22,12 @@ We recommend the use of `pip <http://pip.openplans.org/>`_ for environment
 and dependency management in this and other Python projects. If you don't 
 have them installed we recommend ``sudo apt-get install pip``.
 
-Configure the environment
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Environment
+^^^^^^^^^^^
 
-When first installing this project, you'll need to create a virtual environment
-for it. The environment is just a directory. You can store it anywhere you like.
-For instance, if the source is in ``/home/httpd/sites/georgia_lynchings/src``,
-consider creating an environment in ``/home/httpd/sites/virtual_envs/georgia_lynchings``.
-One way to do this is using virtualenv, wirtualenvwrapper, and distribute::
-
-    $ sudo pip install -U virtualenv
-    $ sudo pip install -U virtualenvwrapper
-    $ sudo pip install -U distribute
-
-After that you should add some settings to your .bashrc ::
-
-    export WORKON_HOME=/home/httpd/sites/virtual_envs
-    export PROJECT_HOME=/home/httpd/sites
-    source /usr/local/bin/virtualenvwrapper.sh
-    # Tell pip to create its virtualenvs in $WORKON_HOME.    
-    export PIP_VIRTUALENV_BASE=$WORKON_HOME 
-    # Tell pip to automatically use the currently active virtualenv.    
-    export PIP_RESPECT_VIRTUALENV=true 
-    export VIRTUALENV_USE_DISTRIBUTE=true
-
-Now, you can create the virtual environment for this project, and launch 
-the virtual environment in one command::
-    
-  $ mkvirtualenv --no-site-packages --distribute georgia_lynchings
-  
-If the environemnt is already created, you can activate the virtual 
-environment for  this project with this command::
-    
-  $ . /home/httpd/sites/virtual_envs/georgia_lynchings/bin/activate  
-
-Once the environment has been activated inside a shell, Python programs
-spawned from that shell will read their environment only from this
-directory, not from the system-wide site packages. Installations will
-correspondingly be installed into this environment.
-
-.. Note::
-  Installation instructions and upgrade notes below assume that
-  you are already in an activated shell.
+The site was developed with the assumption it would be deployed to a server
+running Apache with mod_wsgi and virtualenv as appropriate.  Likely it will
+work under other configurations as needed for that enironment.
 
 Install python dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,11 +36,12 @@ Georgia Lynchings depends on several python libraries. The installation
 is mostly automated, and will print status messages as packages are 
 installed. If there are any errors, pip should announce them very loudly.
 
-You will need python-dev package installed first::
+All dependencies can be executed from a single pip install file::
 
-  $ sudo apt-get install python-dev
+  $ pip install -r pip-install-all.txt
 
-To install python dependencies, cd into the repository checkout and::
+Alternatively install and development requirements have been sperated
+and are executed respectively as::
 
   $ pip install -r pip-install-req.txt
 
@@ -73,85 +50,3 @@ where you plan to run unit tests, code coverage reports, or build sphinx
 documentation, you probably will also want to::
 
   $ pip install -r pip-dev-req.txt
-
-After this step, your virtual environment should contain all of the
-needed dependencies.
-
-Solr
-~~~~
-Georgia Lynchings uses `Solr <http://lucene.apache.org/solr/>` for 
-searching  Georgia Lynchings content. The Solr schema
-included with the source code at ``solr/schema.xml`` should be used as 
-the Solr schema configuration. For cotemplatesnvenience, this directory also
-contains a sample ``solrconfig.xml`` and minimal versions of all other 
-solr configuration files used by the index.  NOTE:  Solr 3.x requires the
-solrconfig.xml to reference the appropriate lucene version.
-
-The url for accessing the configured Solr instance should be set in
-``localsettings.py`` as **SOLR_INDEX_URL**.
-
-To populate the index initially, run the ``reindex_events`` script ::
-
-  $ python manage.py reindex_events 
-  
-New Data Load
-~~~~~~~~~~~~~
-On initial setup and each time there is a new data load available the 
-create_timemap_json manage command should be run.
-
-The url for accessing the configured timemap json url should be set in
-``localsettings.py`` as **TIMEMAP_JSON_URL**.
-
-To populate the timemap json, run the ``create_timemap_json`` script ::
-
-  $ python manage.py create_timemap_json   
-
-
-Install the application
------------------------
-
-Apache
-~~~~~~
-
-After installing dependencies, copy and edit the wsgi and apache
-configuration files in src/apache inside the source code checkout. Both 
-may require some tweaking for paths and other system details.
-
-Configuration
-~~~~~~~~~~~~~
-
-Configure application settings by copying ``localsettings.py.dist`` to
-``localsettings.py`` and editing for local settings (database, Fedora
-repository, etc.).
-
-After configuring all settings, initialize the db with all needed
-tables and initial data using::
-
-  $ python manage.py syncdb
-
-Add the georgia lynching 'documents' and 'media' directories as an 
-apache alias::
-  
-  Example:
-  Alias /georgia_lynchings/documents/ /home/galyn/documents/
-  Alias /georgia_lynchings/media/ /home/httpd/georgia_lynchings/media/ 
-  
-Collect the static media::
-  
-  $ python manage.py collectstatic
-  
-
-Notes for developers
-====================
-
-The following instructions can be ignored when deploying to a staging
-or production environment, but may be helpful to a developer working
-on the project or running automated tests.
-
-Session configuration
----------------------
-
-By default, this project is configured to mark session cookies as secure. 
-To enable login over HTTP (e.g., when developing with Django's runserver), 
-you will need to override this in your ``localsettings.py``.  See the 
-example and comments in ``localsettings.py.dist``.
