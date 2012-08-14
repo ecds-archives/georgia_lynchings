@@ -96,7 +96,7 @@ def county_detail(request, county_id):
     """
     county = get_object_or_404(County, id=county_id)
 
-    lynching_list = Lynching.objects.filter(victim__county=county)
+    lynching_list = Lynching.objects.filter(victim__county=county).distinct()
     return render(request, 'lynchings/list_events.html', {
         'title': 'Lynchings in %s County' % county.name,
         'county': county,
