@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 
 from georgia_lynchings.events.models import SemanticTriplet
-from georgia_lynchings.lynchings.models import Story
+from georgia_lynchings.lynchings.models import Story, Lynching
 from georgia_lynchings.reldata import models
 
 FILTER_FIELDS = [
@@ -130,7 +130,7 @@ def event_lookup(request):
         return HttpResponseBadRequest(msg)
     participant = int(request.GET.get('participant'))
 
-    # FIXME: reformulate as actual Story objects once those are fixed.
+    # FIXME: reformulate as actual Lynching objects once those are fixed.
     qs = models.Relation.objects
     qs = qs.filter(subject__isnull=False,
                    action__isnull=False,
@@ -140,11 +140,23 @@ def event_lookup(request):
     rel_data = qs.values('story_id') \
                  .annotate(Count('id'))
 
+    lynching_data = []
+    for rel in rel_data:
+        try:
+            lynching = Lynching.objects.get(id=rel['story_id'])
+            lynching_data.append({
+                'url': reverse('lynchings:lynching_detail', args=[lynching.id,]),
+                'name': "%s" % lynching, # Use the string method.
+                'appearances': rel['id__count'],
+                })
+        except Lynching.DoesNotExist:
+            pass
+
     data = [{
-        'url': Story(id=rel['story_id']).get_absolute_url(),
-        'name': 'Story %d' % (rel['story_id'],),
+        'url': Lynching(id=rel['story_id']).get_absolute_url(),
+        'name': 'Lynching %d' % (rel['story_id'],),
         'appearances': rel['id__count'],
     } for rel in rel_data]
-    sorted_data = sorted(data, key=lambda s:s['appearances'], reverse=True)
+    sorted_data = sorted(lynching_data, key=lambda s:s['appearances'], reverse=True)
     return HttpResponse(json.dumps(sorted_data),
                         content_type='application/json')
