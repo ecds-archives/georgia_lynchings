@@ -32,9 +32,15 @@
   </script>
 {% endblock %}
 
+{% block content-title %}Network of Groups: {{ block.super }}{% endblock %}
+
 {% block content-body %}
+  <p>This network graph is a simple expression of the scholarly analysis of newspaper articles
+    reporting on Lynching events in Georgia from 1875-1930.  It expresses reported intereactions
+    between groups using the language in the original articles and allows you to filter by the type of interaction expressed there.
+  </p>
   {% for filter in filters %}
-    <label>{{ filter.label }}
+    <label><strong>Filter graph by {{ filter.label }}</strong>
       <select name="{{ filter.http_name }}" class="filter">
         {% for value in filter.values %}
           <option value="{{ value.value }}">{{ value.label }}</option>
@@ -52,38 +58,11 @@
       <div id=graph_resize_bar></div>
       <div id=graph_infobar_content_container>
         <div id=graph_infobar_content>
-          <h2>Lorem ipsum</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc
-          eget metus est. Vestibulum lacinia libero augue. Vestibulum sed
-          tortor mauris. Nulla nec diam ante, ut fringilla elit. Curabitur
-          cursus bibendum libero id hendrerit. Nam eleifend nisl ut quam
-          adipiscing consectetur pellentesque risus auctor. Praesent ante
-          tellus, mollis auctor aliquam non, auctor vitae orci. Cras blandit
-          lobortis mauris nec placerat. Lorem ipsum dolor sit amet,
-          consectetur adipiscing elit. Maecenas blandit ligula at dolor
-          imperdiet vulputate aliquam est porta. Praesent fermentum, nisi sit
-          amet sollicitudin semper, felis libero porta sem, vitae scelerisque
-          nisi tortor eu tellus. Donec eu magna auctor sem laoreet semper sed
-          a velit. Cras iaculis nibh a nisl cursus eget commodo enim
-          ultricies. Maecenas mattis tempor lorem, vitae tempus risus
-          adipiscing vitae. Cras dui erat, fermentum non imperdiet vel,
-          aliquet at ipsum.</p>
+          <h2>Explore Events</h2>
+          <p>Clicking on any node in the graph will return a list of Lynching events
+            that group belongs to so you can examine the newspaper narratives yourself.</p>
         </div>
       </div>
     </div>
   </div>
-<article>
-    <header>
-        <h3>Network Map</h3>
-    </header>
-    <section>
-        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
-            has been the industry's standard dummy text ever since the 1500s, when an unknown printer
-            took a galley of type and scrambled it to make a type specimen book. It has survived not
-            only five centuries, but also the leap into electronic typesetting, remaining essentially
-            unchanged. It was popularised in the 1960s with the release of Letraset sheets containing
-            Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker
-            including versions of Lorem Ipsum.</p>
-    </section>
-</article>
 {% endblock %}

@@ -12,7 +12,7 @@ from georgia_lynchings.reldata import models
 
 FILTER_FIELDS = [
     {
-        'field_label': 'Action type',
+        'field_label': 'Type of Interaction',
         'http_name': 'action',
         'value_field': 'action',
         'label_field': 'action__description',

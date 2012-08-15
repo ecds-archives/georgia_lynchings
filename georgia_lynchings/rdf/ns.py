@@ -1,13 +1,17 @@
-from django.conf import settings
 from rdflib import Namespace
 
+try:
+	from georgia_lynchings.settings import APPLICATION_RDF_NS_ROOT as ns_root 
+except ImportError:
+	ns_root = None
+
 def _source_file_ns(fname, id_prefix=''):
-    uri = '%ssource_data_files/%s#%s' % (settings.APPLICATION_RDF_NS_ROOT,
+    uri = '%ssource_data_files/%s#%s' % (ns_root,
                                          fname, id_prefix)
     return Namespace(uri)
 
 def _constructed_stmts_ns(construct_stmt_path, id_prefix=''):
-    uri = '%sconstructed_statements/index/%s/#%s' % (settings.APPLICATION_RDF_NS_ROOT,
+    uri = '%sconstructed_statements/index/%s/#%s' % (ns_root,
                                          construct_stmt_path, id_prefix)                                         
     return Namespace(uri)
 

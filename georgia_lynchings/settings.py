@@ -111,7 +111,7 @@ SOUTH_TESTS_MIGRATE = False
 
 # The URI root for all internally-defined namespaces used by this
 # application.
-APPLICATION_RDF_NS_ROOT = 'http://galyn.example.com/'
+# APPLICATION_RDF_NS_ROOT = 'http://galyn.example.com/'
 
 try:
     from localsettings import *

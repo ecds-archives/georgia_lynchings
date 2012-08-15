@@ -11,26 +11,34 @@
 
 {% block content-title %}Protype displays (development only){% endblock %}
 {% block content-body %}
-    <!-- floaters handle vertical centering. see index.css -->
-        <ul>
-       <li><a href="{% url lynchings:lynching_list %}">List of all Lynchings</a></li>
-
-       <li><a href="{% url lynchings:alleged_crimes_list %}">List of Alleged Crimes</a></li>
-
-       <li><a href="{% url lynchings:county_list %}">List of Georgia Counties</a></li>
-
-       <li><a href="{% url lynchings:timemap %}">Timemap of Lynching Victims</a></li>
-
-       <li><a href="{% url relations:graph %}">Graph of Story Actors</a></li>
-
-       </ul>
+    <article>
+      <header><h2><a href="{% url lynchings:lynching_list %}">Lynchings</a></h2></header>
+      <p>A list of lynchings studied as part of the scholarly analysis of news articles.
+      </p>
+    </article>
+      <header><h2><a href="{% url lynchings:alleged_crimes_list %}">Alleged Crimes</a></h2></header>
+      <p>View a list of alleged crimes used as a justification for these murders.</p>
+    </article>
+      <header><h2><a href="{% url lynchings:county_list %}">List of Georgia Counties</a></h2></header>
+      <p>List of Counties where these Lynchings happend.</p>
+    </article>
+      <header><h2><a href="{% url lynchings:timemap %}">Timemap of Lynching Victims</a></h2></header>
+      <p>View an interactive timeline of these events with placemarkers.</p>
+    </article>
+      <header><h2><a href="{% url relations:graph %}">Graph of Story Actors</a></h2></header>
+      <p>An interactive network map reflecting the schoarly analysis of connections between
+        actors as expressed in the newspaper articles reporting on the events.</p>
+    </article>
 {% endblock %}
 
 {% block aside %}
 <aside>
-    <h3>{% block aside-title %}aside{% endblock %}</h3>
+    <h3>{% block aside-title %}A History of Violence{% endblock %}</h3>
     {% block aside-content %}
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sodales urna non odio egestas tempor. Nunc vel vehicula ante. Etiam bibendum iaculis libero, eget molestie nisl pharetra in. In semper consequat est, eu porta velit mollis nec. Curabitur posuere enim eget turpis feugiat tempor. Etiam ullamcorper lorem dapibus velit suscipit ultrices.</p>
+    <p>This site brings to light the terrible history of Lynching violence in the state of 
+      Georgia circa 1875-1930.  Through a analysis of the newspaper articles reporting
+      on these crimes, scholars have been attempting to express the complex network of 
+      relationships between actors and classify the types of interactions expressed in reporting from that time.  Through analysis of the language used to report these events scholars hope to express the complexity of interactions related to these terrible events.</p>
     {% endblock %}
 </aside>
 {% endblock %}
