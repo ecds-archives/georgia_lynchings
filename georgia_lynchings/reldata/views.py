@@ -67,10 +67,9 @@ def wordcloud(request):
         'word_list': word_list,
     })
 
-
-def graph_data(request):
-    '''Collect data for a (force-directed) relationship graph from available
-    :class:`~georgia_lynchings.reldata.models.Relation` data.
+def filtered_relation_query(request):
+    '''Get a query set representing :class:`~georgia_lynchings.reldata.models.Relation`
+    objects after applying common filter arguments in the request.
     '''
     rel_qs = models.Relation.objects.filter(subject__isnull=False,
                                             action__isnull=False,
@@ -79,7 +78,13 @@ def graph_data(request):
         value = request.GET.get(field['http_name'], '')
         if value:
             rel_qs = rel_qs.filter(**{field['value_field']: value})
+    return rel_qs
 
+def graph_data(request):
+    '''Collect data for a (force-directed) relationship graph from available
+    :class:`~georgia_lynchings.reldata.models.Relation` data.
+    '''
+    rel_qs = filtered_relation_query(request)
     subjects = rel_qs.values('subject').annotate(Count('id'))
     subjects_dict = {subj['subject']: subj['id__count'] for subj in subjects}
     objects = rel_qs.values('object').annotate(Count('id'))
@@ -124,18 +129,17 @@ def cloud_data(request):
 
 
 def event_lookup(request):
+    '''Look up lynching stories and instance counts for relations matching
+    query terms.
+    '''
     if 'participant' not in request.GET:
         msg = "Event search requires search terms. Current recognized " + \
               "search terms are: participant"
         return HttpResponseBadRequest(msg)
     participant = int(request.GET.get('participant'))
 
-    # FIXME: reformulate as actual Lynching objects once those are fixed.
-    qs = models.Relation.objects
-    qs = qs.filter(subject__isnull=False,
-                   action__isnull=False,
-                   object__isnull=False) \
-           .filter(Q(subject=participant) |
+    qs = filtered_relation_query(request)
+    qs = qs.filter(Q(subject=participant) |
                    Q(object=participant))
     rel_data = qs.values('story_id') \
                  .annotate(Count('id'))
@@ -151,12 +155,6 @@ def event_lookup(request):
                 })
         except Lynching.DoesNotExist:
             pass
-
-    data = [{
-        'url': Lynching(id=rel['story_id']).get_absolute_url(),
-        'name': 'Lynching %d' % (rel['story_id'],),
-        'appearances': rel['id__count'],
-    } for rel in rel_data]
     sorted_data = sorted(lynching_data, key=lambda s:s['appearances'], reverse=True)
     return HttpResponse(json.dumps(sorted_data),
                         content_type='application/json')
