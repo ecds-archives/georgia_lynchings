@@ -61,17 +61,8 @@ function position_new_node(i, node, delta_radius) {
  */
 
 function get_filtered_graph_data(urls, force) {
-  var query = "?";
-  $("select.filter").each(function() {
-    if ($(this).val()) {
-      query += $(this).attr("name") + "=" + $(this).val() + "&";
-    }
-  });
-  query = query.substring(0, query.length - 1);
-  load_graph_data(urls, query, force);
-}
+  var query = get_filter_query_string();
 
-function load_graph_data(urls, query, force) {
   d3.json(urls.data + query, function(json) {
     init_node_locations(json.nodes, force.nodes());
     force.nodes(json.nodes)
@@ -81,6 +72,18 @@ function load_graph_data(urls, query, force) {
     update_selections_on_state_change();
     force.start();
   });
+}
+
+function get_filter_query_string(query) {
+  if (typeof query === 'undefined') { query = '?'; }
+
+  $("select.filter").each(function() {
+    if ($(this).val()) {
+      query += $(this).attr("name") + "=" + $(this).val() + "&";
+    }
+  });
+  query = query.substring(0, query.length - 1);
+  return query;
 }
 
 function update_nodes_on_data_change(json, urls, force) {
@@ -182,7 +185,6 @@ function update_selections_on_state_change() {
   if (typeof node === 'undefined') { return; }
 
   var node_data = d3.select(node).datum();
-  console.log(node_data);
 
   d3.selectAll("#nodes .node")
     .classed("selected", false);
@@ -190,7 +192,6 @@ function update_selections_on_state_change() {
 
   d3.selectAll("#links .link")
     .classed("selected", function(link) {
-      console.log(link);
       return link.source_id == node_data.actor_id ||
              link.target_id == node_data.actor_id;
     });
@@ -202,7 +203,9 @@ function update_sidebar_on_state_change(urls) {
 
   var node_data = d3.select(node).datum();
 
-  var url = urls.events + '?participant=' + node_data.actor_id;
+  var query = '?participant=' + node_data.actor_id + '&';
+  query = get_filter_query_string(query);
+  var url = urls.events + query;
   $.get(url, function(events) {
     set_sidebar_event_dom(events);
     expand_sidebar();
