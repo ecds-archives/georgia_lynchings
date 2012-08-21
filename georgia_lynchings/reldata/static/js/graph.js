@@ -188,12 +188,24 @@ function update_selections_on_state_change() {
 
   d3.selectAll("#nodes .node")
     .classed("selected", false);
-  d3.select(node).classed("selected", true);
+  d3.select(node)
+    .classed("selected", true)
+    .each(function() {
+      /* move to bottom of dom parent, which patins it on top */
+      this.parentNode.appendChild(this);
+    });
 
   d3.selectAll("#links .link")
     .classed("selected", function(link) {
       return link.source_id == node_data.actor_id ||
              link.target_id == node_data.actor_id;
+    })
+    .each(function(link_data) {
+      /* move selected to end of dom parent, which paints it on top */
+      if (link_data.source_id == node_data.actor_id ||
+          link_data.target_id == node_data.actor_id) {
+        this.parentNode.appendChild(this);
+      }
     });
 }
 
