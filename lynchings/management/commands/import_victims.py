@@ -1,3 +1,34 @@
+"""
+Victim data used throughout the site is a product of exports from PCAce to a 
+CSV file in the format listed below.  It can be freely overwritten and is not 
+forked or maintained internally.
+
+This import script will wipe and reload all vicitm information and will prompt
+the user by default to confirm any data deletion.  It does not wipe any Lynching,
+Article or Demogrpahic data.
+
+Usage::
+    $ ./manage.py import_victims <filename>
+
+Import File must be in CSV format and contain the following fields in the following 
+order:
+
+* event_id - int of PCAce MacroEvent ID 
+* date_raw - string of date of attack in format mm/dd/yyyy
+* name - string full name of victim
+* race_raw - string of victims race
+* gender_raw - string of victims gender
+* detailed_reason - string of reason stated for lynching
+* accusation - string of brief description of reason for lynching
+* county - string of county name lynching occured in
+
+**IMPORTANT NOTE:** 
+
+* First row will be ignored as column names.
+* Lynching data is not replaced as part of this import, only victim information.
+
+"""
+
 import re, csv
 from optparse import make_option
 from datetime import datetime
@@ -9,6 +40,12 @@ from georgia_lynchings.demographics.models import County
 from georgia_lynchings.lynchings.models import Lynching, Victim, Race, Accusation
 
 class Command(BaseCommand):
+    """
+    Imports information about Victims of Lynchings for use in rendering the Lynching
+    information throughout the site.
+
+    """
+
     help = "Imports Victim data from the CSV export produced from PCAce.  Ignores first row as fieldnames."
     args = "<filename>"
 

@@ -1,6 +1,5 @@
 # Files to ignore by default in Git #
 #####################################
-*.pdf
 *.pyc
 *.db
 *.jar
@@ -16,26 +15,18 @@
 *.db
 *.sqlite
 *.sql
+*.csv
+*.txt
 
 # Specific Files to ignore #
 ############################
-georgia_lynchings/localsettings.py
-georgia_lynchings/articles/static/articleimages/*.png
-playspace.py
+localsettings.py
 Thumbs.db
 Icon?
 .DS_Store?
-.DS_Store
 ehthumbs.db
 .idea
 collectedmedia
-
-# Directories to Ignore #
-#########################
-build
-dist
-#ignore the docs _build directory
-doc/_build/
-georgia_lynchings/test-results
-sitemedia
-static/documents
+.project
+.pydevproject
+build/

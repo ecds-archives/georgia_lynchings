@@ -1,3 +1,22 @@
+"""
+Imports data compiled from data aquired from the University of Virginia
+Historical Census Browser http://mapserver.lib.virginia.edu/
+
+This will pickup an file names <year>.csv placed in the same directory
+as the manage.py file as long as they have one of the following base
+filenamesnames 1870, 1880, 1900, 1910, 1930.  Sloppy of course but
+this isn't intended to need to be run again.
+
+CSV Files shoudld have the following columns with the designated titles:
+
+* county - string of county name.
+* total - int of total population
+* white - int of total white population
+* black - int of total african american population.
+* iltr_white - (optional) int of total illerate white population.
+* iltr_black - (optional) int of total african american population.
+"""
+
 import csv
 from optparse import make_option
 
@@ -6,6 +25,8 @@ from django.core.management.base import BaseCommand, CommandError
 from georgia_lynchings.demographics.models import County, Population
 
 class Command(BaseCommand):
+
+
     # This is highly specific and probably only useable once.
     help = "Import Census data from a csv export file."
 

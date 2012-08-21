@@ -35,7 +35,7 @@ ADMIN_MEDIA_PREFIX = '%s/static/admin/' % SUB_URL
 # root so no files are overritten.  Uncomment the two lines below if needed.
 # import os
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# MEDIA_ROOT = os.path.join(BASE_DIR, '../..', 'media')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Some default login and logout URL information.
 # Uncomment and configure properly if you include login
