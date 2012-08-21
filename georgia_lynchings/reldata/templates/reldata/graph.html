@@ -25,6 +25,7 @@
       get_filtered_graph_data(URLS, force);
       $("select.filter").change(function() {
         get_filtered_graph_data(URLS, force);
+        update_sidebar_on_state_change(URLS);
       });
 
       $("#graph_resize_bar").click(toggle_sidebar);
