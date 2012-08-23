@@ -18,7 +18,7 @@
 {% block endscript %}
   {{ block.super }}
   <script type="text/javascript">
-var foo = null;
+    var foo = null;
     $(document).ready(function() {
       var START_LOCATION = "1899-04-23"; {# date of Sam Hose lynching #}
       var timemap = TimeMap.init({
@@ -193,7 +193,7 @@ var foo = null;
 				<div id="mapcontainer" class="clearfix">
 					<div id="map">Loading Map</div>
 				</div>
-				<div id="details" class="clearfix">
+				<div id="details">
 					<img class="close" src="{{ STATIC_URL }}images/close.png">
 					<div id="detail-content">
 					</div>	
