@@ -18,12 +18,14 @@
 *.csv
 *.txt
 
-# Specific Files to ignore #
-############################
 localsettings.py
+georgia_lynchings/localsettings.py
+georgia_lynchings/articles/static/articleimages/*.png
+playspace.py
 Thumbs.db
 Icon?
 .DS_Store?
+.DS_Store
 ehthumbs.db
 .idea
 collectedmedia

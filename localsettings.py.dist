@@ -35,7 +35,11 @@ ADMIN_MEDIA_PREFIX = '%s/static/admin/' % SUB_URL
 # root so no files are overritten.  Uncomment the two lines below if needed.
 # import os
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+<<<<<<< HEAD:localsettings.py.dist
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+=======
+# MEDIA_ROOT = os.path.join(BASE_DIR, '../..', 'media')
+>>>>>>> 27dad82c5a443967d7b433791dcc747fe2282723:georgia_lynchings/localsettings.py.dist
 
 # Some default login and logout URL information.
 # Uncomment and configure properly if you include login

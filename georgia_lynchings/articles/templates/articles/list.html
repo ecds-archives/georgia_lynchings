@@ -1,0 +1,16 @@
+{% extends "page_base.html" %}
+
+{% block head-title %}Article List - {{ article.title }}: {{ block.super }}{% endblock %}
+
+
+{% block content-title %}Article List{% endblock %}
+
+{% block content-body %}
+        {% for article in article_list %}
+            {% if not article.file %}
+                {% include "articles/snippets/article_block_nofile.html" %}
+            {% else %}
+                {% include "articles/snippets/article_block.html" %}
+            {% endif %}
+        {% endfor %}
+{% endblock %}
