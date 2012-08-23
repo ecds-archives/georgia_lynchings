@@ -60,29 +60,33 @@ function position_new_node(i, node, delta_radius) {
  * HANDLE DATA CHANGE
  */
 
-function load_graph_data(data_url, events_url, force) {
-  d3.json(data_url, function(json) {
+function get_filtered_graph_data(urls, force) {
+  var query = get_filter_query_string();
+
+  d3.json(urls.data + query, function(json) {
     init_node_locations(json.nodes, force.nodes());
     force.nodes(json.nodes)
          .links(json.links);
-    update_nodes_on_data_change(json, events_url, force);
+    update_nodes_on_data_change(json, urls, force);
     update_links_on_data_change(json, force);
+    update_selections_on_state_change();
     force.start();
   });
 }
 
-function get_filtered_graph_data(urls, force) {
-  var query = "?";
+function get_filter_query_string(query) {
+  if (typeof query === 'undefined') { query = '?'; }
+
   $("select.filter").each(function() {
     if ($(this).val()) {
       query += $(this).attr("name") + "=" + $(this).val() + "&";
     }
   });
   query = query.substring(0, query.length - 1);
-  load_graph_data(urls.data + query, urls.events, force);
+  return query;
 }
 
-function update_nodes_on_data_change(json, events_url, force) {
+function update_nodes_on_data_change(json, urls, force) {
   var nodes_group = d3.select("#nodes");
 
   /* create the nodes. a node is a g containing a circle and text.
@@ -95,7 +99,7 @@ function update_nodes_on_data_change(json, events_url, force) {
       .classed("node", true)
       .style("opacity", 0) /* transition to 1 below */
       .call(force.drag)
-      .on('click.select', function(d) { select_node(this, d, events_url); });
+      .on('click.select', function() { select_node(this, urls); });
   enter_nodes
     .transition()
       .duration(500)
@@ -170,24 +174,61 @@ function update_dom_on_tick() {
 /***
  * NODE SELECTION
  */
-function select_node(node, d, events_url) {
+function select_node(node, urls) {
+  $('#graph').data('current_node', node);
+  update_selections_on_state_change();
+  update_sidebar_on_state_change(urls);
+}
+
+function update_selections_on_state_change() {
+  var node = $('#graph').data('current_node');
+  if (typeof node === 'undefined') { return; }
+
+  var node_data = d3.select(node).datum();
+
   d3.selectAll("#nodes .node")
     .classed("selected", false);
-  d3.select(node).classed("selected", true);
+  d3.select(node)
+    .classed("selected", true)
+    .each(function() {
+      /* move to bottom of dom parent, which patins it on top */
+      this.parentNode.appendChild(this);
+    });
 
   d3.selectAll("#links .link")
     .classed("selected", function(link) {
-      return link.source == d || link.target == d;
+      return link.source_id == node_data.actor_id ||
+             link.target_id == node_data.actor_id;
+    })
+    .each(function(link_data) {
+      /* move selected to end of dom parent, which paints it on top */
+      if (link_data.source_id == node_data.actor_id ||
+          link_data.target_id == node_data.actor_id) {
+        this.parentNode.appendChild(this);
+      }
     });
+}
 
-  var url = events_url + '?participant=' + d.actor_id;
+function update_sidebar_on_state_change(urls) {
+  var node = $('#graph').data('current_node');
+  if (typeof node === 'undefined') { return; }
+
+  var node_data = d3.select(node).datum();
+
+  var query = '?participant=' + node_data.actor_id + '&';
+  query = get_filter_query_string(query);
+  var url = urls.events + query;
   $.get(url, function(events) {
-    update_sidebar_events(d, events);
+    set_sidebar_event_dom(events);
     expand_sidebar();
   });
 }
 
-function update_sidebar_events(node_data, events) {
+function set_sidebar_event_dom(events) {
+  var node = $('#graph').data('current_node');
+  if (typeof node === 'undefined') { return; }
+
+  var node_data = d3.select(node).datum();
   var times = (node_data.value == 1) ? 'time' : 'times';
   var stories = (events.length == 1) ? 'story' : 'stories';
   var html = '<p><em>' + node_data.name + '</em> appears as an actor ' +
