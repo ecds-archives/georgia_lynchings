@@ -36,8 +36,8 @@
               {# TimeMap infoTemplate language uses literal {{}}, so make them with templatetag #}
               infoTemplate:
                 "<div class='detail-name'><b>{% templatetag openvariable %}title{% templatetag closevariable %}</b></div> \
-                 <div class='detail-location'><!--Location:--> {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
-                 <div class='detail-allegation'><!--Alleged Crime:--> {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
+                 <div class='detail-location'><!--Location:--> In {% templatetag openvariable %}county{% templatetag closevariable %} County</div> \
+                 <div class='detail-allegation'><!--Alleged Crime:--> Accused of {% templatetag openvariable %}alleged_crime{% templatetag closevariable %}</div> \
                  <div class='read-more'><a target='_blank' href='{% templatetag openvariable %}detail_link{% templatetag closevariable %}'>View More >></a><div class='clearfix'></div></div>"
             }
           }

@@ -1,6 +1,5 @@
 div#timelinecontainer,
-div#mapcontainer,
-div#details {
+div#mapcontainer {
    background-color: #eee;
 }
 
@@ -11,11 +10,14 @@ div#mapcontainer {
 div#details {
    float: right;
    display: none;
+   background-color: #404040;
+   color: white;
 }
       
 div#details a {
    float: right;
    margin: 5px;
+   color: white;
 }
        
 div#details img.close {
@@ -42,7 +44,6 @@ div#details img.close {
    margin-left:5px;
    margin-bottom:20px;
    font-size:16px;
-   border-bottom: 1px solid #508E52;
 }
 
 #details #detail-content div.read-more {
