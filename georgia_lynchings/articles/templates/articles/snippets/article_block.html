@@ -1,7 +1,0 @@
-<article id="article_{{ article.id }}">
-	<a href="{% url articles:detail article.id %}">
-	<img src="{{ STATIC_URL }}articleimages/{{ article.file|make_list|slice:"6:-4"|join:"" }}_med.png" 
-	height="100" width="77" class="previewImageLink" data-preview="{{ MEDIA_URL }}{{ article.file|make_list|slice:":-4"|join:"" }}_xlrg.png" alt="Article Thumbnail Image" />
- 	{% include 'articles/snippets/article_citation.html' %}
-    </a>
-</article>
