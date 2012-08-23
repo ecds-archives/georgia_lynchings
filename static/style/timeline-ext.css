@@ -1,7 +1,7 @@
 div#timelinecontainer,
 div#mapcontainer,
 div#details {
-	background-color: #eee;
+   background-color: #eee;
 }
 
 div#mapcontainer {
@@ -12,7 +12,7 @@ div#details {
    float: right;
    display: none;
 }
-	   
+      
 div#details a {
    float: right;
    margin: 5px;
@@ -26,7 +26,7 @@ div#details img.close {
    cursor: hand;
    cursor: pointer;
 }
-	   
+      
 #details #detail-content {
    margin: 10px;
    clear: right;
@@ -35,18 +35,18 @@ div#details img.close {
 }
 
 #details #detail-content div {
-	margin: 5px 5px 5px 15px;
+   /*margin: 5px 5px 5px 15px;*/
 }
 
 #details #detail-content div.detail-name {
-	margin-left:5px;
-	margin-bottom:20px;
-	font-size:16px;
-	border-bottom: 1px solid #508E52;
+   margin-left:5px;
+   margin-bottom:20px;
+   font-size:16px;
+   border-bottom: 1px solid #508E52;
 }
 
 #details #detail-content div.read-more {
-	margin-top:20px;
-	margin-left:5px;
-	border-top: 1px solid #508E52;
+   margin-top:20px;
+   margin-left:5px;
+   border-top: 1px solid #508E52;
 }
