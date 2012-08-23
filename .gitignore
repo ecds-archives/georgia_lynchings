@@ -30,3 +30,4 @@ collectedmedia
 .project
 .pydevproject
 build/
+articles/static/articleimages/*.png
