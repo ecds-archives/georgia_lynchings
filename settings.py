@@ -23,11 +23,8 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-<<<<<<< HEAD:settings.py
 STATIC_ROOT = os.path.normpath(os.path.join(BASE_DIR, '..', 'sitemedia'))
-=======
-STATIC_ROOT = os.path.normpath(os.path.join(BASE_DIR, '../..', 'sitemedia'))
->>>>>>> 27dad82c5a443967d7b433791dcc747fe2282723:georgia_lynchings/settings.py
+
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"

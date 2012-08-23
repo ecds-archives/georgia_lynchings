@@ -1,10 +1,6 @@
 div#timelinecontainer,
 <<<<<<< HEAD
 div#mapcontainer {
-=======
-div#mapcontainer,
-div#details {
->>>>>>> 27dad82c5a443967d7b433791dcc747fe2282723
    background-color: #eee;
 }
 
@@ -49,10 +45,7 @@ div#details img.close {
    margin-left:5px;
    margin-bottom:20px;
    font-size:16px;
-<<<<<<< HEAD
-=======
    border-bottom: 1px solid #508E52;
->>>>>>> 27dad82c5a443967d7b433791dcc747fe2282723
 }
 
 #details #detail-content div.read-more {

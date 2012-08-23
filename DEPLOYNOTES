@@ -3,23 +3,6 @@
 Installation
 ============
 
-<<<<<<< HEAD
-#. Extract project root to appropriate location.
-#. Setup MySQL database (or change dependencies as appropriate for alternate DB)
-#. Copy `~georgia_lynchings/georgia_lynchings/localsettings.py.dist` to
-   `~georgia_lynchings/georgia_lynchings/localsettings.py` and configure
-   with appropriate settings.
-#. Run the 'syncdb' manage.py command and configure user accounts.
-#. Run the 'migrate' manage.py command.
-#. Create directory `~sitemedia/`
-#. Copy `~georgia_lynchings/media` to `~media/`
-#. Run the 'collectstatic' manage.py command.
-#. Configured webserver for Django and Static directories as appropriate.
-   Static files should be served from `~sitemedia` with the alias '/static/'
-#. Import data as needed (See Data Import)
-
-Dependencies
-=======
 #. Place the project source into an appriopriate directory.
 #. Create a 'sitemedia' folder outside the project root and configure
    localsettings.py to point to it as appropriate.  This is for any 
@@ -33,28 +16,7 @@ Dependencies
 #. Configure apache as needed for the application.
 
 Software dependencies
->>>>>>> 27dad82c5a443967d7b433791dcc747fe2282723
 ---------------------
-
-We recommend the use of `pip <http://pip.openplans.org/>`_ for environment 
-and dependency management in this and other Python projects. If you don't 
-have them installed we recommend ``sudo apt-get install pip``.
-
-<<<<<<< HEAD
-
-pip install files
-~~~~~~~~~~~~~~~~~
-=======
-Environment
-^^^^^^^^^^^
-
-The site was developed with the assumption it would be deployed to a server
-running Apache with mod_wsgi and virtualenv as appropriate.  Likely it will
-work under other configurations as needed for that enironment.
-
-Install python dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>>>>> 27dad82c5a443967d7b433791dcc747fe2282723
 
 Georgia Lynchings depends on several python libraries. The installation 
 is mostly automated, and will print status messages as packages are 
