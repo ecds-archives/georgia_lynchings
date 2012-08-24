@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
-from georgia_lynchings import geo_coordinates
+#from georgia_lynchings import geo_coordinates
 from georgia_lynchings.events.models import MacroEvent, Victim
 from georgia_lynchings.articles.models import Article
 

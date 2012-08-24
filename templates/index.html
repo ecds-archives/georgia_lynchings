@@ -13,21 +13,21 @@
 {% block content-body %}
     <article>
       <header><h2><a href="{% url lynchings:lynching_list %}">Lynchings</a></h2></header>
-      <p>A list of lynchings studied as part of the scholarly analysis of news articles.
+      <p>Examined details about the {{ count.lynching }} lynchings analyzed for the descriptive narratives and relationships expressed in news articles from the time.
       </p>
     </article>
       <header><h2><a href="{% url lynchings:alleged_crimes_list %}">Alleged Crimes</a></h2></header>
-      <p>View a list of alleged crimes used as a justification for these murders.</p>
+      <p>View the {{ count.accusation }} catagories of accusations made against the victims of these horrible events.</p>
     </article>
       <header><h2><a href="{% url lynchings:county_list %}">List of Georgia Counties</a></h2></header>
-      <p>List of Counties where these Lynchings happend.</p>
+      <p>Lynchings occured in {{ count.county }} counties in Georgia and neighboring states.</p>
     </article>
       <header><h2><a href="{% url lynchings:timemap %}">Timemap of Lynching Victims</a></h2></header>
-      <p>View an interactive timeline of these events with placemarkers.</p>
+      <p>View an interactive timeline and map of these Lynchings.</p>
     </article>
       <header><h2><a href="{% url relations:graph %}">Graph of Story Actors</a></h2></header>
-      <p>An interactive network map reflecting the schoarly analysis of connections between
-        actors as expressed in the newspaper articles reporting on the events.</p>
+      <p>An interactive network of the {{ count.relation }} interactions between groups uncovered
+        as part of the scholarly analysis of newspaper reporting from the time.</p>
     </article>
 {% endblock %}
 

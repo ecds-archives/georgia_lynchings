@@ -7,12 +7,11 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^events/', include('georgia_lynchings.events.urls', namespace="events")),
     url(r'^lynchings/', include('georgia_lynchings.lynchings.urls', namespace="lynchings")),
     url(r'^page/', include('georgia_lynchings.simplepages.urls', namespace="simplepages")),
     url(r'^relations/', include('georgia_lynchings.reldata.urls', namespace="relations")),
     url(r'^articles/', include('georgia_lynchings.articles.urls', namespace="articles")),
-    url(r'^$', 'georgia_lynchings.events.views.home', name="home"),
+    url(r'^$', 'georgia_lynchings.lynchings.views.index', name="home"),
 
     
     # Uncomment the admin/doc line below to enable admin documentation:

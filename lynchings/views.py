@@ -5,8 +5,24 @@ from django.db.models import Count, Q, Sum, Avg
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 
-from georgia_lynchings.lynchings.models import Story, Lynching, Accusation
+from georgia_lynchings.lynchings.models import Story, Lynching, Accusation, Victim
 from georgia_lynchings.demographics.models import County, Population
+from georgia_lynchings.reldata.models import Relation
+
+def index(request):
+    """
+    A Basic index view for the front page of the site.
+    """
+    count  = {
+        'lynching': Lynching.objects.all().count,
+        'victim': Victim.objects.all().count,
+        'county': County.objects.filter(victim__isnull=False).count,
+        'accusation': Accusation.objects.all().count,
+        'relation': Relation.objects.all().count,
+        }
+    return render(request, 'index.html', {
+            'count': count,
+        })
 
 def lynching_detail(request, lynching_id):
     """
