@@ -24,7 +24,8 @@
       var timemap = TimeMap.init({
         mapId: "map",
         timelineId: "timeline",
-        dataLoadedFunction: timemap_data_loaded,
+        // dataLoadedFunction: timemap_data_loaded,
+        dataDisplayedFunction: timemap_data_displayed,
         options: {
           eventIconPath: "{{ STATIC_URL }}js/timemap/images/"
         },
@@ -53,6 +54,14 @@
       function timemap_data_loaded(timemap) {
         timemap.scrollToDate(START_LOCATION, true);
         init_filter_options(timemap);
+      }
+
+      /* Handle loading icon hiding when data has been displayed */
+      function timemap_data_displayed(timemap) {
+        
+        timemap.scrollToDate(START_LOCATION, true);
+        init_filter_options(timemap);
+        $('#tm_loading_icon').hide();
       }
 
       /* Initialize all filter dropdown options from values in the dataset. */
@@ -163,11 +172,36 @@
 {% block content-title %}Lynchings in Georgia (1875-1930) Timeline Map{% endblock %}
 
 {% block content-body %}
-        {# divs for timemap display #}
+    {# divs for timemap display #}
+    <style>
+      #tm_loading_icon {
+        position:absolute;
+        width: 120px;
+        height: 75px;
+        top: 0px;
+        left: 0;
+        right: 0;
+        bottom:0;
 
-        <div class="mapdisplay clearfix">
-	        <div id="timemap">
-                <div id="mapfilters">
+        margin: auto;
+        padding: 18px 12px 10px 12px;
+        text-align: center;
+        background-color: white;
+        border: 1px solid #ccc;
+        color: white;
+        z-index: 10000;
+      }
+      #timemap {
+        position:relative;
+      }
+    </style>
+    <div class="mapdisplay clearfix">
+      <div id="timemap">
+
+        <div id="tm_loading_icon">
+          <img src="{{ STATIC_URL }}images/black-003-loading.gif"/>
+        </div>
+        <div id="mapfilters">
           <div class="filters">
             <div class="filter" id="filter_alleged_crime">
               <label>Filter alleged crime
@@ -183,22 +217,22 @@
                 </select>
               </label>
             </div>
-          </div>
-      <div class="clearfix"></div>
+          </div><!-- /.filters -->
+          <div class="clearfix"></div>
+        </div><!-- /#mapfilters -->
+        <div id="timelinecontainer">
+          <div id="timeline"></div>
+        </div>
+        <div id="mapcontainer" class="clearfix">
+          <div id="map">Loading Map</div>
+        </div>
+        <div id="details">
+          <img class="close" src="{{ STATIC_URL }}images/close.png">
+          <div id="detail-content">
+          </div>  
+          <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
     </div>
-				<div id="timelinecontainer">
-					<div id="timeline"></div>
-				</div>
-				<div id="mapcontainer" class="clearfix">
-					<div id="map">Loading Map</div>
-				</div>
-				<div id="details">
-					<img class="close" src="{{ STATIC_URL }}images/close.png">
-					<div id="detail-content">
-					</div>	
-	                <div class="clearfix"></div>
-				</div>
-				<div class="clearfix"></div>
-			</div>
-		</div>
 {% endblock %}

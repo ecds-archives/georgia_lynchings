@@ -22,6 +22,25 @@ div#mapfilters {
 
 div#timemap {
 padding: 0;
+position: relative;
+}
+
+#tm_loading_icon {
+  position:absolute;
+  width: 120px;
+  height: 75px;
+  top: 0px;
+  left: 0;
+  right: 0;
+  bottom:0;
+
+  margin: auto;
+  padding: 18px 12px 10px 12px;
+  text-align: center;
+  background-color: white;
+  border: 1px solid #ccc;
+  color: white;
+  z-index: 10000;
 }
 
 div#timelinecontainer{
