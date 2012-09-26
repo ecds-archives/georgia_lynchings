@@ -3,43 +3,30 @@ The :mod:`georgia_lynchings` project package
 .. automodule:: georgia_lynchings
    :members:
 
-The :mod:`~georgia_lynchings.events` app
-----------------------------------------
+The :mod: `georgia_lynchings.articles` app
+-------------------------------------------
+.. automodule:: georgia_lynchings.articles
 
-.. automodule:: georgia_lynchings.events.models
+**Models**
 
-   .. autoclass:: MacroEvent
+.. automodule:: georgia_lynchings.articles.models
 
-.. automodule:: georgia_lynchings.events.views
-   :members:
-   
-.. automodule:: georgia_lynchings.events.details
-   :members:   
+   .. autoclass:: Article
 
-The :mod:`~georgia_lynchings.rdf` app
--------------------------------------
+**Views**
 
-:mod:`georgia_lynchings.rdf.sparql`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: georgia_lynchings.rdf.sparql
+.. automodule:: georgia_lynchings.articles.views
    :members:
 
-:mod:`georgia_lynchings.rdf.models`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: georgia_lynchings.rdf.models
+The :mod: `georgia_lynchings.demographics` app
+----------------------------------------------
+.. automodule:: georgia_lynchings.demographics
    :members:
 
-:mod:`georgia_lynchings.rdf.fields`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   .. automodule:: georgia_lynchings.demographics.models
+      :members:
 
-.. automodule:: georgia_lynchings.rdf.fields
+The :mod: `georgia_lynchings.lynchings` app
+-------------------------------------------
+.. automodule:: georgia_lynchings.lynchings
    :members:
-
-:mod:`georgia_lynchings.rdf.queryset`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: georgia_lynchings.rdf.queryset
-   :members:
-

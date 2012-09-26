@@ -1,0 +1,69 @@
+{% extends "page_base.html" %}
+
+{% block head-style %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/graph.css">
+{% endblock %}
+
+{% block head-scripts %}
+  {{ block.super }}
+  <script type="text/javascript" src="http://mbostock.github.com/d3/d3.v2.js?2.9.2"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/graph.js"></script>
+
+  <script type="text/javascript">
+    var URLS = {"data": "{{ data_url }}",
+                "events": "{{ event_url }}"};
+
+    $(document).ready(function(){
+      force = d3.layout.force()
+          .charge(-8000)
+          .gravity(2)
+          .size([$("#graph").attr("width"),
+                 $("#graph").attr("height")])
+          .on("tick", function() { update_dom_on_tick(); });
+
+      get_filtered_graph_data(URLS, force);
+      $("select.filter").change(function() {
+        get_filtered_graph_data(URLS, force);
+        update_sidebar_on_state_change(URLS);
+      });
+
+      $("#graph_resize_bar").click(toggle_sidebar);
+    });
+  </script>
+{% endblock %}
+
+{% block content-title %}Network of Groups: {{ block.super }}{% endblock %}
+
+{% block content-body %}
+  <p>This network graph is a simple expression of the scholarly analysis of newspaper articles
+    reporting on Lynching events in Georgia from 1875-1930.  It expresses reported intereactions
+    between groups using the language in the original articles and allows you to filter by the type of interaction expressed there.
+  </p>
+  {% for filter in filters %}
+    <label><strong>Filter graph by {{ filter.label }}</strong>
+      <select name="{{ filter.http_name }}" class="filter">
+        {% for value in filter.values %}
+          <option value="{{ value.value }}">{{ value.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  {% endfor %}
+  <div id=graph_container>
+    <svg id=graph width=960 height=800>
+      <!-- links before nodes so that nodes are always painted on top -->
+      <g id=links></g>
+      <g id=nodes></g>
+    </svg>
+    <div id=graph_infobar>
+      <div id=graph_resize_bar></div>
+      <div id=graph_infobar_content_container>
+        <div id=graph_infobar_content>
+          <h2>Explore Events</h2>
+          <p>Clicking on any node in the graph will return a list of Lynching events
+            that group belongs to so you can examine the newspaper narratives yourself.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

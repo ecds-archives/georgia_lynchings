@@ -1,0 +1,112 @@
+# Django local settings for georgia_lynchings project.
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+# IP addresses that should be allowed to see DEBUG info 
+INTERNAL_IPS = ('127.0.0.1', '127.0.1.1',)
+
+ADMINS = (
+    # ('Your Name', 'your_email@example.com'),
+)
+
+MANAGERS = ADMINS
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': '',                      # Or path to database file if using sqlite3.
+        'USER': '',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+    }
+}
+# Set this if deploying under a subdirectory.
+SUB_URL = '/galyn' # i.e. '/galyn'
+
+# Orverrides the default entries from settings.py to account for the SUB_URL
+MEDIA_URL = '%s/media/' % SUB_URL
+STATIC_URL = '%s/static/' % SUB_URL
+ADMIN_MEDIA_PREFIX = '%s/static/admin/' % SUB_URL
+
+# Use this to override the default media directory setting in settings.py
+# Recommend you do this in production so it points outside the django project
+# root so no files are overritten.  Uncomment the two lines below if needed.
+# import os
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Some default login and logout URL information.
+# Uncomment and configure properly if you include login
+# LOGIN_URL = '%s/accounts/login/' % SUB_URL
+# LOGIN_REDIRECT_URL = '%s/' % SUB_URL
+# LOGOUT_URL = '%s/accounts/logout/' % SUB_URL'
+
+# Local time zone for this installation. Choices can be found here:
+# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# although not all choices may be available on all operating systems.
+# On Unix systems, a value of None will cause Django to use the same
+# timezone as the operating system.
+# If running in a Windows environment this must be set to the same as your
+# system time zone.
+TIME_ZONE = 'America/New_York'
+
+# Language code for this installation. All choices can be found here:
+# http://www.i18nguy.com/unicode/language-identifiers.html
+LANGUAGE_CODE = 'en-us'
+
+SITE_ID = 1
+
+# Used in article models to se the upload path for article PDFs.  This is
+# relative to the MEDIA_ROOT setting of the app.  For more information see
+# https://docs.djangoproject.com/en/dev/topics/http/file-uploads/
+ARTICLE_UPLOAD_DIR = 'files' # i.e. 'files'
+# Used for the location under the STATIC_ROOT where generated thumbnails and page
+# images will go.
+ARTICLE_IMAGES_DIR = 'articleimages'
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = ''
+
+# for Developers only: to use sessions in runserver, uncomment this line (override configuration in settings.py)
+#SESSION_COOKIE_SECURE = False
+
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error.
+# See http://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'basic': {
+            'format': '[%(asctime)s] %(levelname)s:%(name)s::%(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
+         },
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'console':{
+            'level':'ERROR',
+            'class':'logging.StreamHandler',
+            'formatter': 'basic'
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'georgia_lynchings': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    }
+}

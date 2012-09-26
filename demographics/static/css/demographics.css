@@ -1,0 +1,36 @@
+#demographics {
+	margin-bottom: 20px;
+	color: #bbb;
+}
+#demographics header {
+	color: #ddd;
+}
+#demographics .popdata {
+	font-size: 70%;
+	line-height: 1.4em;
+	margin-top: 1.5em;
+	color: #bbb;
+}
+#demographics .popdetails {
+	margin-left:15px;
+}
+#demographics .statedetails {
+	margin-left:25px;
+	color:#666;
+}
+#demographics .year {
+	font-weight: bold;
+	color: #ddd;
+}
+#demographics .popnum {
+	font-weight: bold;
+	color: #b5f;
+}
+#demographics .poppct {
+	font-style: italic;
+	color: #c4a;
+}
+#demographics .unavailable {
+	font-style: italic;
+	color: #666;
+}

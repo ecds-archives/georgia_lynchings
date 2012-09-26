@@ -1,7 +1,6 @@
 div#timelinecontainer,
-div#mapcontainer,
-div#details {
-	background-color: #eee;
+div#mapcontainer {
+   background-color: #eee;
 }
 
 div#mapcontainer {
@@ -11,11 +10,14 @@ div#mapcontainer {
 div#details {
    float: right;
    display: none;
+   background-color: #404040;
+   color: white;
 }
-	   
+      
 div#details a {
    float: right;
    margin: 5px;
+   color: white;
 }
        
 div#details img.close {
@@ -26,10 +28,27 @@ div#details img.close {
    cursor: hand;
    cursor: pointer;
 }
-	   
+      
 #details #detail-content {
    margin: 10px;
    clear: right;
    overflow: auto;
    height: 80%; /* required for overflow to function properly */
+}
+
+#details #detail-content div {
+   /*margin: 5px 5px 5px 15px;*/
+}
+
+#details #detail-content div.detail-name {
+   margin-left:5px;
+   margin-bottom:20px;
+   font-size:16px;
+   border-bottom: 1px solid #508E52;
+}
+
+#details #detail-content div.read-more {
+   margin-top:20px;
+   margin-left:5px;
+   border-top: 1px solid #508E52;
 }

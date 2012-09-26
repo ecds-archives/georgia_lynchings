@@ -3,4 +3,4 @@ httplib2
 lxml # need to install libxml2 libxml2-dev libxslt and libxslt-dev
 mysql-python # HACK: we don't strictly depend on mysql. find a better way to install it in deploy.
 rdflib>=3.0
-sunburnt
+south==0.7

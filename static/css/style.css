@@ -6,15 +6,64 @@
 
 body{ font:14px/24px Georgia, Helvetica, Helvetica Neue, Arial; }
 
-.wrapper{
+.wrapper {
 	/*width:95%;*/
 	margin:0 3%;
 }
 
-aside a {
+/*
+   ==============
+   Aside Block
+   ==============
+*/
+aside a, aside a:visited {
     color: #508e52;
     text-decoration: none;
 }
+
+/*
+   ====================
+   News Article Display
+   ====================
+*/
+#news_articles {
+  display: block;
+}
+#news_articles article {
+  display: inline-block;
+  float: left;
+  width: 305px;
+  padding: 5px;
+  margin-bottom: 15px;
+  margin-right: 15px;
+}
+#news_articles article img {
+  float: left;
+  margin-right: 15px;
+  border: 1px solid #404040;
+}
+#news_articles article a {
+  text-decoration: none;
+  width: 275px;
+  font-size: .9em;
+  color: #8b8989;
+}
+#news_articles article p {
+  margin: 0;
+  padding: 0;
+}
+
+/*
+  ====================
+    Victim List
+  ====================
+  */
+  #victim_list article p {
+    margin: 0;
+    margin-bottom: .2em;
+    padding: 0;
+  }
+
 /* ===================
     ALL: Black Green
    =================== */
@@ -37,24 +86,6 @@ aside a {
 ::selection      { background: #000000; color: #fff; text-shadow: none; }
 
 /*
-   ==============
-   Aside Block
-   ==============
-*/
-aside div.article_block {
-    display: block;
-    /* border: 1px solid green; */
-    padding: 10px 0;
-    margin: 5px 0;
-    font-size: 85%;
-    clear: both;
-}
-
-aside div.article_block img {
-    margin-right: 10px;
-}
-
-/*
    ===============
     Summary Block
    ===============
@@ -70,6 +101,14 @@ aside div.article_block img {
     margin: 0;
     margin-top: .5em;
 }
+.factlist a {
+    color: #bc8f8f; /* orangered */
+}
+.meta {
+    font-size: 70%;
+    font-style: italic;
+    margin-left: 2em;
+    }
 
 /* ==============
     MOBILE: Menu
@@ -103,27 +142,51 @@ nav a:hover{
     background: url('images/greybackground.jpg');
 }
 
+#main.sidebar article{
+    width: 61%;
+}
+
+#main aside{
+    float:right;
+    width:28%;
+}
+
 #main{
 	padding: 10px 10px;
     background: #ffffff;
 }
-
-#main article h1{
-	font-size:2em;
-}
-
 #main aside{
 	color:white;
 	padding: 0px 5% 10px;
 }
-#main aside.articles {
+#main.with_aside aside {
     padding: 0px 2% 10px;
 }
-
+#main.with_aside #main_section {
+    width: 675px;
+    }
 #footer-container footer{
 	color:white;
     background: #090a0c;
 	padding: 10px 10px;
+}
+#footer-container footer img {
+  float: left;
+}
+
+/*
+   ===============
+   Headers
+   ===============
+   */
+#main h1 {
+    font-size: 1.75em;
+}
+#main h2 {
+    font-size: 1.5em;
+}
+#main h3 {
+    font-size: 1.25em;
 }
 
 /* ===============
@@ -136,7 +199,10 @@ nav a:hover{
 /* ===== Primary Styles ========================================================
    Author:
    ========================================================================== */
-
+.listcolumn {
+  width: 450px;
+  float: left;
+}
 
 
 /* =============================================================================
@@ -179,7 +245,8 @@ nav a:hover{
    ==================== */
 
 	#header-container,
-	#main aside{
+	#main aside,
+    #news_articles article, #timemap {
 		-webkit-box-shadow:0 5px 10px #aaa;
 		   -moz-box-shadow:0 5px 10px #aaa;
 		        box-shadow:0 5px 10px #aaa;
@@ -194,22 +261,15 @@ nav a:hover{
 	}
 
 	nav{
-		float:right;
-		width:38%;
-	}
+		float: right;
+		width: 38%;
+    }}
 
 /* ============
     WIDE: Main
    ============ */
 
-	#main article{
-	}
-		
-	#main aside{
-		float:right;
-		width:28%;
-	}
-}
+
 
 @media only screen and (min-width: 1140px) {
 
@@ -236,7 +296,9 @@ nav a:hover{
 #map_canvas {
     height: 200px;
 }
+#timelineontainer {
 
+}
 /*
    =========================
    Image Preview Popup
@@ -261,9 +323,11 @@ nav a:hover{
 .visuallyhidden { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
 .visuallyhidden.focusable:active, .visuallyhidden.focusable:focus { clip: auto; height: auto; margin: 0; overflow: visible; position: static; width: auto; }
 .invisible { visibility: hidden; }
+.clearfix { clear: both;}
 .clearfix:before, .clearfix:after { content: ""; display: table; }
 .clearfix:after { clear: both; }
 .clearfix { *zoom: 1; }
+.notice { font-style: italic; font-size: 80%;}
 
 /* =============================================================================
    Print Styles

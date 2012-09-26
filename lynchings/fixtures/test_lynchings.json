@@ -1,0 +1,29 @@
+[
+    {
+        "fields": {
+            "articles": [],
+            "pca_id": 1,
+            "pca_last_update": null
+        },
+        "model": "lynchings.lynching",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "articles": [],
+            "pca_id": 2,
+            "pca_last_update": null
+        },
+        "model": "lynchings.lynching",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "articles": [],
+            "pca_id": 3,
+            "pca_last_update": null
+        },
+        "model": "lynchings.lynching",
+        "pk": 3
+    }
+]
