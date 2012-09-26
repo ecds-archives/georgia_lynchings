@@ -6,11 +6,6 @@
 {% block content-title %}Article List{% endblock %}
 
 {% block content-body %}
-        {% for article in article_list %}
-            {% if not article.file %}
-                {% include "articles/snippets/article_block_nofile.html" %}
-            {% else %}
-                {% include "articles/snippets/article_block.html" %}
-            {% endif %}
-        {% endfor %}
+The application does not currently allow listing of articles individually.
+    Please locate relevant articles in their related events.
 {% endblock %}

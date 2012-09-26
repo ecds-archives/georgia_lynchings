@@ -41,11 +41,20 @@
 
 {% block aside %}
 <aside>
-    <section id="victim_map">
+    <section id="Article Information">
         <header>
-            <h3>Article Information</h3>
+            <h3>Article Citation</h3>
         </header>
         <div>{% include 'articles/snippets/article_citation.html' %}</div>
+        <div id="download">
+        <h4>Article Download</h4>
+            {% if article.file %}
+            <a href="{{ MEDIA_URL }}{{ article.file }}">
+            <img src="{{ STATIC_URL }}images/pdf-icon.jpg" alt="pdf icon" />
+                Download PDF
+            </a>
+            {% endif %}
+        </div>
     </section>
 </aside>
 {% endblock %}
