@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.conf.urls.defaults import patterns, include, url
-from georgia_lynchings.events.views import home
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin

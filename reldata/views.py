@@ -6,7 +6,6 @@ from django.db.models import Count, Q
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 
-from georgia_lynchings.events.models import SemanticTriplet
 from georgia_lynchings.lynchings.models import Story, Lynching
 from georgia_lynchings.reldata import models
 
@@ -58,7 +57,7 @@ def graph(request):
         })
 
 def wordcloud(request):
-    rels = Relation.objects.exclude(subject_adjective="").\
+    rels = models.Relation.objects.exclude(subject_adjective="").\
     values('subject_adjective').annotate(Count('subject_adjective'))
     word_list = [{'word': rel['subject_adjective'], 'count': rel['subject_adjective__count']}
     for rel in rels]
@@ -121,7 +120,7 @@ def cloud_data(request):
     '''
     Generates json data for the wordcloud view.
     '''
-    rels = Relationship.objects.exclude(subject_adjective="").\
+    rels = models.Relation.objects.exclude(subject_adjective="").\
         values('subject_adjective').annotate(Count('subject_adjective'))
     data = [{'word': rel['subject_adjective'], 'count': rel['subject_adjective__count']}
         for rel in rels]

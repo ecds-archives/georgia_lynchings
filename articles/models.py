@@ -5,10 +5,10 @@ from django.db import models
 from django.conf import settings
 from django.utils.encoding import smart_str
 
-from georgia_lynchings.rdf.fields import ChainedRdfPropertyField, \
-        ReversedRdfPropertyField, RdfPropertyField
-from georgia_lynchings.rdf.models import RdfObject, ComplexObject
-from georgia_lynchings.rdf.ns import dd, dxcxd, ssxn
+#from georgia_lynchings.rdf.fields import ChainedRdfPropertyField, \
+#        ReversedRdfPropertyField, RdfPropertyField
+#from georgia_lynchings.rdf.models import RdfObject, ComplexObject
+#from georgia_lynchings.rdf.ns import dd, dxcxd, ssxn
 
 logger = logging.getLogger(__name__)
 
@@ -175,44 +175,44 @@ class Article(models.Model):
     class Meta:
         ordering = ('featured', '-file', 'date', 'publisher')
 
-class PcAceDocument(RdfObject):
-    """
-    A PDF document in PC-ACE, with metadata in the RDF triplestore.
-    """
-
-    rdf_type = dd.Row
-    'the URI of the RDF Class describing document objects'
-
-    id = dd.ID
-    'the numeric id used in PC-ACE for the document'
-
-    newspaper_name = ssxn.Newspaper_name
-    'the name of the newspaper the document comes from'
-    newspaper_date = ssxn.Newspaper_date
-    'the date of the newspaper the document comes from'
-    page_number = ssxn.Page_number
-    'the page number of the document'
-
-    _pdf_path = ssxn.documentPath
-    '''the relative path to the document. assumes windows path conventions and
-       a predefined directory structure'''
-
-    documented = ChainedRdfPropertyField(
-            ReversedRdfPropertyField(dxcxd.Document),
-            RdfPropertyField(dxcxd.Complex,
-                result_type=ComplexObject, multiple=True),
-            reverse_field_name='documents',
-        )
-    '''the list of :class:`~georgia_lynchings.rdf.models.ComplexObject`
-    objects associated with this document. In practice, this property is
-    more useful in reverse: It creates a ``documents`` property on
-    :class:`~georgia_lynchings.rdf.models.ComplexObject` that lists all of
-    the :class:`PcAceDocument` objects associated with that object.'''
-
-    @property
-    def pdf_filename(self):
-        'the document filename, stripped of OS and directory structure'
-        fpath = self._pdf_path
-        if fpath:
-            path, bslash, fname = fpath.rpartition('\\')
-            return fname
+#class PcAceDocument(RdfObject):
+#    """
+#    A PDF document in PC-ACE, with metadata in the RDF triplestore.
+#    """
+#
+#    rdf_type = dd.Row
+#    'the URI of the RDF Class describing document objects'
+#
+#    id = dd.ID
+#    'the numeric id used in PC-ACE for the document'
+#
+#    newspaper_name = ssxn.Newspaper_name
+#    'the name of the newspaper the document comes from'
+#    newspaper_date = ssxn.Newspaper_date
+#    'the date of the newspaper the document comes from'
+#    page_number = ssxn.Page_number
+#    'the page number of the document'
+#
+#    _pdf_path = ssxn.documentPath
+#    '''the relative path to the document. assumes windows path conventions and
+#       a predefined directory structure'''
+#
+#    documented = ChainedRdfPropertyField(
+#            ReversedRdfPropertyField(dxcxd.Document),
+#            RdfPropertyField(dxcxd.Complex,
+#                result_type=ComplexObject, multiple=True),
+#            reverse_field_name='documents',
+#        )
+#    '''the list of :class:`~georgia_lynchings.rdf.models.ComplexObject`
+#    objects associated with this document. In practice, this property is
+#    more useful in reverse: It creates a ``documents`` property on
+#    :class:`~georgia_lynchings.rdf.models.ComplexObject` that lists all of
+#    the :class:`PcAceDocument` objects associated with that object.'''
+#
+#    @property
+#    def pdf_filename(self):
+#        'the document filename, stripped of OS and directory structure'
+#        fpath = self._pdf_path
+#        if fpath:
+#            path, bslash, fname = fpath.rpartition('\\')
+#            return fname
