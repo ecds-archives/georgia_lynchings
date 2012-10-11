@@ -1,3 +1,19 @@
+"""
+This imports data for the coded relationships that create the filter relationship
+graph on the site.
+
+This imports a CSV file in the following format:
+
+    * 'story_id':  int of the id of the Lynching it relates to
+    * 'event_id':  int
+    * 'sequence_id':  int
+    * 'triplet_id':  int of pk for this particular relationship.
+    * 'subject': string label for subject acting
+    * 'action':  string label for action being taken that appears in filter.
+    * 'object':  string label for object being acted on.
+
+"""
+
 import csv
 import datetime
 from optparse import make_option
